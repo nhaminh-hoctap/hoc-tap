@@ -606,7 +606,7 @@ function setLearned(kd,n){n=Math.min(kd.words.length,Math.max(0,Math.round(+n||0
 const INTERVALS=[1,3,7,14,30,60];
 function srsOf(kd){return store.get('vocab_srs_v1',{})[kd.id]||{}}
 function srsSave(kd,o){const a=store.get('vocab_srs_v1',{});a[kd.id]=o;store.set('vocab_srs_v1',a)}
-function logOf(kd){const l=store.get('vocab_daily_v1',{})[kd.id]||{};l.per=l.per||4;l.old=l.old||15;l.days=l.days||{};return l}
+function logOf(kd){const l=store.get('vocab_daily_v1',{})[kd.id]||{};l.per=l.per||5;l.old=l.old||15;l.days=l.days||{};return l}
 function logSave(kd,o){const a=store.get('vocab_daily_v1',{});a[kd.id]=o;store.set('vocab_daily_v1',a)}
 function recToday(kd){const l=logOf(kd);return l.days[today()]||{}}
 function updRec(kd,fn){const l=logOf(kd);const t=today();l.days[t]=l.days[t]||{};fn(l.days[t]);logSave(kd,l)}
@@ -1476,7 +1476,7 @@ $('btnHome').onclick=()=>{if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').cl
 // Mỗi khóa dữ liệu học được lưu thành tài liệu "sync/<khóa>" (hoặc "sync/<khóa>.<bé>" với dữ liệu tách theo bé).
 // Mở trên máy nào (đăng nhập Claude) cũng tải về cùng một dữ liệu; thay đổi tự đẩy lên và các máy khác nhận ngay.
 const SYNC_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1',
-  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1','vocab_adj_tn240','vocab_enrich_v1'];
+  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_cfg_20261119','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1','vocab_adj_tn240','vocab_enrich_v1'];
 const KID_IDS=['anhphong','thanhnghi'];
 const SYNC={parts:{},db:null,dev:Math.random().toString(36).slice(2,10),dirty:new Set(),timer:null,busy:false,last:{},known:new Set(),state:'local'};
 function isKidKeyed(v){return v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length>0&&Object.keys(v).every(k=>KID_IDS.includes(k))}
@@ -2191,6 +2191,8 @@ $('fFix').onclick=()=>{const w=S.newWords&&S.newWords[S.fi];if(w)openFix(w)};$('
     store.set('vocab_stars_v1',a);store.set('vocab_stars_init_v1',true)}
   if(!store.get('vocab_cfg_20261118',false)){ // cài đặt khuyến nghị sau khi mô phỏng: Anh Phong 4 từ mới; ôn 10 từ cũ/ngày
     KIDS.forEach(k=>{const l=logOf(k);if(k.id==='anhphong')l.per=4;l.old=10;logSave(k,l)});store.set('vocab_cfg_20261118',true)}
+  if(!store.get('vocab_cfg_20261119',false)&&!SYNC.hold){ // bố mẹ chốt: mặc định mỗi bé 5 từ mới/ngày (khớp điều kiện rương báu)
+    KIDS.forEach(k=>{const l=logOf(k);l.per=5;logSave(k,l)});store.set('vocab_cfg_20261119',true)}
   if(!store.get('vocab_adj_tn240',false)&&!SYNC.hold){ // bố mẹ chỉnh: số sao hiện có của Thanh Nghị = −240 (điều chỉnh vào dòng số sao chuyển ban đầu)
     const a=store.get('vocab_stars_v1',{}),s=a.thanhnghi;
     if(s&&s.led){const e=s.led.find(x=>String(x.r).startsWith('📌 Số sao chuyển'));
