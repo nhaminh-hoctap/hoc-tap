@@ -1,0 +1,241 @@
+diff --git a/index.html b/index.html
+index 67a68c5..f5a6b8f 100644
+--- a/index.html
++++ b/index.html
+@@ -13,3 +13,3 @@ body{min-height:100vh;transition:background .2s}
+ button{font:inherit;color:inherit;cursor:pointer}
+-.wrap{max-width:760px;margin:0 auto;padding:18px 16px 40px}
++.wrap{max-width:900px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
+ .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+@@ -91,2 +91,19 @@ h2{font-size:19px;margin:24px 2px 10px}
+ .hide{display:none!important}
++/* ===== Bố cục mới, tối ưu cho iPad ===== */
++.hero{align-items:center}.hero .av{width:150px;height:150px;flex:none;display:grid;place-items:center}.hero .av .pet-scene{box-shadow:0 0 0 4px rgba(255,255,255,.55);width:100%!important;height:100%!important}
++.hinfo{flex:1;min-width:0}.hiS{font-size:16px;font-weight:700;opacity:.95;margin-bottom:6px}.hiS span{font-weight:600;opacity:.9}
++.hrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px}.hrow .bal{margin-top:0}.hrow .today{margin-top:0}
++.tiles.learn .tile{min-height:190px;padding:22px 22px 20px}.tiles.learn .ic{font-size:54px}.tiles.learn .t{font-size:24px}.tiles.learn .s{font-size:15.5px}
++.tiles.learn .go{font-size:18px;padding:12px 22px;border-radius:14px}
++.mini2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
++.mini2 button{display:flex;align-items:center;gap:12px;min-height:76px;padding:12px 18px;border-radius:20px;border:2px solid var(--line);background:#fff;text-align:left;box-shadow:0 4px 0 var(--line)}
++.mini2 button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
++.mini2 .mi{font-size:36px;line-height:1}.mini2 b{display:block;font-size:19px}.mini2 small{display:block;color:var(--ink2);font-size:14px;margin-top:2px}
++.mini2 .star{background:#FFFBEB;border-color:#FCD34D;box-shadow:0 4px 0 #FCD34D}
++.setList{background:#fff;border:2px solid var(--line);border-radius:20px;overflow:hidden}
++.setList button{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:12px 18px;border:0;border-top:1px solid var(--line);background:#fff;text-align:left}
++.setList button:first-child{border-top:0}.setList button:active{background:#F8FAFC}
++.setList .si{font-size:30px;width:40px;text-align:center}.setList b{display:block;font-size:17px}.setList small{display:block;color:var(--ink2);font-size:14px}.setList .ar{margin-left:auto;font-size:22px;color:#94A3B8}
++.kidsum .ks{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
++@media (max-width:640px){.hero{flex-direction:column;text-align:center}.hero .av{width:120px;height:120px}.hrow{justify-content:center}.mini2{grid-template-columns:1fr}.tiles.learn .tile{min-height:0}}
+ @media (max-width:520px){.tiles{grid-template-columns:1fr}.tile{min-height:0}.whoBtn .av{font-size:58px}.whoBtn .nm{font-size:22px}.hero .av{font-size:52px}.hero h1{font-size:23px}}
+@@ -122,3 +139,2 @@ h2{font-size:19px;margin:24px 2px 10px}
+     <div id="pLeagueW"></div>
+-    <div class="recent" id="pRecent"></div>
+   </section>
+@@ -132,7 +148,8 @@ h2{font-size:19px;margin:24px 2px 10px}
+     <div class="kidsum" id="pParSum"></div>
+-    <div id="pParLeague"></div>
+-    <h2>Sao thưởng</h2>
++    <h2>⭐ Sao thưởng</h2>
+     <div class="tiles" id="pParStar"></div>
+-    <h2>Thiết lập các ứng dụng</h2>
+-    <div class="tiles" id="pParSet"></div>
++    <div id="pParLeague"></div>
++    <div class="recent" id="pRecent"></div>
++    <h2>⚙️ Cài đặt các ứng dụng</h2>
++    <div class="setList" id="pParSet"></div>
+     <div class="foot"><button class="ghost" id="pParOut">🚪 Thoát Góc bố mẹ</button><span>Các con không thấy các mục chấm sao, phạt sao và cài đặt.</span></div>
+@@ -143,7 +160,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+       <div class="av" id="pAv"></div>
+-      <div style="flex:1;min-width:0">
++      <div class="hinfo">
++        <div class="hiS">Chào con! 👋 <span id="pGr"></span></div>
+         <h1 id="pHi"></h1>
+-        <div class="gr" id="pGr"></div>
+-        <div class="bal" id="pBal"></div>
+-        <div class="today" id="pToday"></div>
++        <div id="pPetLine"></div>
++        <div class="hrow"><div class="bal" id="pBal"></div><div class="today" id="pToday"></div></div>
+       </div>
+@@ -151,10 +168,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ 
+-    <div id="pPet"></div>
+-    <h2>Hôm nay con học gì?</h2>
+-    <div class="tiles" id="pTiles"></div>
++    <h2>📚 Hôm nay con học gì?</h2>
++    <div class="tiles learn" id="pTiles"></div>
++    <div class="mini2" id="pMini"></div>
+     <div id="pLeague"></div>
+ 
+-    <h2>⭐ Cách nhận sao thưởng</h2>
+-    <details class="rules" id="pRules"><summary>Xem cách nhận sao ở từng môn</summary><div id="pRulesBody"></div></details>
+-
+     <div class="foot">
+@@ -192,3 +206,4 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
+   },
+-  homeBtnHtml:function(style){var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';
++  homeBtnHtml:function(style){if(document.getElementById('pbar'))return ''; // đã có thanh trên cùng chung
++    var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';
+     // Lớp 2 / Lớp 6: thêm tên bé kèm danh hiệu ngay cạnh nút về trang chính (Từ vựng tự hiện ở nút tên bé)
+@@ -214,2 +229,3 @@ async function mount(app,kid,mode){
+   document.head.appendChild(sty);
++  var bsty=document.createElement('style');bsty.textContent=BAR_CSS;document.head.appendChild(bsty);
+   [].slice.call(doc.body.attributes).forEach(function(a){document.body.setAttribute(a.name,a.value)});
+@@ -222,2 +238,4 @@ async function mount(app,kid,mode){
+     document.body.appendChild(c)});
++  var bar=document.createElement('div');bar.id='pbar';document.body.insertBefore(bar,document.body.firstChild);
++  document.documentElement.classList.add('pbar');renderBar();
+   // các ứng dụng chờ sự kiện "trang đã tải" -> chạy ngay vì trang đã tải xong
+@@ -231,2 +249,32 @@ async function mount(app,kid,mode){
+ 
++/* ---------- Thanh trên cùng chung cho cả ba ứng dụng ---------- */
++var BAR_CSS='#pbar{position:sticky;top:0;z-index:900;display:flex;align-items:center;gap:12px;min-height:68px;padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));'+
++  'background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:3px solid var(--pbk,#CBD5E1);box-shadow:0 2px 12px rgba(15,23,42,.07);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#1E293B;line-height:1.2;box-sizing:border-box}'+
++  '#pbar *{box-sizing:border-box}#pbar .pb-home{display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 16px 0 12px;border-radius:15px;border:2px solid #E2E8F0;background:#fff;font-size:24px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 #E2E8F0;flex:none;color:#1E293B;font-family:inherit}'+
++  '#pbar .pb-home:active{transform:translateY(2px);box-shadow:0 1px 0 #E2E8F0}#pbar .pb-home span{font-size:16px}'+
++  '#pbar .pb-who{flex:none;min-width:0;max-width:34%}#pbar .pb-par{font-weight:800;font-size:16px;background:#EEF2FF;color:#4338CA;border-radius:99px;padding:6px 12px;white-space:nowrap}'+
++  '#pbar .pb-title{flex:1;min-width:0;font-size:19px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}'+
++  '#pbar .pb-star{flex:none;font-weight:800;font-size:19px;color:#B45309;background:#FFFBEB;border:2px solid #FCD34D;border-radius:99px;padding:6px 14px;white-space:nowrap}#pbar .pb-star.neg{color:#B91C1C}'+
++  '#pbar .pb-sync{flex:none;width:12px;height:12px;border-radius:50%;background:#22C55E}#pbar .pb-sync.wait{background:#F59E0B}'+
++  '#pbar .pb-sync.err{width:auto;height:auto;background:#FEF2F2;color:#B91C1C;border-radius:99px;padding:5px 10px;font-size:13px;font-weight:700}'+
++  '@media (max-width:700px){#pbar .pb-home span{display:none}#pbar .pb-title{font-size:16px}}@media (max-width:520px){#pbar .pb-title{display:none}#pbar .pb-who{max-width:none;flex:1}}'+
++  /* ẩn phần trùng lặp trong từng ứng dụng */
++  'html.pbar #portalHome,html.pbar #appTitle,html.pbar body:not(.parent) #kidChip{display:none!important}'+
++  'html.pbar #syncBadge.ok,html.pbar #syncBadge.saving,html.pbar #syncBadge.loading{display:none!important}'+
++  'html.pbar .top .pill,html.pbar .top .sc-on,html.pbar .top .sc-wait{display:none!important}'+
++  'html.pbar .topbar .brand,html.pbar .topbar .starpill,html.pbar .topbar .syncpill.ok,html.pbar .topbar .syncpill.saving,html.pbar .topbar .syncpill.connecting{display:none!important}'+
++  'html.pbar .topbar{padding-top:8px;padding-bottom:0;min-height:0}';
++function barTitle(){var m=P.mode,a=P.app;
++  if(m==='parent-sao')return['⭐','Thưởng · Phạt · Tiêu sao'];if(m==='parent-report')return['📊','Báo cáo học từ vựng'];if(m==='parent-set')return['📘','Cài đặt Học từ vựng'];
++  if(m==='parent')return a==='lop2'?['🧮','Cài đặt Lớp 2']:['📐','Cài đặt Lớp 6'];var A=APPS[a]||{ic:'',t:''};return[A.ic,A.t]}
++function renderBar(){var b=$('pbar');if(!b)return;var t=barTitle(),st=BANK.state,k=P.kid&&kidById(P.kid);
++  b.style.setProperty('--pbk',P.parent?'#818CF8':k?k.color:'#CBD5E1');
++  var tot=P.parent||!P.kid?null:showTotal(P.kid);
++  b.innerHTML='<button class="pb-home" type="button" aria-label="Về trang chính">🏠<span>Trang chính</span></button>'+
++    '<div class="pb-who">'+(P.parent?'<span class="pb-par">👨‍👩‍👧 Góc bố mẹ</span>':BANK.nameplate(P.kid,'S',null,{av:true}))+'</div>'+
++    '<div class="pb-title">'+t[0]+' '+esc(t[1])+'</div>'+
++    (tot==null?'':'<div class="pb-star'+(tot<0?' neg':'')+'" title="Sao thưởng chung mọi môn">⭐ '+tot+'</div>')+
++    (st==='ok'?'<span class="pb-sync" title="Đã đồng bộ"></span>':st==='loading'?'<span class="pb-sync wait" title="Đang kết nối"></span>':'<span class="pb-sync err">⚠️ '+(st==='off'?'Chỉ trên máy này':'Chưa đồng bộ')+'</span>');
++  b.querySelector('.pb-home').onclick=function(){P.home()}}
++
+ /* ---------- Trang chính ---------- */
+@@ -241,4 +289,3 @@ function renderWho(){
+   $('pParBtn').onclick=openPin;
+-  renderRecent();
+-  var T=window.THIDUA;if(T){if(T.data())$('pLeagueW').innerHTML=T.leagueHtml(null);T.load()}
++  var T=window.THIDUA;if(T){if(T.data())$('pLeagueW').innerHTML=T.leagueHtml(null,false,'mini');T.load()}
+ }
+@@ -254,5 +301,6 @@ function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
+ function renderKid(){
+-  if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR);
+-  $('pAv').textContent=petE(k);var T=window.THIDUA;
+-  if(T&&T.data()){$('pPet').innerHTML=T.petHtml(CUR);$('pLeague').innerHTML=T.leagueHtml(CUR);T.celebrate(CUR)}if(T)T.load();$('pHi').innerHTML='<span class="hiS">Chào con! 👋</span>'+BANK.nameplate(CUR,'L');$('pGr').textContent=k.grade+' · Cố lên nhé, mỗi ngày một chút!';
++  if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR),T=window.THIDUA,has=T&&T.data();
++  $('pAv').innerHTML=has?T.petScene(CUR,150):'<span style="font-size:80px">'+k.av+'</span>';
++  $('pHi').innerHTML=BANK.nameplate(CUR,'L');$('pGr').textContent='· '+k.grade;
++  $('pPetLine').innerHTML=has?T.petLine(CUR):'';
+   $('pBal').className='bal'+(tot<0?' neg':'');$('pBal').innerHTML='⭐ '+tot+' <small>sao thưởng</small>';
+@@ -261,11 +309,9 @@ function renderKid(){
+   var sub=APPS[k.app];
+-  var tiles=[
+-    ['tuvung',APPS.tuvung,''],
+-    [k.app,sub,''],
+-    ['sao',APPS.sao,'star'],
+-    ['huyhieu',APPS.huyhieu,'']
+-  ];
+-  $('pTiles').innerHTML=tiles.map(function(x){return '<button class="tile '+x[2]+'" data-app="'+x[0]+'"><span class="ic">'+x[1].ic+'</span><span class="t">'+x[1].t+'</span><span class="s">'+x[1].s+'</span><span class="go">Mở →</span></button>'}).join('');
+-  $('pTiles').querySelectorAll('.tile').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
+-  $('pRulesBody').innerHTML='<div class="grp"><div style="font-weight:700;margin-bottom:4px">📘 Từ vựng tiếng Anh</div>Học từ mới, ôn tập, luyện thêm, thuộc chắc theo khối… (xem chi tiết trong mục Sao thưởng)</div><div class="grp">'+BANK.rulesHtml(CUR)+'</div>';
++  $('pTiles').innerHTML=[['tuvung',APPS.tuvung],[k.app,sub]].map(function(x){return '<button class="tile" data-app="'+x[0]+'"><span class="ic">'+x[1].ic+'</span><span class="t">'+x[1].t+'</span><span class="s">'+x[1].s+'</span><span class="go">Vào học →</span></button>'}).join('');
++  var ti=BANK.title(CUR);
++  $('pMini').innerHTML='<button class="star" data-app="sao"><span class="mi">⭐</span><span><b>Sao thưởng</b><small>Xem sao của mọi môn, đổi quà</small></span></button>'+
++    '<button data-app="huyhieu"><span class="mi">🏅</span><span><b>Huy hiệu & danh hiệu</b><small>'+(ti&&ti.rank?'Cấp '+ti.rank+'/7 · '+(ti.pts||0)+' điểm huy hiệu':'Bộ sưu tập · trang trí tên')+'</small></span></button>';
++  document.querySelectorAll('#pTiles .tile,#pMini button').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
++  $('pLeague').innerHTML=has?T.leagueHtml(CUR,false,'compact'):'';
++  if(has)T.celebrate(CUR);if(T)T.load();
+ }
+@@ -355,2 +401,3 @@ function renderParent(){if(!PARENT)return;
+   var TD=window.THIDUA;if(TD){if(TD.data())$('pParLeague').innerHTML=TD.leagueHtml(null,true);TD.load()}
++  renderRecent();
+   var T=function(app,ic,t,sub,cls){return '<button class="tile '+(cls||'par')+'" data-app="'+app+'"><span class="ic">'+ic+'</span><span class="t">'+t+'</span><span class="s">'+sub+'</span><span class="go">Mở →</span></button>'};
+@@ -358,6 +405,7 @@ function renderParent(){if(!PARENT)return;
+     T('p-report','📊','Báo cáo học từ vựng','Báo cáo tuần, tiến độ thuộc chắc của từng con.');
+-  $('pParSet').innerHTML=T('p-tuvung','📘','Cài đặt Học từ vựng','Số từ mới, số từ ôn mỗi ngày, giọng đọc, micro, mã bố mẹ, sao lưu.')+
+-    T('p-lop2','🧮','Cài đặt Lớp 2 (Anh Phong)','Số câu mỗi lượt, tự đọc đề, kết quả học và kiểm tra.')+
+-    T('p-lop6','📐','Cài đặt Lớp 6 (Thanh Nghị)','Mục tiêu mỗi ngày, mã bố mẹ, đồng bộ, sao lưu, kết quả học.');
+-  document.querySelectorAll('#pPar .tile').forEach(function(b){b.onclick=function(){goParent(b.dataset.app)}});
++  var R=function(app,ic,t,sub){return '<button data-app="'+app+'"><span class="si">'+ic+'</span><span><b>'+t+'</b><small>'+sub+'</small></span><span class="ar">›</span></button>'};
++  $('pParSet').innerHTML=R('p-tuvung','📘','Học từ vựng','Số từ mới, số từ ôn mỗi ngày, giọng đọc, micro, mã bố mẹ, sao lưu')+
++    R('p-lop2','🧮','Lớp 2 · Anh Phong','Số câu mỗi lượt, tự đọc đề, kết quả học và kiểm tra')+
++    R('p-lop6','📐','Lớp 6 · Thanh Nghị','Mục tiêu mỗi ngày, mã bố mẹ, đồng bộ, sao lưu, kết quả học');
++  document.querySelectorAll('#pPar .tile,#pParSet button').forEach(function(b){b.onclick=function(){goParent(b.dataset.app)}});
+ }
+@@ -370,3 +418,3 @@ function restorePortal(){
+   [].slice.call(document.body.attributes).forEach(function(a){document.body.removeAttribute(a.name)});
+-  document.body.innerHTML=SHELL.body;P.app=null;P.mode=null;document.title='Góc học tập';
++  document.documentElement.classList.remove('pbar');document.body.innerHTML=SHELL.body;P.app=null;P.mode=null;document.title='Góc học tập';
+   bindPortal();renderSync();if(P.parent){P.parent=false;openParent()}else if(P.kid)openKid(P.kid);else renderWho();window.scrollTo(0,0);
+@@ -380,3 +428,3 @@ function renderSync(){var s=BANK.state;if(s==='off'&&window.__fbError){$('pSync'
+ if(window.THIDUA)THIDUA.onUpdate(function(){if(P.app)return;if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
+-BANK.onChange(function(){if(P.app)return;renderSync();if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
++BANK.onChange(function(){if(P.app){renderBar();return}renderSync();if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
+ 
+diff --git a/thidua.js b/thidua.js
+index d70b6d9..860fafe 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -175,2 +175,7 @@
+     '@media (max-width:520px){.lg-row{grid-template-columns:1fr auto}.lg-row .lg-bar{grid-column:1/-1;grid-row:2}.pet-scene{width:96px;height:96px}}' +
++    '.lg-c>summary{list-style:none;cursor:pointer}.lg-c>summary::-webkit-details-marker{display:none}.lg-sum{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px;color:#334155;margin-top:4px}' +
++    '.lg-more{font-weight:700;color:#2563EB;font-size:14px;margin-left:auto}.lg-c[open] .lg-more{display:none}.lg-mini h3{margin-bottom:2px}' +
++    '.pet-line{margin-top:8px}.pet-line>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}.pet-line>summary::-webkit-details-marker{display:none}' +
++    '.pl-n{font-weight:800;font-size:16px}.pl-n small{font-weight:600;opacity:.85}.pl-bar{flex:1;min-width:120px;max-width:260px;height:10px;border-radius:99px;background:rgba(255,255,255,.35);overflow:hidden}.pl-bar i{display:block;height:100%;background:#FDE047;border-radius:99px}' +
++    '.pl-x{font-size:13.5px;opacity:.95}.pl-how{margin-top:8px;background:rgba(255,255,255,.18);border-radius:12px;padding:8px 12px;font-size:14px;line-height:1.6}' +
+     '@media (prefers-reduced-motion:reduce){.pet-e,.pet-a,.td-box .big{animation:none}}';
+@@ -197,4 +202,18 @@
+ 
++  function petScene(kid, px) {
++    var p = pet(kid); if (!p) return ''; css(); px = px || 140;
++    return '<div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="width:' + px + 'px;height:' + px + 'px;background:linear-gradient(160deg,' + SCENE[kid][p.i] + ')">' +
++      '<span class="pet-e" style="font-size:' + Math.round(px * (0.42 + p.i * 0.03)) + 'px">' + p.e + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span>' + (p.i >= 6 ? '<span class="pet-a a2">✨</span>' : '') : '') + '</div>';
++  }
++  function petLine(kid) {
++    var p = pet(kid); if (!p) return ''; css();
++    var pct = p.next ? Math.round((p.xp - p.from) / (p.next[0] - p.from) * 100) : 100, td = xpToday(kid);
++    return '<details class="pet-line"><summary><span class="pl-n">' + p.e + ' ' + esc(p.name) + ' <small>· cấp ' + (p.i + 1) + '/' + p.n + '</small></span>' +
++      '<span class="pl-bar"><i style="width:' + Math.max(3, pct) + '%"></i></span><span class="pl-x">' + (p.next ? 'còn ' + (p.next[0] - p.xp) + ' ⚡ nữa để lớn' : 'đã lớn hết cỡ 👑') + (td ? ' · hôm nay +' + td + ' ⚡' : '') + ' ⓘ</span></summary>' +
++      '<div class="pl-how"><b>Linh vật lớn lên nhờ năng lượng ⚡</b><br>Học đủ bài tiếng Anh +10 · Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' +5 · Mở rương báu +3 · Cúp tuần +20<br>' +
++      PETS[kid].map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details>';
++  }
++
+   var TODAY_LBL = { en: ['📘', 'Học đủ bài tiếng Anh', 5], sub: ['🧮', 'Đạt mục tiêu môn chính', 4], acc: ['🎯', 'Chính xác từ 90%', 2], chest: ['🎁', 'Đủ điều kiện rương báu', 2], more: ['💪', 'Học vượt gấp đôi mục tiêu', 2] };
+-  function leagueHtml(focus, withHist) {
++  function leagueHtml(focus, withHist, mode) {
+     if (!D) return ''; css();
+@@ -208,4 +227,10 @@
+     }).join('');
+-    var h = '<div class="td-card"><h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3>' + rows +
+-      '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️ khiên</b></div>';
++    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3>' + rows;
++    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️ khiên</b></div>';
++    if (mode === 'mini') return '<div class="td-card lg-mini">' + head + meta + '</div>';
++    var h;
++    if (mode === 'compact') {
++      var tp = focus ? dayPts(focus, t).t : 0;
++      h = '<details class="td-card lg-c"><summary>' + head + '<div class="lg-sum"><span>' + (focus ? 'Hôm nay con được <b>' + tp + '/15</b> điểm' : '') + '</span><span class="lg-more">Xem chi tiết ▾</span></div></summary>' + meta;
++    } else h = '<div class="td-card">' + head + meta;
+     if (focus) {
+@@ -220,3 +245,3 @@
+         return '<span class="' + (got ? 'ok' : '') + '">' + (got ? '✅ ' : '') + L[0] + ' ' + L[1] + ' <b>' + (got ? '+' + got : '+' + L[2]) + '</b>' + hint + '</span>';
+-      }).join('') + '</div><div class="lg-meta">Hôm nay con đã được <b>' + p.t + '/15</b> điểm.</div>';
++      }).join('') + '</div>' + (mode === 'compact' ? '' : '<div class="lg-meta">Hôm nay con đã được <b>' + p.t + '/15</b> điểm.</div>');
+     }
+@@ -240,3 +265,3 @@
+       '<li>Tuần chốt hết Chủ nhật. Con nhiều điểm hơn (ít nhất ' + WIN_MIN + ' điểm) nhận <b>cúp vô địch +' + CUP + ' sao</b>. Bằng điểm thì cả hai cùng nhận.</li>' +
+-      '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥 cho con.</li></ul></details></div>';
++      '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥 cho con.</li></ul></details>' + (mode === 'compact' ? '</details>' : '</div>');
+     return h;
+@@ -272,3 +297,3 @@
+     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
+-    pet: pet, petHtml: petHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
++    pet: pet, petHtml: petHtml, petScene: petScene, petLine: petLine, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
+     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
