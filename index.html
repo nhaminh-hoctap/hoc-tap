@@ -248,7 +248,7 @@ function go(app){
 var PARENT=false;
 function show(id){['pWho','pKid','pPin','pPar'].forEach(function(x){$(x).classList.toggle('hide',x!==id)})}
 function okPin(v){var pin='5789';try{var x=BANK.pin&&BANK.pin();if(x)pin=x}catch(e){}return v===pin||v==='5789'&&!BANK.pinSet}
-function openPin(){show('pPin');$('pPinIn').value='';$('pPinErr').textContent='';setTimeout(function(){$('pPinIn').focus()},50)}
+function openPin(){show('pPin');$('pPinIn').value='';$('pPinErr').textContent='';setTimeout(function(){var i=$('pPinIn');if(i)i.focus()},50)}
 function tryPin(){var v=$('pPinIn').value.trim();if(okPin(v)){P.pin=v;try{sessionStorage.setItem('portal_pin',v)}catch(e){}openParent()}else{$('pPinErr').textContent='Mã chưa đúng';$('pPinIn').value=''}}
 function openParent(){PARENT=true;CUR=null;P.kid=null;document.documentElement.style.setProperty('--soft','#F1F5F9');document.documentElement.style.setProperty('--kid','#334155');show('pPar');renderParent();window.scrollTo(0,0)}
 function renderParent(){if(!PARENT)return;

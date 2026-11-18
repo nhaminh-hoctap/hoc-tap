@@ -288,11 +288,17 @@ body.pm-learn #btnStars,body.pm-learn #btnBadge{display:none}
 body.pm-sao #btnHome,body.pm-sao #btnSet,body.pm-badges #btnHome,body.pm-badges #btnSet{display:none}
 body.in-portal #tabs{display:none}
 body.in-portal:not(.parent) #btnSet{display:none}
-body.pm-sao .pgcard,body.pm-sao .ux,body.pm-sao #undoBox{display:none!important}
+body.in-portal:not(.parent) .pgcard,body.in-portal:not(.parent) .ux,body.in-portal:not(.parent) #undoBox{display:none!important}
 body.parent #btnHome,body.parent #btnBadge{display:none}
 body.parent #btnRep{display:inline-block!important}
 body.parent #stPin,body.parent #undoPin,body.parent #bkPin,body.parent #fixPin{display:none}
 body.parent #kidChip::after{content:' ⇄';opacity:.8}
+.rulecard summary{cursor:pointer;list-style:none}.rulecard summary::-webkit-details-marker{display:none}
+.rlist{margin-top:8px;display:flex;flex-direction:column}
+.rl{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(110px,.9fr) 2fr;gap:4px 10px;padding:6px 0;border-bottom:1px dashed rgba(0,0,0,.12);font-size:.92rem;align-items:baseline}
+.rl .rh{font-weight:700}.rl .rv{font-weight:800;color:#B45309}.rl .rs{color:var(--mut,#64748B);font-size:.85rem}
+.rl.wide{grid-template-columns:1fr}.rl.wide .rs ul{margin:2px 0 0;padding-left:18px}
+@media (max-width:560px){.rl{grid-template-columns:1fr auto}.rl .rs{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -471,11 +477,11 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <div class="row" style="gap:18px;align-items:flex-end"><div><div class="num" id="stBal"></div><div class="sub">sao đang có</div></div>
       <div class="sub" id="stToday"></div></div>
   </div>
-  <div class="card" style="margin-top:14px">
-    <b style="font-size:1.1rem">📋 Sao tự động trong ứng dụng</b>
-    <div class="tiles" id="stRules"></div>
-    <p class="hint">Chỉ tính câu bé tự làm đúng (không dùng 💡 gợi ý). Làm sai trong app không bị trừ sao.</p>
-  </div>
+  <details class="card rulecard" id="stRuleBox" style="margin-top:14px">
+    <summary><b style="font-size:1.05rem">📋 Sao tự động trong ứng dụng</b> <span class="hint">(bấm để xem)</span></summary>
+    <div class="rlist" id="stRules"></div>
+    <p class="hint" style="margin:6px 0 0">Chỉ tính câu bé tự làm đúng (không dùng 💡 gợi ý). Làm sai không bị trừ sao.</p>
+  </details>
   <div class="card pgcard">
     <div class="row" style="justify-content:space-between"><b style="font-size:1.1rem">👨‍👩‍👧 Bố mẹ chấm sao</b><span class="hint">Theo “Quy tắc tích sao – V3”</span></div>
     <div class="seg2" id="pgTabs"><button data-g="earn" class="on">➕ Tích sao</button><button data-g="pen">➖ Phạt sao</button><button data-g="spend">🎁 Tiêu sao</button></div>
@@ -810,6 +816,8 @@ $('fNext').onclick=()=>{
     shuffle(S.newWords).forEach(w=>items.push({w,t:'cloze',ph:'new'}));
     shuffle(S.newWords).forEach(w=>items.push({w,t:'spell',ph:'new'}));
   }
+  // một vài câu tự đọc to (khoảng 1/8 số câu) khi máy nghe được giọng nói
+  if(canSay()){const k=Math.max(1,Math.round(items.length/8));shuffle(S.newWords).slice(0,k).forEach(w=>items.push({w,t:'say',ph:'new'}))}
   startSession('new',items);
 };
 
@@ -818,6 +826,7 @@ $('fNext').onclick=()=>{
 function reviewType(b,kd,w){
   const say=canSay(),clz=w&&sentOf(w);
   const P=(...a)=>pick(a.filter(Boolean));
+  if(say&&b>=1&&Math.random()<0.12) return 'say'; // thỉnh thoảng đọc to (tỉ lệ nhỏ)
   if(b<=0) return P('listen','vi2en');
   if(b===1) return P('vi2en','listen',!kd.young&&clz&&'cloze');
   if(b===2) return kd.young?P('vi2en','listen'):P(clz&&'cloze','vi2en','spell');
@@ -927,7 +936,7 @@ async function startPractice(ws,type,meta){
   const seq=build50(ws);
   S.meta=Object.assign({type,start:Date.now(),words:new Set(seq.map(w=>w.n)).size},meta);
   const srsT=srsOf(kd);
-  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':pick(mixTypes(kd,w))):type,ph:'practice'})));
+  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
 }
 $('pGo').onclick=async()=>{
   const kd=kid(),N=Math.max(1,learned(kd));let a=Math.max(1,Math.min(N,+$('pFrom').value||1)),b=Math.max(a,Math.min(N,+$('pTo').value||a));
@@ -959,7 +968,7 @@ let autoTimer=null;
 function renderQ(){
   stopListening();clearTimeout(autoTimer);
   const it=S.items[S.i],w=it.w;if(it.t==='auto')it.t=reviewType(it.b||0,kid(),w);
-  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='say'||it.t==='readW')))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
+  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&!canSay()))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
   const t=it.t;S.answered=false;S.sayTries=0;S.hinted=false;
   $('qBar').style.width=(S.i/S.items.length*100)+'%';$('qTag').textContent=`${S.i+1}/${S.items.length} · ⭐${S.score}`;
   $('fb').className='fb';
@@ -1008,13 +1017,14 @@ const PRAISE=['Giỏi quá! 🎉','Chính xác! ⭐','Tuyệt vời! 🚀','Đú
 function answer(ok,extra){
   if(S.answered)return;S.answered=true;
   const it=S.items[S.i];
+  const soft=!ok&&(it.t==='say'||(it.ph==='ls'&&isSpeakT(it.t))); // máy nghe chưa ra: không tính là sai vào mức nhớ
   statAnswer(it,ok);
   if(it.ph==='place')placeRecord(it.w,ok&&!S.hinted);
-  if(it.ph==='review')srsAnswer(it.w,ok,S.hinted);
+  if(it.ph==='review'&&!soft)srsAnswer(it.w,ok,S.hinted);
   if(it.ph==='practice')pstatRecord(kid(),it.w,ok);
-  if(it.ph==='practice')creditFromPractice(it.w,ok,S.hinted); // Nghe & nói không tính vào thuộc chắc (iPad không dùng được micro)
+  if((it.ph==='practice'||it.ph==='ls')&&!soft)creditFromPractice(it.w,ok,S.hinted); // Luyện thêm và Nghe & nói đều tính vào thuộc chắc
   if(ok&&S.hinted)S.hintOk=(S.hintOk||0)+1;
-  if(ok)S.score++;else{S.wrong.push(it.w);if(it.ph!=='retry'&&it.ph!=='practice'&&it.ph!=='place'&&it.ph!=='phon')S.items.push({w:it.w,t:it.ph==='ls'?(isSpeakT(it.t)?'rep':'lsPick'):(it.t==='listen'?'vi2en':'listen'),ph:'retry'})}
+  if(ok)S.score++;else if(soft&&it.ph!=='ls'){}else{S.wrong.push(it.w);if(it.ph!=='retry'&&it.ph!=='practice'&&it.ph!=='place'&&it.ph!=='phon')S.items.push({w:it.w,t:it.ph==='ls'?(isSpeakT(it.t)?'rep':'lsPick'):(it.t==='listen'?'vi2en':'listen'),ph:'retry'})}
   $('qTag').textContent=`${S.i+1}/${S.items.length} · ⭐${S.score}`;
   const _em=it.w&&it.w.n>0?emojiOf(it.w):(it.w&&it.w.emo)||'';
   $('fbText').innerHTML=(ok?`${pick(PRAISE)} <b>${esc(it.w.main)}</b>`:`😅 ${extra||''}`)+(_em?` <span class="emoS">${_em}</span>`:'');
@@ -1078,7 +1088,7 @@ function finishSession(){
   const uniq=[...new Map(S.wrong.map(w=>[w.n,w])).values()];
   $('rWrong').innerHTML=uniq.map(w=>`<button class="wchip" data-m="${esc(w.main)}">🔊 ${esc(w.main)} · ${esc(w.vi)}</button>`).join('');
   $('rWrong').querySelectorAll('.wchip').forEach(b=>b.onclick=()=>speak(b.dataset.m));
-  if(S.kind==='practice'&&S.credited)S.starNote=`📈 ${S.credited} từ lên mức nhớ`+(S.newMast?` · 🏆 ${S.newMast} từ vừa thuộc chắc!`:'')+(S.starNote?' · '+S.starNote:'');
+  if((S.kind==='practice'||S.kind==='ls')&&S.credited)S.starNote=`📈 ${S.credited} từ lên mức nhớ`+(S.newMast?` · 🏆 ${S.newMast} từ vừa thuộc chắc!`:'')+(S.starNote?' · '+S.starNote:'');
   {const h=new Date().getHours();if(h<7&&h>=4)bstatAdd(kd,'early');
    if(S.kind==='review'&&firstTry>=10&&right===firstTry)bstatAdd(kd,'revPerfect');
    if(S.kind==='ls'&&firstTry&&right/firstTry>=0.95)bstatAdd(kd,'lsTop');
@@ -1124,7 +1134,8 @@ function renderStarPill(){}
 function renderStars(){
   const kd=kid(),s=starsOf(kd);$('stKid').textContent=kd.name;$('stBal').textContent=s.bal;$('stBal').style.color=s.bal<0?'#7F1D1D':'';
   $('stToday').textContent=`Hôm nay: +${todayStars(kd)} sao`;
-  const T=(h,v,sub,cls='')=>`<div class="tile ${cls}"><div class="h">${h}</div><div class="v">${v}</div>${sub?`<div class="s">${sub}</div>`:''}</div>`;
+  const T=(h,v,sub)=>`<div class="rl"><span class="rh">${h}</span><span class="rv">${v}</span>${sub?`<span class="rs">${String(sub).replace(/<br>/g,' · ')}</span>`:''}</div>`;
+  $('stRuleBox').open=!document.body.classList.contains('parent');
   $('stRules').innerHTML=
     (()=>{const B=BLOCK_SPLIT[kd.id],bp=blockProgress(kd),done=allBlocks(kd).filter(b=>b.paid).length;
       return T('🏆 Thuộc chắc theo khối',`100 ⭐ / 100 từ · 150 ⭐ / 50 từ`,`Từ 1–${B}: mỗi 100 từ thuộc chắc = +100 ⭐<br>Từ ${B+1} trở đi: mỗi 50 từ = +150 ⭐<br>`+
@@ -1137,7 +1148,7 @@ function renderStars(){
     T('🎯 Mục tiêu tuần',`+${STAR2.week} ⭐ / tuần`,`Học đủ bài ${STAR2.weekDays}/7 ngày trong tuần (thứ Hai – Chủ nhật)`)+
     T('🧭 Kiểm tra từ cũ',`+${STAR2.place} ⭐ / lượt`,`tối đa ${STAR2.placePerDay} lượt/ngày`)+
     (PHON_ON&&kd.young?T('🔤 Phonics',`+${STAR2.phon} ⭐ / bài`,'Qua bài lần đầu (đúng ≥ 80%)'):'')+
-    (window.BANK?`<div class="tile" style="grid-column:1/-1"><div class="h">${kd.young?'🧮 Toán · 📖 Tiếng Việt lớp 2':'🧮 Toán · 📚 Ngữ văn lớp 6'}</div><div class="s" style="font-size:14px">${BANK.rulesHtml(kd.id)}</div></div>`:'');
+    (window.BANK?`<div class="rl wide"><span class="rh">${kd.young?'🧮 Toán · 📖 Tiếng Việt lớp 2':'🧮 Toán · 📚 Ngữ văn lớp 6'}</span><span class="rs">${BANK.rulesHtml(kd.id)}</span></div>`:'');
   $('undoBox').classList.add('hide');
   $('stLedger').innerHTML=s.led.length?s.led.slice(0,120).map((e,i)=>`<div class="led"><span class="d">${fmtWhen(e.t)}</span><span class="r">${esc(e.r)}</span><span class="v" style="color:${e.v>0?'#B45309':'#E5484D'}">${e.v>0?'+':''}${e.v} ⭐</span>${/^(📌|🏆)/.test(String(e.r))?'':`<button class="ux" data-i="${i}" title="Bố mẹ hủy dòng này">✕</button>`}</div>`).join(''):'<p class="hint">Chưa có sao nào. Học và ôn đều đặn để nhận sao nhé!</p>';
 }
