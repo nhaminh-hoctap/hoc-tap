@@ -1,0 +1,87 @@
+diff --git a/index.html b/index.html
+index 2b339e3..0750424 100644
+--- a/index.html
++++ b/index.html
+@@ -61,4 +61,10 @@ h2{font-size:19px;margin:24px 2px 10px}
+ @keyframes b{to{transform:translateY(-10px)}}
+-.parentBtn{grid-column:1/-1;margin-top:4px;border:2px dashed #94A3B8;background:#fff;border-radius:22px;padding:14px 18px;display:flex;align-items:center;gap:14px;text-align:left}
+-.parentBtn .av{font-size:40px}.parentBtn b{font-size:20px;display:block}.parentBtn small{color:var(--ink2);font-size:14px}
++.parentBtn{grid-column:1/-1;margin-top:4px;border:0;border-radius:24px;padding:16px 20px;display:flex;align-items:center;gap:16px;text-align:left;color:#fff;
++  background:linear-gradient(135deg,#6366F1 0%,#8B5CF6 55%,#EC4899 100%);box-shadow:0 8px 0 rgba(76,29,149,.35),0 12px 24px -10px rgba(99,102,241,.6);position:relative;overflow:hidden;transition:transform .08s}
++.parentBtn:active{transform:translateY(4px);box-shadow:0 4px 0 rgba(76,29,149,.35)}
++.parentBtn::after{content:'';position:absolute;right:-30px;top:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.12)}
++.parentBtn .av{font-size:34px;width:62px;height:62px;flex:none;border-radius:18px;background:rgba(255,255,255,.22);display:grid;place-items:center}
++.parentBtn b{font-size:22px;display:block}.parentBtn small{display:block;opacity:.92;font-size:14px;margin-top:2px}
++.parentBtn .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.parentBtn .chips i{font-style:normal;font-size:12.5px;background:rgba(255,255,255,.2);border-radius:99px;padding:3px 9px}
++.parentBtn .lock{margin-left:auto;font-size:15px;font-weight:700;background:#fff;color:#6D28D9;border-radius:12px;padding:8px 12px;white-space:nowrap;position:relative;z-index:1}
+ .pinBox{background:#fff;border-radius:22px;padding:22px;max-width:360px;margin:30px auto;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+@@ -118,3 +124,3 @@ h2{font-size:19px;margin:24px 2px 10px}
+   <section id="pPar" class="hide">
+-    <h1 style="font-size:26px;margin:10px 0 14px">👨‍👩‍👧 Góc bố mẹ</h1>
++    <div style="display:flex;align-items:center;gap:12px;margin:6px 0 14px"><button class="ghost" id="pParBack" aria-label="Quay lại">⬅</button><h1 style="font-size:26px;margin:0">👨‍👩‍👧 Góc bố mẹ</h1></div>
+     <div class="kidsum" id="pParSum"></div>
+@@ -145,3 +151,3 @@ h2{font-size:19px;margin:24px 2px 10px}
+     <div class="foot">
+-      <button class="ghost" id="pSwitch">🔄 Đổi bạn khác</button>
++      <button class="ghost" id="pSwitch">⬅ Quay lại · Đổi bạn khác</button>
+       <span>Dữ liệu tự lưu và đồng bộ giữa các máy</span>
+@@ -173,3 +179,3 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
+     lsSet(NAV_KEY,{app:'',kid:P.parent?null:P.kid,parent:!!P.parent,t:Date.now()});
+-    try{if(location.hash)history.replaceState(null,'',location.pathname+location.search)}catch(e){}
++    try{history.replaceState(P.parent?{p:'par'}:{p:'kid',kid:P.kid},'',location.pathname+location.search)}catch(e){}
+     showLoading();location.reload();
+@@ -220,3 +226,3 @@ function renderWho(){
+     return '<button class="whoBtn '+k.id+'" data-k="'+k.id+'"><span class="av">'+k.av+'</span><span class="nm">'+esc(k.name)+'</span><span class="gr">'+k.grade+'</span><span class="st">⭐ '+b+'</span></button>'}).join('');
+-  $('pWhoGrid').insertAdjacentHTML('beforeend','<button class="parentBtn" id="pParBtn"><span class="av">👨‍👩‍👧</span><span><b>Bố mẹ</b><small>Thưởng, phạt, tiêu sao · cài đặt các ứng dụng (cần mã bố mẹ)</small></span></button>');
++  $('pWhoGrid').insertAdjacentHTML('beforeend','<button class="parentBtn" id="pParBtn"><span class="av">👨‍👩‍👧</span><span><b>Góc bố mẹ</b><small>Theo dõi và quản lý việc học của các con</small><span class="chips"><i>⭐ Thưởng · phạt · tiêu sao</i><i>📊 Báo cáo</i><i>⚙️ Cài đặt</i></span></span><span class="lock">🔒 Vào</span></button>');
+   $('pWhoGrid').querySelectorAll('.whoBtn').forEach(function(b){b.onclick=function(){openKid(b.dataset.k)}});
+@@ -225,3 +231,3 @@ function renderWho(){
+ }
+-function openKid(id){
++function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
+   CUR=id;P.kid=id;var k=kidById(id);
+@@ -252,5 +258,12 @@ function go(app){
+   // mở thẳng ứng dụng trong trang (nhanh hơn tải lại); về trang chính thì tải lại trang cho sạch
+-  try{if(location.hash)history.replaceState(null,'',location.pathname+location.search)}catch(e){}
++  pushNav({p:'app',app:app});
+   mount(app,CUR);
+ }
++/* Nút Quay lại của trình duyệt / vuốt quay lại trên iPad */
++function pushNav(st){try{history.pushState(st,'',location.pathname+location.search)}catch(e){}}
++window.addEventListener('popstate',function(e){var st=e.state;
++  if(P.app){if(st&&st.p&&st.p!=='app'){P.home()}return} // đang ở trong ứng dụng: chỉ về trang chính khi lùi qua mốc trang chính
++  if(st&&st.p==='kid'&&st.kid){openKid(st.kid,true)}
++  else if(st&&st.p==='par'&&PARENT){show('pPar')}
++  else{PARENT=false;CUR=null;document.documentElement.style.setProperty('--soft','#FFF7ED');show('pWho');renderWho()}});
+ /* ---------- Bảng: các con đã học gì 3 ngày qua ---------- */
+@@ -321,3 +334,3 @@ function openPin(){show('pPin');$('pPinIn').value='';$('pPinErr').textContent=''
+ function tryPin(){var v=$('pPinIn').value.trim();if(okPin(v)){P.pin=v;try{sessionStorage.setItem('portal_pin',v)}catch(e){}openParent()}else{$('pPinErr').textContent='Mã chưa đúng';$('pPinIn').value=''}}
+-function openParent(){PARENT=true;CUR=null;P.kid=null;document.documentElement.style.setProperty('--soft','#F1F5F9');document.documentElement.style.setProperty('--kid','#334155');show('pPar');renderParent();window.scrollTo(0,0)}
++function openParent(fromPop){if(!fromPop)pushNav({p:'par'});PARENT=true;CUR=null;P.kid=null;document.documentElement.style.setProperty('--soft','#F1F5F9');document.documentElement.style.setProperty('--kid','#334155');show('pPar');renderParent();window.scrollTo(0,0)}
+ function renderParent(){if(!PARENT)return;
+@@ -333,3 +346,3 @@ function renderParent(){if(!PARENT)return;
+ }
+-function goParent(app){if(!P.pin){try{P.pin=sessionStorage.getItem('portal_pin')}catch(e){}}P.pin=P.pin||'5789';var m={'p-sao':['tuvung','parent-sao'],'p-report':['tuvung','parent-report'],'p-tuvung':['tuvung','parent-set'],'p-lop2':['lop2','parent'],'p-lop6':['lop6','parent']}[app];if(!m)return;
++function goParent(app){pushNav({p:'app',app:app});if(!P.pin){try{P.pin=sessionStorage.getItem('portal_pin')}catch(e){}}P.pin=P.pin||'5789';var m={'p-sao':['tuvung','parent-sao'],'p-report':['tuvung','parent-report'],'p-tuvung':['tuvung','parent-set'],'p-lop2':['lop2','parent'],'p-lop6':['lop6','parent']}[app];if(!m)return;
+   var kid=app==='p-lop2'?'anhphong':app==='p-lop6'?'thanhnghi':(lsGet('portal_last_kid')||'anhphong');
+@@ -344,2 +357,3 @@ function restorePortal(){
+ function bindPortal(){$('pPinOk').onclick=tryPin;$('pPinIn').onkeydown=function(e){if(e.key==='Enter')tryPin()};$('pPinCancel').onclick=function(){show('pWho');renderWho()};
++  $('pParBack').onclick=function(){$('pParOut').onclick()};
+   $('pParOut').onclick=function(){PARENT=false;P.pin=null;try{sessionStorage.removeItem('portal_pin')}catch(e){}document.documentElement.style.setProperty('--soft','#FFF7ED');show('pWho');renderWho()};
+@@ -355,2 +369,3 @@ if(!(window.WEB_FAMILY&&WEB_FAMILY.get())){
+   return;}
++try{if(!history.state)history.replaceState({p:'who'},'',location.pathname+location.search)}catch(e){}
+ var nav=lsGet(NAV_KEY);
+@@ -359,3 +374,3 @@ if(fresh)lsSet(NAV_KEY,{app:'',kid:nav.kid,t:0}); // dùng một lần
+ if(fresh&&nav.app&&APPS[nav.app]&&nav.kid){mount(nav.app,nav.kid)}
+-else{renderWho();renderSync();if(fresh&&nav.parent)openParent();else if(fresh&&nav.kid&&kidById(nav.kid))openKid(nav.kid)}
++else{renderWho();renderSync();if(fresh&&nav.parent)openParent(true);else if(fresh&&nav.kid&&kidById(nav.kid))openKid(nav.kid,true)}
+ })();
+diff --git a/tuvung.html b/tuvung.html
+index 5de37de..3c69d31 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -289,2 +289,3 @@ body.pm-sao #btnHome,body.pm-sao #btnSet,body.pm-badges #btnHome,body.pm-badges
+ body.in-portal #tabs{display:none}
++body.in-portal [data-kidline],body.in-portal .who{display:none!important}
+ body.in-portal:not(.parent) #btnSet{display:none}
