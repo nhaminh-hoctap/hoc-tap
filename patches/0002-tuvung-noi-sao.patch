@@ -1,0 +1,89 @@
+diff --git a/index.html b/index.html
+index 8e17848..bf40cbc 100644
+--- a/index.html
++++ b/index.html
+@@ -250,3 +250,3 @@ function show(id){['pWho','pKid','pPin','pPar'].forEach(function(x){$(x).classLi
+ function okPin(v){var pin='5789';try{var x=BANK.pin&&BANK.pin();if(x)pin=x}catch(e){}return v===pin||v==='5789'&&!BANK.pinSet}
+-function openPin(){show('pPin');$('pPinIn').value='';$('pPinErr').textContent='';setTimeout(function(){$('pPinIn').focus()},50)}
++function openPin(){show('pPin');$('pPinIn').value='';$('pPinErr').textContent='';setTimeout(function(){var i=$('pPinIn');if(i)i.focus()},50)}
+ function tryPin(){var v=$('pPinIn').value.trim();if(okPin(v)){P.pin=v;try{sessionStorage.setItem('portal_pin',v)}catch(e){}openParent()}else{$('pPinErr').textContent='Mã chưa đúng';$('pPinIn').value=''}}
+diff --git a/tuvung.html b/tuvung.html
+index 36b1758..5de37de 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -290,3 +290,3 @@ body.in-portal #tabs{display:none}
+ body.in-portal:not(.parent) #btnSet{display:none}
+-body.pm-sao .pgcard,body.pm-sao .ux,body.pm-sao #undoBox{display:none!important}
++body.in-portal:not(.parent) .pgcard,body.in-portal:not(.parent) .ux,body.in-portal:not(.parent) #undoBox{display:none!important}
+ body.parent #btnHome,body.parent #btnBadge{display:none}
+@@ -295,2 +295,8 @@ body.parent #stPin,body.parent #undoPin,body.parent #bkPin,body.parent #fixPin{d
+ body.parent #kidChip::after{content:' ⇄';opacity:.8}
++.rulecard summary{cursor:pointer;list-style:none}.rulecard summary::-webkit-details-marker{display:none}
++.rlist{margin-top:8px;display:flex;flex-direction:column}
++.rl{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(110px,.9fr) 2fr;gap:4px 10px;padding:6px 0;border-bottom:1px dashed rgba(0,0,0,.12);font-size:.92rem;align-items:baseline}
++.rl .rh{font-weight:700}.rl .rv{font-weight:800;color:#B45309}.rl .rs{color:var(--mut,#64748B);font-size:.85rem}
++.rl.wide{grid-template-columns:1fr}.rl.wide .rs ul{margin:2px 0 0;padding-left:18px}
++@media (max-width:560px){.rl{grid-template-columns:1fr auto}.rl .rs{grid-column:1/-1}}
+ </style>
+@@ -473,7 +479,7 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
+   </div>
+-  <div class="card" style="margin-top:14px">
+-    <b style="font-size:1.1rem">📋 Sao tự động trong ứng dụng</b>
+-    <div class="tiles" id="stRules"></div>
+-    <p class="hint">Chỉ tính câu bé tự làm đúng (không dùng 💡 gợi ý). Làm sai trong app không bị trừ sao.</p>
+-  </div>
++  <details class="card rulecard" id="stRuleBox" style="margin-top:14px">
++    <summary><b style="font-size:1.05rem">📋 Sao tự động trong ứng dụng</b> <span class="hint">(bấm để xem)</span></summary>
++    <div class="rlist" id="stRules"></div>
++    <p class="hint" style="margin:6px 0 0">Chỉ tính câu bé tự làm đúng (không dùng 💡 gợi ý). Làm sai không bị trừ sao.</p>
++  </details>
+   <div class="card pgcard">
+@@ -812,2 +818,4 @@ $('fNext').onclick=()=>{
+   }
++  // một vài câu tự đọc to (khoảng 1/8 số câu) khi máy nghe được giọng nói
++  if(canSay()){const k=Math.max(1,Math.round(items.length/8));shuffle(S.newWords).slice(0,k).forEach(w=>items.push({w,t:'say',ph:'new'}))}
+   startSession('new',items);
+@@ -820,2 +828,3 @@ function reviewType(b,kd,w){
+   const P=(...a)=>pick(a.filter(Boolean));
++  if(say&&b>=1&&Math.random()<0.12) return 'say'; // thỉnh thoảng đọc to (tỉ lệ nhỏ)
+   if(b<=0) return P('listen','vi2en');
+@@ -929,3 +938,3 @@ async function startPractice(ws,type,meta){
+   const srsT=srsOf(kd);
+-  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':pick(mixTypes(kd,w))):type,ph:'practice'})));
++  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
+ }
+@@ -961,3 +970,3 @@ function renderQ(){
+   const it=S.items[S.i],w=it.w;if(it.t==='auto')it.t=reviewType(it.b||0,kid(),w);
+-  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='say'||it.t==='readW')))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
++  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&!canSay()))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
+   const t=it.t;S.answered=false;S.sayTries=0;S.hinted=false;
+@@ -1010,9 +1019,10 @@ function answer(ok,extra){
+   const it=S.items[S.i];
++  const soft=!ok&&(it.t==='say'||(it.ph==='ls'&&isSpeakT(it.t))); // máy nghe chưa ra: không tính là sai vào mức nhớ
+   statAnswer(it,ok);
+   if(it.ph==='place')placeRecord(it.w,ok&&!S.hinted);
+-  if(it.ph==='review')srsAnswer(it.w,ok,S.hinted);
++  if(it.ph==='review'&&!soft)srsAnswer(it.w,ok,S.hinted);
+   if(it.ph==='practice')pstatRecord(kid(),it.w,ok);
+-  if(it.ph==='practice')creditFromPractice(it.w,ok,S.hinted); // Nghe & nói không tính vào thuộc chắc (iPad không dùng được micro)
++  if((it.ph==='practice'||it.ph==='ls')&&!soft)creditFromPractice(it.w,ok,S.hinted); // Luyện thêm và Nghe & nói đều tính vào thuộc chắc
+   if(ok&&S.hinted)S.hintOk=(S.hintOk||0)+1;
+-  if(ok)S.score++;else{S.wrong.push(it.w);if(it.ph!=='retry'&&it.ph!=='practice'&&it.ph!=='place'&&it.ph!=='phon')S.items.push({w:it.w,t:it.ph==='ls'?(isSpeakT(it.t)?'rep':'lsPick'):(it.t==='listen'?'vi2en':'listen'),ph:'retry'})}
++  if(ok)S.score++;else if(soft&&it.ph!=='ls'){}else{S.wrong.push(it.w);if(it.ph!=='retry'&&it.ph!=='practice'&&it.ph!=='place'&&it.ph!=='phon')S.items.push({w:it.w,t:it.ph==='ls'?(isSpeakT(it.t)?'rep':'lsPick'):(it.t==='listen'?'vi2en':'listen'),ph:'retry'})}
+   $('qTag').textContent=`${S.i+1}/${S.items.length} · ⭐${S.score}`;
+@@ -1080,3 +1090,3 @@ function finishSession(){
+   $('rWrong').querySelectorAll('.wchip').forEach(b=>b.onclick=()=>speak(b.dataset.m));
+-  if(S.kind==='practice'&&S.credited)S.starNote=`📈 ${S.credited} từ lên mức nhớ`+(S.newMast?` · 🏆 ${S.newMast} từ vừa thuộc chắc!`:'')+(S.starNote?' · '+S.starNote:'');
++  if((S.kind==='practice'||S.kind==='ls')&&S.credited)S.starNote=`📈 ${S.credited} từ lên mức nhớ`+(S.newMast?` · 🏆 ${S.newMast} từ vừa thuộc chắc!`:'')+(S.starNote?' · '+S.starNote:'');
+   {const h=new Date().getHours();if(h<7&&h>=4)bstatAdd(kd,'early');
+@@ -1126,3 +1136,4 @@ function renderStars(){
+   $('stToday').textContent=`Hôm nay: +${todayStars(kd)} sao`;
+-  const T=(h,v,sub,cls='')=>`<div class="tile ${cls}"><div class="h">${h}</div><div class="v">${v}</div>${sub?`<div class="s">${sub}</div>`:''}</div>`;
++  const T=(h,v,sub)=>`<div class="rl"><span class="rh">${h}</span><span class="rv">${v}</span>${sub?`<span class="rs">${String(sub).replace(/<br>/g,' · ')}</span>`:''}</div>`;
++  $('stRuleBox').open=!document.body.classList.contains('parent');
+   $('stRules').innerHTML=
+@@ -1139,3 +1150,3 @@ function renderStars(){
+     (PHON_ON&&kd.young?T('🔤 Phonics',`+${STAR2.phon} ⭐ / bài`,'Qua bài lần đầu (đúng ≥ 80%)'):'')+
+-    (window.BANK?`<div class="tile" style="grid-column:1/-1"><div class="h">${kd.young?'🧮 Toán · 📖 Tiếng Việt lớp 2':'🧮 Toán · 📚 Ngữ văn lớp 6'}</div><div class="s" style="font-size:14px">${BANK.rulesHtml(kd.id)}</div></div>`:'');
++    (window.BANK?`<div class="rl wide"><span class="rh">${kd.young?'🧮 Toán · 📖 Tiếng Việt lớp 2':'🧮 Toán · 📚 Ngữ văn lớp 6'}</span><span class="rs">${BANK.rulesHtml(kd.id)}</span></div>`:'');
+   $('undoBox').classList.add('hide');
