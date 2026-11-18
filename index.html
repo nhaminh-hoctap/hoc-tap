@@ -24,7 +24,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .whoBtn{border:0;border-radius:28px;padding:26px 12px 22px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 8px 0 rgba(0,0,0,.18);transition:transform .08s}
 .whoBtn:active{transform:translateY(4px);box-shadow:0 4px 0 rgba(0,0,0,.18)}
 .whoBtn .av{font-size:76px;line-height:1.1}
-.whoBtn .nm{font-size:27px;font-weight:800}
+.whoBtn .nm{font-size:27px;font-weight:800;max-width:100%;margin:4px 0 2px}
+.hiS{display:block;font-size:16px;font-weight:700;opacity:.95;margin-bottom:6px}
+.hero h1 .np{margin-top:4px}.ks .np{font-size:16px}
+.recent th .np{font-size:13px}
 .whoBtn .gr{font-size:16px;opacity:.95}
 .whoBtn .st{margin-top:6px;background:rgba(255,255,255,.95);color:var(--gold);font-weight:800;border-radius:99px;padding:5px 14px;font-size:18px}
 .whoBtn.anhphong{background:linear-gradient(160deg,#FB923C,#EA580C)}
@@ -72,6 +75,7 @@ h2{font-size:19px;margin:24px 2px 10px}
 .pinBox .err{color:#B91C1C;font-size:14px;min-height:18px}
 .btnp{background:#334155;color:#fff;border:0;border-radius:14px;padding:11px 22px;font-weight:700;font-size:17px}
 .kidsum{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:520px){.kidsum{grid-template-columns:1fr}}
 .ks{border-radius:22px;padding:14px 16px;color:#fff}
 .ks.anhphong{background:linear-gradient(150deg,#FB923C,#EA580C)}.ks.thanhnghi{background:linear-gradient(150deg,#4ADE80,#15803D)}
 .ks .n{font-size:20px;font-weight:800}.ks .b{background:#fff;color:var(--gold);display:inline-block;border-radius:99px;padding:3px 12px;font-weight:800;font-size:20px;margin:6px 0}
@@ -181,7 +185,10 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
     showLoading();location.reload();
     setTimeout(restorePortal,2500); // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
   },
-  homeBtnHtml:function(style){return '<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>'}
+  homeBtnHtml:function(style){var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';
+    // Lớp 2 / Lớp 6: thêm tên bé kèm danh hiệu ngay cạnh nút về trang chính (Từ vựng tự hiện ở nút tên bé)
+    if(P.kid&&!P.parent&&P.app&&APPS[P.app]&&APPS[P.app].file!=='tuvung.html'&&window.BANK&&BANK.nameplate)h+='<span class="portal-np" style="display:inline-flex;align-items:center;margin-right:10px;vertical-align:middle;max-width:46vw">'+BANK.nameplate(P.kid,'S',null,{av:true})+'</span>';
+    return h}
 };
 function showLoading(){var l=$('pLoading');if(l)l.classList.remove('hide')}
 
@@ -198,7 +205,7 @@ async function mount(app,kid,mode){
   document.querySelectorAll('[data-shell]').forEach(function(e){e.remove()});
   doc.head.querySelectorAll('style,link[rel="stylesheet"],link[rel="preconnect"]').forEach(function(e){document.head.appendChild(document.importNode(e,true))});
   var sty=document.createElement('style');
-  sty.textContent='.portal-home{font-size:20px;line-height:1;width:44px;height:44px;border-radius:14px;border:2px solid rgba(0,0,0,.12);background:#fff;cursor:pointer;display:inline-grid;place-items:center;padding:0;flex:none;vertical-align:middle;box-shadow:0 2px 0 rgba(0,0,0,.08)}';
+  sty.textContent='@media (max-width:480px){.top .brand .portal-np{display:none!important}}.portal-home{font-size:20px;line-height:1;width:44px;height:44px;border-radius:14px;border:2px solid rgba(0,0,0,.12);background:#fff;cursor:pointer;display:inline-grid;place-items:center;padding:0;flex:none;vertical-align:middle;box-shadow:0 2px 0 rgba(0,0,0,.08)}';
   document.head.appendChild(sty);
   [].slice.call(doc.body.attributes).forEach(function(a){document.body.setAttribute(a.name,a.value)});
   document.body.innerHTML='';
@@ -223,7 +230,7 @@ function kidById(id){return BANK.kid(id)}
 function showTotal(id){var v=BANK.vocabBal(id);return v==null&&BANK.state!=='off'&&BANK.state!=='err'?'…':BANK.total(id)}
 function renderWho(){
   $('pWhoGrid').innerHTML=BANK.KIDS.map(function(k){var b=showTotal(k.id);
-    return '<button class="whoBtn '+k.id+'" data-k="'+k.id+'"><span class="av">'+k.av+'</span><span class="nm">'+esc(k.name)+'</span><span class="gr">'+k.grade+'</span><span class="st">⭐ '+b+'</span></button>'}).join('');
+    return '<button class="whoBtn '+k.id+'" data-k="'+k.id+'"><span class="av">'+k.av+'</span><span class="nm">'+BANK.nameplate(k.id,'L')+'</span><span class="gr">'+k.grade+'</span><span class="st">⭐ '+b+'</span></button>'}).join('');
   $('pWhoGrid').insertAdjacentHTML('beforeend','<button class="parentBtn" id="pParBtn"><span class="av">👨‍👩‍👧</span><span><b>Góc bố mẹ</b><small>Theo dõi và quản lý việc học của các con</small><span class="chips"><i>⭐ Thưởng · phạt · tiêu sao</i><i>📊 Báo cáo</i><i>⚙️ Cài đặt</i></span></span><span class="lock">🔒 Vào</span></button>');
   $('pWhoGrid').querySelectorAll('.whoBtn').forEach(function(b){b.onclick=function(){openKid(b.dataset.k)}});
   $('pParBtn').onclick=openPin;
@@ -239,7 +246,7 @@ function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
 }
 function renderKid(){
   if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR);
-  $('pAv').textContent=k.av;$('pHi').textContent='Chào '+k.name+'!';$('pGr').textContent=k.grade+' · Cố lên nhé, mỗi ngày một chút!';
+  $('pAv').textContent=k.av;$('pHi').innerHTML='<span class="hiS">Chào con! 👋</span>'+BANK.nameplate(CUR,'L');$('pGr').textContent=k.grade+' · Cố lên nhé, mỗi ngày một chút!';
   $('pBal').className='bal'+(tot<0?' neg':'');$('pBal').innerHTML='⭐ '+tot+' <small>sao thưởng</small>';
   var parts=Object.keys(td).filter(function(s){return td[s]>0}).map(function(s){return '<span>'+BANK.SRC[s].e+' '+BANK.SRC[s].n+' +'+td[s]+'</span>'});
   $('pToday').innerHTML=parts.length?'Hôm nay: '+parts.join(''):'Hôm nay con chưa nhận sao nào. Bắt đầu thôi!';
@@ -323,7 +330,7 @@ async function renderRecent(){var box=$('pRecent');if(!box)return;
   var rows=days.map(function(d){
     var ap=vocabLines(R[0],R[1],d.k).concat(l2Lines(R[4],d.k)),tn=vocabLines(R[2],R[3],d.k).concat(l6Lines(R[5],d.k));
     return '<tr><td>'+d.lab+'</td><td>'+(ap.join('')||'<span class="no">Chưa học</span>')+'</td><td>'+(tn.join('')||'<span class="no">Chưa học</span>')+'</td></tr>'}).join('');
-  RECENT.html='<h3>📋 Các con đã học gì 3 ngày qua</h3><table><tr><th>Ngày</th><th>🦖 Anh Phong</th><th>🚀 Thanh Nghị</th></tr>'+rows+'</table>';
+  RECENT.html='<h3>📋 Các con đã học gì 3 ngày qua</h3><table><tr><th>Ngày</th><th>'+BANK.nameplate('anhphong','S',null,{av:true})+'</th><th>'+BANK.nameplate('thanhnghi','S',null,{av:true})+'</th></tr>'+rows+'</table>';
   var b=$('pRecent');if(b)b.innerHTML=RECENT.html}
 
 /* ---------- Góc bố mẹ ---------- */
@@ -335,7 +342,8 @@ function tryPin(){var v=$('pPinIn').value.trim();if(okPin(v)){P.pin=v;try{sessio
 function openParent(fromPop){if(!fromPop)pushNav({p:'par'});PARENT=true;CUR=null;P.kid=null;document.documentElement.style.setProperty('--soft','#F1F5F9');document.documentElement.style.setProperty('--kid','#334155');show('pPar');renderParent();window.scrollTo(0,0)}
 function renderParent(){if(!PARENT)return;
   $('pParSum').innerHTML=BANK.KIDS.map(function(k){var td=BANK.todayBySrc(k.id),t=Object.keys(td).filter(function(x){return td[x]}).map(function(x){return BANK.SRC[x].e+' +'+td[x]}).join(' · ');
-    return '<div class="ks '+k.id+'"><div class="n">'+k.av+' '+esc(k.name)+'</div><div class="b">⭐ '+showTotal(k.id)+'</div><div class="t">Hôm nay: '+(t||'chưa nhận sao')+'</div></div>'}).join('');
+    var ti=BANK.title(k.id);
+    return '<div class="ks '+k.id+'"><div class="n">'+BANK.nameplate(k.id,'M',null,{av:true})+'</div>'+(ti&&ti.rank?'<div class="t" style="margin-top:6px">🏆 Cấp '+ti.rank+'/7 '+(ti.re||'')+' '+esc(ti.rn||'')+' · '+(ti.pts||0)+' điểm huy hiệu'+(ti.spe&&ti.spe.length?' · Đặc biệt: '+ti.spe.join(''):'')+'</div>':'')+'<div class="b">⭐ '+showTotal(k.id)+'</div><div class="t">Hôm nay: '+(t||'chưa nhận sao')+'</div></div>'}).join('');
   var T=function(app,ic,t,sub,cls){return '<button class="tile '+(cls||'par')+'" data-app="'+app+'"><span class="ic">'+ic+'</span><span class="t">'+t+'</span><span class="s">'+sub+'</span><span class="go">Mở →</span></button>'};
   $('pParStar').innerHTML=T('p-sao','⭐','Thưởng · Phạt · Tiêu sao','Chấm sao việc nhà, việc tốt; phạt; đổi quà; hủy dòng sao nhầm. Xem lịch sử sao của cả hai con.','star')+
     T('p-report','📊','Báo cáo học từ vựng','Báo cáo tuần, tiến độ thuộc chắc của từng con.');

@@ -100,14 +100,14 @@
   };
 
   function withTimeout(p, ms) { return Promise.race([p, new Promise(function (r) { setTimeout(function () { r(null); }, ms); })]); }
-  async function readVocabDoc(snap, kidOf) {
+  async function readVocabDoc(snap, kidOf, key) {
     if (!snap || !snap.exists) return null;
     var x = snap.data() || {}, s = null;
     if (typeof x.v === 'string') s = x.v;
     else if (x.c) {
       s = '';
       for (var i = 0; i < x.c; i++) {
-        try { var p = await B.db.doc('sync/vocab_stars_v1.' + kidOf + '~' + i).get(); s += (p.exists ? (p.data() || {}).p : '') || ''; } catch (e) { return null; }
+        try { var p = await B.db.doc('sync/' + (key || 'vocab_stars_v1') + '.' + kidOf + '~' + i).get(); s += (p.exists ? (p.data() || {}).p : '') || ''; } catch (e) { return null; }
       }
     }
     try { return JSON.parse(s); } catch (e) { return null; }
@@ -131,11 +131,49 @@
           readVocabDoc(snap, k.id).then(function (v) { if (v) { vocab[k.id] = v; B._emit(); } });
         });
       } catch (e) { }
+      try {
+        db.doc('sync/vocab_title_v1.' + k.id).onSnapshot(function (snap) {
+          readVocabDoc(snap, k.id, 'vocab_title_v1').then(function (v) { if (v && v.show) { B.setTitle(k.id, v); B._emit(); } });
+        });
+      } catch (e) { }
     });
     try { db.doc('sync/vocab_pin').onSnapshot(function (snap) { if (snap && snap.exists) { try { var v = JSON.parse((snap.data() || {}).v); if (v) { PIN = String(v); B.pinSet = true; } } catch (e) { } } }); } catch (e) { }
     B._flush();
     return true;
   })();
+
+
+  /* ----- Danh hiệu & khung tên (dữ liệu do ứng dụng Từ vựng tính, lưu ở sync/vocab_title_v1.<bé>) ----- */
+  var TKEY = 'title_show_v1', TT = {};
+  try { TT = JSON.parse(localStorage.getItem(TKEY) || '{}') || {}; } catch (e) { TT = {}; }
+  B.title = function (kid) { return TT[kid] || null; };
+  B.setTitle = function (kid, v) { TT[kid] = v; try { localStorage.setItem(TKEY, JSON.stringify(TT)); } catch (e) { } };
+  var NP_CSS = '.np{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-weight:800;line-height:1.15;white-space:nowrap;position:relative;vertical-align:middle;color:#1E293B;background:rgba(255,255,255,.95);border:2px solid #E2E8F0;font-size:15px;max-width:100%;box-sizing:border-box}' +
+    '.np>.npT{font-size:1.15em;line-height:1;display:inline;width:auto;margin:0;padding:0;border:0}.np>.npN{display:inline-flex;flex-direction:column;align-items:flex-start;min-width:0;text-align:left}.np .npN>small{display:block;font-size:.62em;font-weight:700;opacity:.8;letter-spacing:.02em;white-space:nowrap;margin:0}' +
+    '.np .npN>b{display:block;font-weight:800;overflow:hidden;text-overflow:ellipsis}.np .npB{letter-spacing:1px;font-size:.95em}' +
+    '.np.L{font-size:22px;padding:6px 16px 6px 12px;border-width:3px}.np.L .npT{font-size:1.25em}.np.S{font-size:13.5px;padding:2px 9px}.np.S .npN>small{display:none}' +
+    '.np.f2{border-color:#E7C29A}' +
+    '.np.f3{border:3px solid transparent;background:linear-gradient(#fff,#F8FAFC) padding-box,linear-gradient(135deg,#F1F5F9,#94A3B8,#F8FAFC,#64748B) border-box}' +
+    '.np.f4{border:3px solid transparent;background:linear-gradient(#FFFBEB,#fff) padding-box,linear-gradient(90deg,#B45309,#FDE68A,#F59E0B,#FEF3C7,#B45309) border-box;background-size:100% 100%,300% 100%;animation:npShift 4s linear infinite;color:#78350F}' +
+    '.np.f5{border:3px solid #FBBF24;background:linear-gradient(135deg,#F59E0B,#FDE68A 45%,#F59E0B);color:#5B2A06;overflow:hidden;box-shadow:0 0 0 2px rgba(255,255,255,.6),0 4px 14px -4px rgba(217,119,6,.8)}' +
+    '.np.f5::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);animation:npSweep 2.8s ease-in-out infinite}' +
+    '.np.f6{border:3px solid transparent;background:linear-gradient(135deg,#F0F9FF,#E0E7FF) padding-box,linear-gradient(135deg,#38BDF8,#A78BFA,#22D3EE,#818CF8,#38BDF8) border-box;background-size:100% 100%,300% 300%;animation:npShift 5s linear infinite;color:#0C4A6E;box-shadow:0 0 14px rgba(56,189,248,.65)}' +
+    '.np.f6::before,.np.f6::after{content:"✦";position:absolute;color:#38BDF8;font-size:12px;animation:npTw 1.6s ease-in-out infinite}.np.f6::before{top:-9px;left:14%}.np.f6::after{bottom:-9px;right:12%;animation-delay:.8s;color:#A78BFA}' +
+    '.np.f7{border:3px solid transparent;margin-top:12px;background:linear-gradient(135deg,#FFF7ED,#FDF4FF) padding-box,linear-gradient(90deg,#EF4444,#F59E0B,#EAB308,#22C55E,#3B82F6,#8B5CF6,#EC4899,#EF4444) border-box;background-size:100% 100%,300% 100%;animation:npShift 3s linear infinite;color:#4C1D95;box-shadow:0 0 16px rgba(236,72,153,.5)}' +
+    '.np.f7::before{content:"👑";position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:18px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}.np.f7.L::before{font-size:24px;top:-24px}' +
+    '@keyframes npShift{to{background-position:0 0,300% 0}}@keyframes npSweep{0%{left:-60%}60%,100%{left:130%}}@keyframes npTw{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}' +
+    '@media (prefers-reduced-motion:reduce){.np,.np::after,.np::before{animation:none!important}}' +
+    '@media (max-width:520px){.np.S .npB{display:none}.np.L{font-size:19px}}';
+  function npCss() { if (document.getElementById('npCss')) return; var st = document.createElement('style'); st.id = 'npCss'; st.textContent = NP_CSS; document.head.appendChild(st); }
+  /* size: 'L' (thẻ lớn: danh hiệu trên tên), 'M', 'S' (thanh tiêu đề) ; data: ghi đè dữ liệu (ứng dụng Từ vựng truyền thẳng) */
+  B.nameplate = function (kid, size, data, opt) {
+    npCss(); opt = opt || {};
+    var k = B.kid(kid), name = k ? k.name : '', t = data || B.title(kid), sh = t && t.show || {};
+    var f = +sh.f || 1, te = sh.e || '', tn = sh.n || '', bd = (sh.b || []).join('');
+    function e(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    return '<span class="np ' + (size || 'M') + ' f' + f + '"' + (tn ? ' title="' + e(tn) + '"' : '') + '>' + (te ? '<span class="npT">' + te + '</span>' : (opt.av && k ? '<span class="npT">' + k.av + '</span>' : '')) +
+      '<span class="npN">' + (tn && size !== 'S' ? '<small>' + e(tn) + '</small>' : '') + '<b>' + e(name) + '</b></span>' + (bd && !opt.noBadges ? '<span class="npB">' + bd + '</span>' : '') + '</span>';
+  };
 
   /* Cửa sổ báo nhận sao (dùng chung) */
   B.celebrate = function (lines) {

@@ -270,6 +270,18 @@ html[data-kid="anhphong"]{--kbg:#FFEBD6;--kc:#EA580C;--ksoft:#FED7AA}
 html[data-kid="thanhnghi"]{--kbg:#E2F6E8;--kc:#16A34A;--ksoft:#BBF7D0}
 .kidchip{border:none;border-radius:999px;padding:3px 12px 3px 8px;font-weight:800;font-size:.95rem;background:var(--kc,#999);color:#fff;vertical-align:middle;box-shadow:0 2px 0 rgba(0,0,0,.15)}
 .kidchip:empty{display:none}
+.kidchip.hasnp{background:none;box-shadow:none;padding:0;color:inherit}
+.npPrev{display:flex;justify-content:center;align-items:center;min-height:74px;padding:22px 8px 14px;margin:10px 0;border-radius:18px;background:linear-gradient(135deg,#FEF3C7,#FCE7F3 50%,#E0F2FE)}
+.npSec{margin-top:14px}.npSec h4{margin:0 0 7px;font-size:1rem}
+.npChips{display:flex;flex-wrap:wrap;gap:8px}
+.npc{border:2px solid #E2E8F0;background:#fff;border-radius:14px;padding:6px 10px;font-weight:700;font-size:.92rem;cursor:pointer;color:#1E293B;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.npc small{font-weight:600;opacity:.75;font-size:.78rem}
+.npc.on{border-color:#F59E0B;background:#FFFBEB;box-shadow:0 0 0 2px #F59E0B inset}
+.npc.lock{opacity:.5;filter:grayscale(.9)}
+.npc .np{pointer-events:none;margin-top:0}.npc .np.f7::before{display:none}
+.npBd{font-size:1.5rem;line-height:1}
+.npRules{margin-top:14px;border-top:1px dashed #E2E8F0;padding-top:8px}.npRules summary{cursor:pointer;font-weight:700}
+.npRt{width:100%;border-collapse:collapse;font-size:.92rem;margin-top:6px}.npRt td{border-top:1px solid #F1F5F9;padding:5px 4px;vertical-align:top}.npRt tr.ok td:first-child{font-weight:800;color:#15803D}
 .kidline{align-self:center;display:inline-flex;align-items:center;gap:6px;background:var(--ksoft,#eee);color:var(--kc,#333);border-radius:999px;padding:2px 12px;font-weight:800;font-size:.9rem;margin:2px 0 4px}
 #flash .card,#quiz .card,#result .card{border-top:6px solid var(--kc,transparent)}
 .who{display:block;font-size:.78rem;font-weight:700;opacity:.75;margin-top:1px}
@@ -382,6 +394,7 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <div class="row" style="gap:18px;align-items:flex-end"><div><div class="num" id="bdNum"></div><div class="sub">huy hiệu đã đạt</div></div>
       <div class="sub" id="bdLast"></div></div>
   </div>
+  <div class="card npcard" id="npCard" style="margin-top:14px"></div>
   <div class="card" style="margin-top:14px"><b id="bdTitle" style="font-size:1.1rem"></b><div id="bdGrid"></div></div>
 </section>
 <section id="report" class="hide">
@@ -554,7 +567,8 @@ function toast(t,ms=2600){const el=$('toast');el.textContent=t;el.style.display=
 const KID_AV={anhphong:'🦖',thanhnghi:'🚀'};
 function kidAv(k){return KID_AV[k.id]||'🙂'}
 function applyKidTheme(){const kd=KIDS[KI];if(!kd)return;document.documentElement.dataset.kid=kd.id;document.documentElement.style.setProperty('--bg',{anhphong:'#FFEBD6',thanhnghi:'#E2F6E8'}[kd.id]||'#FFF8EE');document.body.dataset.kid=kd.id;
-  $('kidChip').textContent=`${kidAv(kd)} ${kd.name}`;document.querySelectorAll('[data-kidline]').forEach(e=>e.textContent=`${kidAv(kd)} ${kd.name} đang học`)}
+  if(window.BANK&&BANK.nameplate&&window.PORTAL&&PORTAL.kid){const d=titleDoc(kd);$('kidChip').innerHTML=plate(kd,'S',d);$('kidChip').classList.add('hasnp')}
+  else{$('kidChip').textContent=`${kidAv(kd)} ${kd.name}`;$('kidChip').classList.remove('hasnp')}document.querySelectorAll('[data-kidline]').forEach(e=>e.textContent=`${kidAv(kd)} ${kd.name} đang học`)}
 function openWho(){if(!KIDS.length)return;
   $('whoBtns').innerHTML=KIDS.map((k,i)=>{const b=starsOf(k).bal;return `<button class="whoBtn ${k.id}" data-i="${i}"><span class="av">${kidAv(k)}</span><span class="nm">${esc(k.name)}</span><span class="gr">${esc(k.note)}</span><span class="st">⭐ ${b}</span></button>`}).join('');
   $('whoBtns').querySelectorAll('.whoBtn').forEach(b=>b.onclick=()=>{KI=+b.dataset.i;saveSettings();$('whoPick').classList.add('hide');
@@ -1451,7 +1465,7 @@ $('btnHome').onclick=()=>{if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').cl
 // Mỗi khóa dữ liệu học được lưu thành tài liệu "sync/<khóa>" (hoặc "sync/<khóa>.<bé>" với dữ liệu tách theo bé).
 // Mở trên máy nào (đăng nhập Claude) cũng tải về cùng một dữ liệu; thay đổi tự đẩy lên và các máy khác nhận ngay.
 const SYNC_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1',
-  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_badges_v1','vocab_bstat_v1','vocab_adj_tn240','vocab_enrich_v1'];
+  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_adj_tn240','vocab_enrich_v1'];
 const KID_IDS=['anhphong','thanhnghi'];
 const SYNC={parts:{},db:null,dev:Math.random().toString(36).slice(2,10),dirty:new Set(),timer:null,busy:false,last:{},known:new Set(),state:'local'};
 function isKidKeyed(v){return v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length>0&&Object.keys(v).every(k=>KID_IDS.includes(k))}
@@ -1467,7 +1481,7 @@ function docsFor(k){
   else out[k]=JSON.stringify(v);
   return out;
 }
-const KID_KEY_SET=new Set(['vocab_enrich_v1','vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stars_v1','vocab_ls_lv','vocab_phonics_v1','vocab_fix_v1','vocab_badges_v1','vocab_bstat_v1']);
+const KID_KEY_SET=new Set(['vocab_enrich_v1','vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stars_v1','vocab_ls_lv','vocab_phonics_v1','vocab_fix_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1']);
 const CHUNK=60000; // ký tự mỗi phần (kho giới hạn 256 KiB/tài liệu)
 async function writeDoc(id,str){
   const t=Date.now(),d=SYNC.dev;
@@ -1927,15 +1941,17 @@ function checkBadges(kd,silent){
   const a=store.get('vocab_badges_v1',{}),got=a[kd.id]||(a[kd.id]={}),first=!got._i;
   const news=[];badgeDefs(kd).forEach(b=>{if(b.ok&&!got[b.id]){got[b.id]=today();news.push(b)}});
   if(first)got._i=1;
-  if(!news.length&&!first)return;
-  store.set('vocab_badges_v1',a);
-  if(first||silent)return; // lần đầu bật tính năng: ghi nhận huy hiệu đã có, không hiện chúc mừng dồn
-  news.forEach(b=>BQ.push([kd,b])); // huy hiệu là cơ chế riêng, không cộng sao
-  showNextBadge();
+  if(news.length||first)store.set('vocab_badges_v1',a);
+  // lần đầu bật tính năng: ghi nhận huy hiệu đã có, không hiện chúc mừng dồn
+  if(!first&&!silent)news.forEach(b=>BQ.push([kd,b])); // huy hiệu là cơ chế riêng, không cộng sao
+  titleRefresh(kd,!first&&!silent); // danh hiệu: tính lại, báo lên cấp (sau các huy hiệu mới)
+  if(BQ.length)showNextBadge();
 }
 function showNextBadge(){
   if(!BQ.length||!$('bdPop').classList.contains('hide'))return;
-  const [kd,b]=BQ.shift(),t=TIER[b.t];
+  const [kd,b]=BQ.shift();
+  if(b.k){showTitlePop(kd,b);return}
+  const t=TIER[b.t];
   $('bdPopBody').innerHTML=`<div class="rays"></div>${medal(Object.assign({},b,{ok:true}),true)}
     <div class="bpT">Huy hiệu mới!</div><div class="bpN">${esc(b.n)}</div><div class="bpD">${esc(b.d)}</div>
     <div class="bpTier ${t.c}">Hạng ${t.n}</div><div class="bpK">${esc(kd.name)}</div>`;
@@ -1955,7 +1971,8 @@ function renderBadges(){
   const n=B.filter(b=>b.ok).length;
   $('bdTitle').innerHTML=`🏅 Bộ sưu tập huy hiệu <span class="bdCount">${n}/${B.length}</span>`;
   const groups={};B.forEach(b=>(groups[b.g]=groups[b.g]||[]).push(b));
-  $('bdGrid').innerHTML=`<div class="bdLegend">${Object.values(TIER).map(t=>`<span class="tierdot ${t.c}"></span>${t.n}`).join(' ')} <span style="opacity:.8">· huy hiệu không kèm sao</span></div>`+
+  renderNameCard();
+  $('bdGrid').innerHTML=`<div class="bdLegend">${Object.entries(TIER).map(([k,t])=>`<span class="tierdot ${t.c}"></span>${t.n} <small style="opacity:.75">${TPTS[k]}đ</small>`).join(' ')} <span style="opacity:.8">· huy hiệu không kèm sao</span></div>`+
     Object.entries(groups).map(([g,list])=>`<div class="bdGroup"><div class="bdGh">${BGROUP[g]} <small>${list.filter(b=>b.ok).length}/${list.length}</small></div><div class="bdRow">`+
     list.map(b=>`<button class="bdItem ${b.ok?'on':''}" data-id="${b.id}">${medal(b)}<div class="bn">${b.ok||!b.secret?esc(b.n):'???'}</div>`+
       (!b.ok&&!b.secret?`<div class="bprog"><i style="width:${Math.round(b.v/b.goal*100)}%"></i></div>`:'')+`</button>`).join('')+`</div></div>`).join('');
@@ -1964,8 +1981,121 @@ function renderBadgePill(){const kd=kid(),B=badgeDefs(kd),got=earnedBadges(kd);c
   const last=B.filter(b=>got[b.id]).sort((x,y)=>got[y.id]<got[x.id]?-1:1).slice(0,3).map(b=>b.e).join('');
   $('sBadge').innerHTML=`🏅 ${n}/${B.length} huy hiệu ${last?`<span style="letter-spacing:2px">${last}</span>`:''}`}
 
+// ================= DANH HIỆU & KHUNG TÊN =================
+// Điểm huy hiệu theo hạng; danh hiệu cấp bậc cần đủ điểm VÀ đủ chất lượng; không bao giờ mất cấp
+const TPTS={1:1,2:3,3:6,4:12,5:25};
+const RANKS=[
+  {r:1,e:'🐣',n:'Tân Binh Học Tập',p:0},
+  {r:2,e:'🧭',n:'Nhà Thám Hiểm Nhí',p:8},
+  {r:3,e:'⚔️',n:'Chiến Binh Chăm Chỉ',p:25,q:[2,2]},
+  {r:4,e:'🛡️',n:'Hiệp Sĩ Tri Thức',p:50,q:[3,1]},
+  {r:5,e:'🦁',n:'Đại Kiện Tướng',p:90,q:[3,3]},
+  {r:6,e:'🧙',n:'Bậc Thầy Ngôn Ngữ',p:150,q:[4,1]},
+  {r:7,e:'👑',n:'Huyền Thoại Học Đường',p:250,q:[5,1]}];
+const FRAMES={1:'Trơn',2:'Viền đồng',3:'Viền bạc',4:'Vàng lấp lánh',5:'Nền vàng tỏa sáng',6:'Kim cương xanh',7:'Cầu vồng vương miện'};
+const SPECIALS=[
+  {id:'sp_m500',e:'📚',n:'Nhà Bác Học Từ Vựng',d:'Mở huy hiệu “Đỉnh Núi Kiến Thức” (thuộc chắc 500 từ)',ok:E=>!!E.m500},
+  {id:'sp_s30',e:'🔥',n:'Ngọn Lửa Không Tắt',d:'Mở huy hiệu “Núi Lửa Bất Khuất” (học đủ bài 30 ngày liền)',ok:E=>!!E.s30},
+  {id:'sp_p50x5',e:'🎯',n:'Xạ Thủ Thần Sầu',d:'Mở huy hiệu “Xạ Thủ Huyền Thoại” (5 bài luyện thêm đúng 50/50)',ok:E=>!!E.p50x5},
+  {id:'sp_lst5',e:'🎙️',n:'Giọng Ca Vàng',d:'Mở huy hiệu “Ngôi Sao Giọng Nói” (5 lần Nghe & nói đúng từ 95%)',ok:E=>!!E.lst5},
+  {id:'sp_w12',e:'🗓️',n:'Người Kỷ Luật Thép',d:'Mở huy hiệu “Ba Tháng Kỷ Luật” (đạt mục tiêu 12 tuần)',ok:E=>!!E.w12},
+  {id:'sp_trip',e:'🗺️',n:'Nhà Lữ Hành Vĩ Đại',d:'Đi hết 3/4 số chặng của Hành trình từ vựng',ok:(E,B)=>{const j=B.filter(b=>b.g==='trip');return j.length>0&&j.filter(b=>E[b.id]).length>=Math.ceil(j.length*3/4)}},
+  {id:'sp_all',e:'🌟',n:'Toàn Năng',d:'Có huy hiệu Vàng trở lên ở cả 5 nhóm: Thuộc chắc, Kiên trì, Thói quen, Thiện xạ, Giọng nói',ok:(E,B)=>['mast','fire','habit','aim','voice'].every(g=>B.some(b=>b.g===g&&b.t>=3&&E[b.id]))}];
+function titleDoc(kd){return store.get('vocab_title_v1',{})[kd.id]||{}}
+function titleCalc(kd){
+  const B=badgeDefs(kd),got=earnedBadges(kd),E={};B.forEach(b=>{if(b.ok||got[b.id])E[b.id]=b});
+  const list=Object.values(E),pts=list.reduce((s,b)=>s+(TPTS[b.t]||0),0),atLeast=t=>list.filter(b=>b.t>=t).length;
+  const meets=R=>pts>=R.p&&(!R.q||atLeast(R.q[0])>=R.q[1]);
+  const doc=titleDoc(kd);let rank=Math.max(1,+doc.rank||1);RANKS.forEach(R=>{if(meets(R))rank=Math.max(rank,R.r)});
+  const sp=SPECIALS.filter(x=>x.ok(E,B)).map(x=>x.id);(doc.sp||[]).forEach(id=>{if(!sp.includes(id)&&SPECIALS.some(x=>x.id===id))sp.push(id)});
+  return {B,E,list,got,pts,rank,sp,atLeast};
+}
+function autoBadges(c){return c.list.slice().sort((x,y)=>y.t-x.t||String(c.got[y.id]||'').localeCompare(String(c.got[x.id]||''))).slice(0,3).map(b=>b.id)}
+function shownBadgeIds(c,sel){return Array.isArray(sel.b)?sel.b.filter(id=>c.E[id]).slice(0,3):autoBadges(c)}
+function titleShow(c,doc){
+  const sel=doc.sel||{};let T=null;
+  if(sel.t&&/^r\d$/.test(sel.t)){const R=RANKS[+sel.t.slice(1)-1];if(R&&R.r<=c.rank)T=R}
+  else if(sel.t){const S=SPECIALS.find(x=>x.id===sel.t);if(S&&c.sp.includes(S.id))T=S}
+  if(!T)T=RANKS[c.rank-1];
+  const f=sel.f&&sel.f<=c.rank?sel.f:c.rank;
+  return {e:T.e,n:T.n,f,b:shownBadgeIds(c,sel).map(id=>c.E[id].e)};
+}
+function titleRefresh(kd,notify){
+  const a=store.get('vocab_title_v1',{}),doc=a[kd.id]||{},c=titleCalc(kd),first=!doc._i;
+  if(!first&&notify){
+    if(c.rank>(+doc.rank||1))BQ.push([kd,{k:'rank',R:RANKS[c.rank-1]}]);
+    c.sp.filter(id=>!(doc.sp||[]).includes(id)).forEach(id=>BQ.push([kd,{k:'sp',S:SPECIALS.find(x=>x.id===id)}]));
+  }
+  const R=RANKS[c.rank-1],nd=Object.assign({},doc,{_i:1,rank:c.rank,pts:c.pts,sp:c.sp,re:R.e,rn:R.n,spe:c.sp.map(id=>SPECIALS.find(x=>x.id===id).e)});
+  nd.show=titleShow(c,nd);
+  if(JSON.stringify(nd)!==JSON.stringify(doc)){a[kd.id]=nd;store.set('vocab_title_v1',a);if(kd.id===(KIDS[KI]||{}).id)applyKidTheme()}
+  if(window.BANK&&BANK.setTitle)BANK.setTitle(kd.id,nd);
+  return {c,doc:nd};
+}
+function plate(kd,size,doc){return window.BANK&&BANK.nameplate?BANK.nameplate(kd.id,size,doc&&doc.show?doc:null,{av:true}):`${kidAv(kd)} ${esc(kd.name)}`}
+function showTitlePop(kd,x){
+  if(x.k==='rank'){const R=x.R,doc=titleDoc(kd);
+    $('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:74px;line-height:1.1">${R.e}</div>
+      <div class="bpT">Con vừa lên cấp ${R.r}!</div><div class="bpN">${esc(R.n)}</div>
+      <div style="margin:16px 0 8px">${plate(kd,'L',{show:{e:R.e,n:R.n,f:R.r,b:(doc.show||{}).b||[]}})}</div>
+      <div class="bpD">${R.r>=3?'Khung tên mới: <b>'+FRAMES[R.r]+'</b>. ':''}Vào 🏅 Huy hiệu › Trang trí tên để chọn danh hiệu và khung.</div><div class="bpK">${esc(kd.name)}</div>`;
+    $('bdPop').classList.remove('hide');confetti();setTimeout(confetti,1300);setTimeout(()=>speak('Level up! Congratulations!'),400);
+  }else{const S=x.S;
+    $('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:74px;line-height:1.1">${S.e}</div>
+      <div class="bpT">Danh hiệu đặc biệt mới!</div><div class="bpN">${esc(S.n)}</div><div class="bpD">${esc(S.d)}</div>
+      <div class="bpTier gold">Có thể chọn hiển thị trước tên</div><div class="bpK">${esc(kd.name)}</div>`;
+    $('bdPop').classList.remove('hide');confetti();setTimeout(()=>speak('Amazing!'),400);
+  }
+}
+function canDecorate(kd){return !window.PORTAL||!PORTAL.kid||PORTAL.parent||PORTAL.kid===kd.id}
+function renderNameCard(){
+  const kd=kid(),box=$('npCard');if(!box)return;
+  const c=titleCalc(kd),doc=titleDoc(kd),sel=doc.sel||{},R=RANKS[c.rank-1],N=RANKS[c.rank];
+  const show=titleShow(c,doc),pv={show};
+  let next='<div class="sub">Con đã đạt cấp cao nhất. Thật phi thường! 👑</div>';
+  if(N){const need=[];if(c.pts<N.p)need.push(`thêm <b>${N.p-c.pts}</b> điểm`);
+    if(N.q){const h=c.atLeast(N.q[0]);if(h<N.q[1])need.push(`thêm <b>${N.q[1]-h}</b> huy hiệu ${TIER[N.q[0]].n}${N.q[0]<5?' trở lên':''}`)}
+    next=`<div class="bprog" style="margin:8px 0 4px"><i style="width:${Math.min(100,Math.round(c.pts/N.p*100))}%"></i></div>
+      <div class="sub">Lên cấp ${N.r} ${N.e} <b>${N.n}</b>: ${need.length?'cần '+need.join(' và '):'sắp lên rồi!'}</div>`}
+  const can=canDecorate(kd);
+  const chip=(attr,on,lock,inner,tip)=>`<button class="npc ${on?'on':''} ${lock?'lock':''}" ${attr} ${tip?`data-tip="${esc(tip)}"`:''}>${inner}</button>`;
+  const tSel=sel.t||'';
+  const tChips=chip('data-t=""',!tSel,false,'⚡ Tự động (cấp cao nhất)')+
+    RANKS.map(x=>chip(`data-t="r${x.r}"`,tSel==='r'+x.r,x.r>c.rank,`${x.r>c.rank?'🔒':x.e} ${esc(x.n)}`,x.r>c.rank?`Cấp ${x.r}: cần ${x.p} điểm${x.q?' và '+x.q[1]+' huy hiệu '+TIER[x.q[0]].n+(x.q[0]<5?' trở lên':''):''}`:'')).join('')+
+    SPECIALS.map(x=>{const ok=c.sp.includes(x.id);return chip(`data-t="${x.id}"`,tSel===x.id,!ok,`${ok?x.e:'🔒'} ${esc(x.n)}`,ok?'':x.d)}).join('');
+  const fChips=chip('data-f="0"',!sel.f,false,'⚡ Theo cấp')+
+    Object.keys(FRAMES).map(Number).map(f=>chip(`data-f="${f}"`,sel.f===f,f>c.rank,(window.BANK&&BANK.nameplate?BANK.nameplate(kd.id,'S',{show:{e:'',n:'',f,b:[]}}):'')+`<small>${f>c.rank?'🔒 ':''}${FRAMES[f]}</small>`,f>c.rank?`Mở khi lên cấp ${f}`:'')).join('');
+  const bIds=shownBadgeIds(c,sel);
+  const bChips=chip('data-b="auto"',!Array.isArray(sel.b),false,'⚡ Tự động')+chip('data-b="none"',Array.isArray(sel.b)&&!sel.b.length,false,'Không hiện')+
+    (c.list.length?c.list.slice().sort((x,y)=>y.t-x.t).map(b=>chip(`data-b="${b.id}"`,bIds.includes(b.id)&&Array.isArray(sel.b),false,`<span class="npBd">${b.e}</span><small>${TIER[b.t].n}</small>`,'')).join(''):'<span class="sub">Chưa có huy hiệu nào.</span>');
+  const rules=`<details class="npRules"><summary>📜 Cách tính điểm và các cấp danh hiệu</summary>
+    <div class="sub" style="margin:6px 0">Điểm mỗi huy hiệu: ${Object.entries(TIER).map(([k,t])=>`${t.n} ${TPTS[k]}`).join(' · ')}. Danh hiệu không cộng sao và không bao giờ bị mất.</div>
+    <table class="npRt">${RANKS.map(x=>`<tr class="${x.r<=c.rank?'ok':''}"><td>${x.e} ${x.n}</td><td>${x.p} điểm${x.q?`<br><small>+ ${x.q[1]} huy hiệu ${TIER[x.q[0]].n}${x.q[0]<5?'↑':''}</small>`:''}</td></tr>`).join('')}</table>
+    <div class="sub" style="margin-top:8px"><b>Danh hiệu đặc biệt:</b><br>${SPECIALS.map(x=>`${c.sp.includes(x.id)?'✅':'▫️'} ${x.e} <b>${x.n}</b>: ${x.d}`).join('<br>')}</div></details>`;
+  box.innerHTML=`<b style="font-size:1.1rem">✨ Trang trí tên của con</b>
+    <div class="npPrev">${plate(kd,'L',pv)}</div>
+    <div style="text-align:center;font-weight:700">Cấp ${c.rank}/7 · ${R.e} ${R.n} · <span style="color:#B45309">${c.pts} điểm huy hiệu</span></div>${next}
+    ${can?`<div class="npSec"><h4>🏷️ Danh hiệu trước tên</h4><div class="npChips">${tChips}</div></div>
+    <div class="npSec"><h4>🖼️ Khung tên</h4><div class="npChips">${fChips}</div></div>
+    <div class="npSec"><h4>🏅 Huy hiệu trưng bày <small class="sub">(tối đa 3${Array.isArray(sel.b)?`, đã chọn ${bIds.length}`:''})</small></h4><div class="npChips">${bChips}</div></div>`
+    :`<div class="sub" style="margin-top:8px;text-align:center">Chỉ ${esc(kd.name)} mới được tự trang trí tên của mình.</div>`}${rules}`;
+  if(!can)return;
+  box.onclick=e=>{const b=e.target.closest('.npc');if(!b)return;
+    if(b.classList.contains('lock')){toast('🔒 '+(b.dataset.tip||'Chưa mở'),3200);return}
+    const a=store.get('vocab_title_v1',{}),d=a[kd.id]||(a[kd.id]={}),s=d.sel=Object.assign({},d.sel);
+    if(b.dataset.t!=null){if(b.dataset.t)s.t=b.dataset.t;else delete s.t}
+    else if(b.dataset.f!=null){const f=+b.dataset.f;if(f)s.f=f;else delete s.f}
+    else if(b.dataset.b!=null){const id=b.dataset.b;
+      if(id==='auto')delete s.b;else if(id==='none')s.b=[];
+      else{let l=Array.isArray(s.b)?s.b.filter(x=>c.E[x]):[];
+        if(l.includes(id))l=l.filter(x=>x!==id);else if(l.length>=3){toast('Chỉ chọn tối đa 3 huy hiệu. Bấm vào một huy hiệu đã chọn để bỏ bớt nhé.',3200);return}else l.push(id);
+        s.b=l}}
+    store.set('vocab_title_v1',a);titleRefresh(kd,false);renderNameCard();
+    if(window.BANK&&BANK._emit)BANK._emit()};
+}
+
 // ================= RESET =================
-const LEARN_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stats_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_phonics_v1','vocab_badges_v1','vocab_bstat_v1'];
+const LEARN_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stats_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_phonics_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1'];
 function resetLearningData(){LEARN_KEYS.forEach(k=>{try{LS.removeItem(k)}catch(e){}if(window.__syncDirty)window.__syncDirty(k)})}
 $('setReset').onclick=()=>{
   if($('setResetPin').value.trim()!==(store.get('vocab_pin','')||'5789')){toast('Mã bố mẹ chưa đúng');return}
