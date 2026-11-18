@@ -1,0 +1,37 @@
+# Claude gửi các bản sửa nhỏ vào thư mục patches/ (dạng git diff).
+# Quy trình này tự áp dụng bản sửa, xoá tệp patch, lưu lại và cập nhật trang web.
+name: Ap dung ban sua
+on:
+  push:
+    branches: [main]
+    paths: ['patches/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: apply-patches
+  cancel-in-progress: false
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ap dung ban sua
+        run: |
+          set -e
+          ls patches/*.patch >/dev/null 2>&1 || { echo "Khong co ban sua"; exit 0; }
+          git config user.name "nhaminh-hoctap"
+          git config user.email "nhaminh-hoctap@users.noreply.github.com"
+          for f in $(ls patches/*.patch | sort); do
+            echo "== $f"
+            git apply --whitespace=nowarn "$f"
+            git rm -q "$f"
+          done
+          git add -A
+          git commit -m "Ap dung ban sua tu Claude"
+          git push
+      - name: Cap nhat trang web
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST repos/${{ github.repository }}/pages/builds || true
