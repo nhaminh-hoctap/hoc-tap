@@ -17,7 +17,8 @@
     toan: { e: '🧮', n: 'Toán' },
     tv: { e: '📖', n: 'Tiếng Việt' },
     van: { e: '📚', n: 'Ngữ văn' },
-    home: { e: '🏠', n: 'Bố mẹ thưởng / đổi quà' }
+    home: { e: '🏠', n: 'Bố mẹ thưởng / đổi quà' },
+    cup: { e: '🏆', n: 'Cúp tuần' }
   };
   /* Quy tắc nhận sao cho Toán – Tiếng Việt – Ngữ văn.
      cap: số lần tối đa có sao trong một ngày (tính chung các môn của ứng dụng đó) */
@@ -78,11 +79,12 @@
     },
     /* số lần đã nhận sao hôm nay của một loại (k) */
     countToday: function (kid, k) { var d = ymd(); return B.extList(kid).filter(function (e) { return e.k === k && ymd(e.t) === d && e.v > 0; }).length; },
+    hasId: function (kid, id) { return !!(cache[kid] && cache[kid][id]); },
     has: function (kid, key) { return B.extList(kid).some(function (e) { return e.key === key; }); },
     /* ghi một dòng sao: {v, r, src, k, key?} */
     add: function (kid, o) {
       if (!o || !o.v || !cache[kid]) return null;
-      var e = { id: rid(), t: Date.now(), v: Math.round(o.v), r: String(o.r || ''), src: o.src || 'home', k: o.k || 'x', key: o.key || '', day: ymd() };
+      var e = { id: o.id || rid(), t: Date.now(), v: Math.round(o.v), r: String(o.r || ''), src: o.src || 'home', k: o.k || 'x', key: o.key || '', day: ymd() };
       cache[kid][e.id] = e; pending[kid + '/' + e.id] = e; saveCache(); B._emit(); B._flush();
       return e;
     },
@@ -112,10 +114,11 @@
     }
     try { return JSON.parse(s); } catch (e) { return null; }
   }
+  var extGot = {}, extDone; B.extReady = new Promise(function (r) { extDone = r; setTimeout(function () { r(false); }, 20000); });
   B.ready = (async function () {
     var db = null;
     try { if (window.claude && claude.use) db = await withTimeout(claude.use('db'), 15000); } catch (e) { db = null; }
-    if (!db) { B.state = 'off'; B._emit(); return false; }
+    if (!db) { B.state = 'off'; extDone(false); B._emit(); return false; }
     B.db = db; B.state = 'ok';
     KIDS.forEach(function (k) {
       try {
@@ -123,7 +126,7 @@
           var m = {};
           snap.docs.forEach(function (d) { var x = d.data(); if (x && x.id) m[x.id] = x; });
           Object.keys(pending).forEach(function (p) { if (p.indexOf(k.id + '/') === 0) { var e = pending[p]; m[e.id] = e; } });
-          cache[k.id] = m; saveCache(); B._emit();
+          cache[k.id] = m; saveCache(); extGot[k.id] = 1; if (extGot.anhphong && extGot.thanhnghi) extDone(true); B._emit();
         }, function () { B.state = 'err'; B._emit(); });
       } catch (e) { }
       try {

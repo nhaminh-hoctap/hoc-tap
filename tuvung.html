@@ -51,6 +51,14 @@ header h1{font-size:1.3rem;margin:0}
 .dots i{width:14px;height:14px;border-radius:4px;background:#fff;border:2px solid var(--line)}
 .dots i.on{background:var(--ok);border-color:var(--ok)}
 .dots i.half{background:#BFE6CF;border-color:#BFE6CF}
+.dots i.sh{background:#C7D2FE;border-color:#818CF8;position:relative}.dots i.sh::after{content:'🛡';position:absolute;inset:-2px;font-size:10px;display:grid;place-items:center}
+.chestcard{display:flex;gap:14px;align-items:center;margin-top:12px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #FCD34D}
+.chestcard .chIc{font-size:54px;line-height:1;flex:none}.chestcard.ready .chIc{animation:chShake 1s ease-in-out infinite}
+.chestcard .chB{flex:1;min-width:0}.chestcard b{font-size:1.08rem}.chL{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:5px;font-size:.92rem}.chL span.ok{color:#15803D;font-weight:700}
+.chestcard .btn{flex:none}.chestcard.open{background:#F8FAFC;border-color:#E2E8F0}
+.chestAnim{font-size:96px;line-height:1.2;animation:chShake .35s ease-in-out infinite}
+@keyframes chShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.05)}75%{transform:rotate(12deg) scale(1.05)}}
+@media (max-width:560px){.chestcard{flex-wrap:wrap}.chestcard .btn{width:100%}}
 /* two main parts */
 .parts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .part{border-radius:20px;padding:16px;color:#fff;display:flex;flex-direction:column;gap:8px;min-height:230px}
@@ -340,6 +348,7 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <div class="journey" id="sJourney"></div>
   </div>
 
+  <div class="card chestcard" id="chestCard"></div>
   <div class="parts">
     <div class="part new">
       <h2>📘 Học từ mới</h2>
@@ -602,7 +611,8 @@ function logSave(kd,o){const a=store.get('vocab_daily_v1',{});a[kd.id]=o;store.s
 function recToday(kd){const l=logOf(kd);return l.days[today()]||{}}
 function updRec(kd,fn){const l=logOf(kd);const t=today();l.days[t]=l.days[t]||{};fn(l.days[t]);logSave(kd,l)}
 const dayDone=r=>!!(r&&(r.done||(r.newDone&&r.reviewDone)));
-function streakOf(kd){const days=logOf(kd).days;let d=today(),n=0;if(!dayDone(days[d]))d=addDays(d,-1);while(dayDone(days[d])){n++;d=addDays(d,-1)}return n}
+function shUsed(kd){return (store.get('vocab_shield_v1',{})[kd.id]||{}).used||{}}
+function streakOf(kd){const days=logOf(kd).days,u=shUsed(kd),ok=d=>dayDone(days[d])||!!u[d];let d=today(),n=0;if(!ok(d))d=addDays(d,-1);while(ok(d)){n++;d=addDays(d,-1)}return n}
 
 const LOAD_LIMIT=40; // còn quá nhiều từ đến hạn ôn -> tạm giảm từ mới để không bị dồn
 function dueCount(kd){const t=today();return Object.values(srsOf(kd)).filter(s=>s.d<=t&&!s.pr).length}
@@ -716,10 +726,11 @@ function renderHome(){
   $('tabs').innerHTML=KIDS.map((k,i)=>{const b=starsOf(k).bal;return `<button class="tab ${i===KI?'on':''}" data-i="${i}"><span class="tname">${esc(k.name)}<span class="kstar ${b<0?'neg':''}">⭐ ${b}</span></span><small>${esc(k.note)}</small></button>`}).join('');
   $('tabs').querySelectorAll('.tab').forEach(b=>b.onclick=()=>{KI=+b.dataset.i;saveSettings();renderHome()});
   const L=learned(kd),N=kd.words.length;
-  $('sStreak').textContent=`🔥 ${streakOf(kd)} ngày liên tiếp`;
+  $('sStreak').textContent=`🔥 ${streakOf(kd)} ngày liên tiếp`+(shieldHave(kd)?` · 🛡️×${shieldHave(kd)}`:'');
+  renderChest(kd);if(!PORTAL_PARENT())loadLeague().then(()=>{if(kid()!==kd)return;applyShields(kd);$('sStreak').textContent=`🔥 ${streakOf(kd)} ngày liên tiếp`+(shieldHave(kd)?` · 🛡️×${shieldHave(kd)}`:'')});
   $('sLearned').textContent=`Đã học ${L}/${N} từ`;
   $('sMaster').textContent=`✅ Thuộc chắc ${Object.values(srsOf(kd)).filter(s=>s.b>=3).length} từ`;$('sBar').style.width=(L/N*100).toFixed(1)+'%';
-  const days=logOf(kd).days;let dots='';for(let i=6;i>=0;i--){const r=days[addDays(today(),-i)];dots+=`<i class="${dayDone(r)?'on':(r&&(r.newDone||r.reviewDone))?'half':''}" title="${addDays(today(),-i)}"></i>`}$('sDots').innerHTML=dots;
+  const days=logOf(kd).days,shu=shUsed(kd);let dots='';for(let i=6;i>=0;i--){const dd=addDays(today(),-i),r=days[dd];dots+=`<i class="${dayDone(r)?'on':shu[dd]?'sh':(r&&(r.newDone||r.reviewDone))?'half':''}" title="${dd}${shu[dd]?' · khiên giữ chuỗi':''}"></i>`}$('sDots').innerHTML=dots;
 
   // new words part
   const np=newPlan(kd),per=logOf(kd).per;
@@ -1465,7 +1476,7 @@ $('btnHome').onclick=()=>{if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').cl
 // Mỗi khóa dữ liệu học được lưu thành tài liệu "sync/<khóa>" (hoặc "sync/<khóa>.<bé>" với dữ liệu tách theo bé).
 // Mở trên máy nào (đăng nhập Claude) cũng tải về cùng một dữ liệu; thay đổi tự đẩy lên và các máy khác nhận ngay.
 const SYNC_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1',
-  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_adj_tn240','vocab_enrich_v1'];
+  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1','vocab_adj_tn240','vocab_enrich_v1'];
 const KID_IDS=['anhphong','thanhnghi'];
 const SYNC={parts:{},db:null,dev:Math.random().toString(36).slice(2,10),dirty:new Set(),timer:null,busy:false,last:{},known:new Set(),state:'local'};
 function isKidKeyed(v){return v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length>0&&Object.keys(v).every(k=>KID_IDS.includes(k))}
@@ -1481,7 +1492,7 @@ function docsFor(k){
   else out[k]=JSON.stringify(v);
   return out;
 }
-const KID_KEY_SET=new Set(['vocab_enrich_v1','vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stars_v1','vocab_ls_lv','vocab_phonics_v1','vocab_fix_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1']);
+const KID_KEY_SET=new Set(['vocab_enrich_v1','vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stars_v1','vocab_ls_lv','vocab_phonics_v1','vocab_fix_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1']);
 const CHUNK=60000; // ký tự mỗi phần (kho giới hạn 256 KiB/tài liệu)
 async function writeDoc(id,str){
   const t=Date.now(),d=SYNC.dev;
@@ -1852,7 +1863,7 @@ function checkWeekGoal(kd){
   let n=0;for(let d=ws,k=0;k<7;k++,d=addDays(d,1))if(dayDone(l.days[d]))n++;
   if(n>=STAR2.weekDays){l.wk[ws]=1;logSave(kd,l);addStars(kd,STAR2.week,`🎯 Đạt mục tiêu tuần: học đủ ${STAR2.weekDays} ngày`)}
 }
-function maxStreak(kd){const days=Object.keys(logOf(kd).days).filter(d=>dayDone(logOf(kd).days[d])).sort();let best=0,run=0,prev=null;
+function maxStreak(kd){const days=[...new Set([...Object.keys(logOf(kd).days).filter(d=>dayDone(logOf(kd).days[d])),...Object.keys(shUsed(kd))])].sort();let best=0,run=0,prev=null;
   days.forEach(d=>{run=prev&&addDays(prev,1)===d?run+1:1;best=Math.max(best,run);prev=d});return best}
 // ================= BỘ HUY HIỆU =================
 const TIER={1:{n:'Đồng',c:'bronze',st:2},2:{n:'Bạc',c:'silver',st:5},3:{n:'Vàng',c:'gold',st:10},4:{n:'Kim cương',c:'diamond',st:20},5:{n:'Huyền thoại',c:'legend',st:50}};
@@ -2040,6 +2051,11 @@ function showTitlePop(kd,x){
       <div style="margin:16px 0 8px">${plate(kd,'L',{show:{e:R.e,n:R.n,f:R.r,b:(doc.show||{}).b||[]}})}</div>
       <div class="bpD">${R.r>=3?'Khung tên mới: <b>'+FRAMES[R.r]+'</b>. ':''}Vào 🏅 Huy hiệu › Trang trí tên để chọn danh hiệu và khung.</div><div class="bpK">${esc(kd.name)}</div>`;
     $('bdPop').classList.remove('hide');confetti();setTimeout(confetti,1300);setTimeout(()=>speak('Level up! Congratulations!'),400);
+  }else if(x.k==='shield'){
+    $('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:80px;line-height:1.1">🛡️</div>
+      <div class="bpT">Khiên đã bảo vệ con!</div><div class="bpN">🔥 Chuỗi ${x.st} ngày vẫn còn</div>
+      <div class="bpD">Con lỡ nghỉ ${x.n} ngày, ${x.n>1?x.n+' chiếc khiên':'1 chiếc khiên'} đã giữ chuỗi ngày học. Hôm nay học tiếp để chuỗi dài thêm nhé!</div><div class="bpK">${esc(kd.name)}</div>`;
+    $('bdPop').classList.remove('hide');confetti();
   }else{const S=x.S;
     $('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:74px;line-height:1.1">${S.e}</div>
       <div class="bpT">Danh hiệu đặc biệt mới!</div><div class="bpN">${esc(S.n)}</div><div class="bpD">${esc(S.d)}</div>
@@ -2047,7 +2063,44 @@ function showTitlePop(kd,x){
     $('bdPop').classList.remove('hide');confetti();setTimeout(()=>speak('Amazing!'),400);
   }
 }
-function canDecorate(kd){return !window.PORTAL||!PORTAL.kid||PORTAL.parent||PORTAL.kid===kd.id}
+function canDecorate(kd){return canDecorate0(kd)}
+// ================= RƯƠNG BÁU & KHIÊN GIỮ CHUỖI =================
+const CHEST_NEW=5,SHIELD_MAX=2;
+const PORTAL_PARENT=()=>!!(window.PORTAL&&PORTAL.parent);
+function chestState(kd,k){k=k||today();const r=logOf(kd).days[k]||{},pl=plogOf(kd).filter(e=>e&&e.t&&ymd(new Date(e.t))===k&&e.total>0&&e.done>=e.total);
+  const nw=(r.new||[]).length,rv=!!(r.reviewDone||r.done),pr=pl.filter(e=>e.type!=='ls').length,ls=pl.filter(e=>e.type==='ls').length;
+  return {nw,rv,pr,ls,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
+function renderChest(kd){const box=$('chestCard');if(!box)return;if(PORTAL_PARENT()){box.classList.add('hide');return}box.classList.remove('hide');
+  const st=chestState(kd),it=(ok,t)=>`<span class="${ok?'ok':''}">${ok?'✅':'⬜'} ${t}</span>`;
+  const items=[it(st.nw>=CHEST_NEW,`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
+  const left=[st.nw>=CHEST_NEW,st.rv,st.pr>=2,st.ls>=1].filter(x=>!x).length;
+  box.className='card chestcard '+(st.opened?'open':st.ok?'ready':'');
+  box.innerHTML=`<div class="chIc">${st.opened?'🪙':'🎁'}</div><div class="chB"><b>Rương báu hôm nay</b> <span class="sub">· mở ra được 5–10 ⭐</span><div class="chL">${items.join('')}</div>
+    ${CHEST_NEW>logOf(kd).per&&st.nw<CHEST_NEW&&recToday(kd).newDone?`<div class="sub" style="margin-top:4px">Bấm “Học thêm” ở phần Học từ mới để đủ ${CHEST_NEW} từ nhé.</div>`:''}</div>
+    <button class="btn" id="chestGo" ${st.opened||!st.ok?'disabled':''}>${st.opened?`Đã mở: +${st.opened} ⭐`:st.ok?'🎁 Mở rương!':`Còn ${left} việc`}</button>`;
+  $('chestGo').onclick=()=>openChest(kd)}
+function openChest(kd){const st=chestState(kd);if(!st.ok||st.opened)return;
+  const v=5+Math.floor(Math.random()*6),d=today().split('-').reverse().slice(0,2).join('/');
+  updRec(kd,r=>{r.chest=v});addStars(kd,v,`🎁 Rương báu ngày ${d}`,'auto');if(S&&S.earned)S.earned.pop();
+  $('bdPopBody').innerHTML=`<div class="rays"></div><div class="chestAnim">🎁</div><div class="bpT">Đang mở rương…</div>`;$('bdPop').classList.remove('hide');
+  setTimeout(()=>{$('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:78px;line-height:1.2">✨🪙✨</div><div class="bpT">Rương báu!</div><div class="bpN" style="font-size:2.4rem">+${v} ⭐</div><div class="bpD">Sao đã vào kho Sao thưởng. Linh vật của con cũng được thêm ⚡ năng lượng!</div><div class="bpK">${esc(kd.name)}</div>`;confetti();setTimeout(()=>speak(pick(['Wow!','Amazing!','Treasure!'])),200)},1400);
+  renderHome()}
+let LEAGUE={docs:{},at:0};
+async function loadLeague(){if(!SYNC.db||!syncLoaded||SYNC.hold)return false;if(Date.now()-LEAGUE.at<60000)return true;
+  try{const sn=await SYNC.db.collection('league').get();const o={};sn.docs.forEach(d=>{const x=d.data();if(x&&x.wk)o[x.wk]=x});LEAGUE.docs=o;LEAGUE.at=Date.now();return true}catch(e){return false}}
+function shieldHave(kd){const ev=[];
+  Object.keys(LEAGUE.docs).forEach(w=>{if((LEAGUE.docs[w].sh||[]).includes(kd.id))ev.push([addDays(w,7),0])});
+  const u=shUsed(kd);Object.keys(u).forEach(d=>ev.push([String(u[d]).length===10?u[d]:d,1]));
+  ev.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:a[1]-b[1]);let h=0;ev.forEach(e=>{h=e[1]?Math.max(0,h-1):Math.min(SHIELD_MAX,h+1)});return h}
+function applyShields(kd){
+  if(!LEAGUE.at||!syncLoaded||SYNC.hold)return; // chỉ dùng khiên khi đã chắc dữ liệu mới nhất
+  const days=logOf(kd).days,u=shUsed(kd),t=today(),ok=d=>dayDone(days[d])||!!u[d];
+  const y=addDays(t,-1);if(ok(y))return;
+  const gap=[y];let d=addDays(t,-2);while(!ok(d)&&gap.length<SHIELD_MAX){gap.push(d);d=addDays(d,-1)}
+  if(!ok(d)||shieldHave(kd)<gap.length)return;
+  const a=store.get('vocab_shield_v1',{}),s=a[kd.id]||(a[kd.id]={});s.used=Object.assign({},s.used);gap.forEach(g=>s.used[g]=t);store.set('vocab_shield_v1',a);
+  BQ.push([kd,{k:'shield',n:gap.length,st:streakOf(kd)}]);showNextBadge();renderHome()}
+function canDecorate0(kd){return !window.PORTAL||!PORTAL.kid||PORTAL.parent||PORTAL.kid===kd.id}
 function renderNameCard(){
   const kd=kid(),box=$('npCard');if(!box)return;
   const c=titleCalc(kd),doc=titleDoc(kd),sel=doc.sel||{},R=RANKS[c.rank-1],N=RANKS[c.rank];
@@ -2095,7 +2148,7 @@ function renderNameCard(){
 }
 
 // ================= RESET =================
-const LEARN_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stats_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_phonics_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1'];
+const LEARN_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1','vocab_prange_v1','vocab_stats_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_phonics_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1'];
 function resetLearningData(){LEARN_KEYS.forEach(k=>{try{LS.removeItem(k)}catch(e){}if(window.__syncDirty)window.__syncDirty(k)})}
 $('setReset').onclick=()=>{
   if($('setResetPin').value.trim()!==(store.get('vocab_pin','')||'5789')){toast('Mã bố mẹ chưa đúng');return}

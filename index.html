@@ -97,6 +97,7 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="claude-shim.js"></script>
 <script src="bank.js"></script>
+<script src="thidua.js"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Học tập">
@@ -118,6 +119,7 @@ h2{font-size:19px;margin:24px 2px 10px}
     <h1>👋 Ai đang học hôm nay?</h1>
     <p>Bấm vào tên của con nhé</p>
     <div class="whoGrid" id="pWhoGrid"></div>
+    <div id="pLeagueW"></div>
     <div class="recent" id="pRecent"></div>
   </section>
 
@@ -128,6 +130,7 @@ h2{font-size:19px;margin:24px 2px 10px}
   <section id="pPar" class="hide">
     <div style="display:flex;align-items:center;gap:12px;margin:6px 0 14px"><button class="ghost" id="pParBack" aria-label="Quay lại">⬅</button><h1 style="font-size:26px;margin:0">👨‍👩‍👧 Góc bố mẹ</h1></div>
     <div class="kidsum" id="pParSum"></div>
+    <div id="pParLeague"></div>
     <h2>Sao thưởng</h2>
     <div class="tiles" id="pParStar"></div>
     <h2>Thiết lập các ứng dụng</h2>
@@ -146,8 +149,10 @@ h2{font-size:19px;margin:24px 2px 10px}
       </div>
     </div>
 
+    <div id="pPet"></div>
     <h2>Hôm nay con học gì?</h2>
     <div class="tiles" id="pTiles"></div>
+    <div id="pLeague"></div>
 
     <h2>⭐ Cách nhận sao thưởng</h2>
     <details class="rules" id="pRules"><summary>Xem cách nhận sao ở từng môn</summary><div id="pRulesBody"></div></details>
@@ -230,12 +235,14 @@ function kidById(id){return BANK.kid(id)}
 function showTotal(id){var v=BANK.vocabBal(id);return v==null&&BANK.state!=='off'&&BANK.state!=='err'?'…':BANK.total(id)}
 function renderWho(){
   $('pWhoGrid').innerHTML=BANK.KIDS.map(function(k){var b=showTotal(k.id);
-    return '<button class="whoBtn '+k.id+'" data-k="'+k.id+'"><span class="av">'+k.av+'</span><span class="nm">'+BANK.nameplate(k.id,'L')+'</span><span class="gr">'+k.grade+'</span><span class="st">⭐ '+b+'</span></button>'}).join('');
+    return '<button class="whoBtn '+k.id+'" data-k="'+k.id+'"><span class="av">'+petE(k)+'</span><span class="nm">'+BANK.nameplate(k.id,'L')+'</span><span class="gr">'+k.grade+'</span><span class="st">⭐ '+b+'</span></button>'}).join('');
   $('pWhoGrid').insertAdjacentHTML('beforeend','<button class="parentBtn" id="pParBtn"><span class="av">👨‍👩‍👧</span><span><b>Góc bố mẹ</b><small>Theo dõi và quản lý việc học của các con</small><span class="chips"><i>⭐ Thưởng · phạt · tiêu sao</i><i>📊 Báo cáo</i><i>⚙️ Cài đặt</i></span></span><span class="lock">🔒 Vào</span></button>');
   $('pWhoGrid').querySelectorAll('.whoBtn').forEach(function(b){b.onclick=function(){openKid(b.dataset.k)}});
   $('pParBtn').onclick=openPin;
   renderRecent();
+  var T=window.THIDUA;if(T){if(T.data())$('pLeagueW').innerHTML=T.leagueHtml(null);T.load()}
 }
+function petE(k){var T=window.THIDUA,p=T&&T.pet(k.id);return p?p.e:k.av}
 function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
   CUR=id;P.kid=id;var k=kidById(id);
   document.documentElement.style.setProperty('--kid',k.color);
@@ -246,7 +253,8 @@ function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
 }
 function renderKid(){
   if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR);
-  $('pAv').textContent=k.av;$('pHi').innerHTML='<span class="hiS">Chào con! 👋</span>'+BANK.nameplate(CUR,'L');$('pGr').textContent=k.grade+' · Cố lên nhé, mỗi ngày một chút!';
+  $('pAv').textContent=petE(k);var T=window.THIDUA;
+  if(T&&T.data()){$('pPet').innerHTML=T.petHtml(CUR);$('pLeague').innerHTML=T.leagueHtml(CUR);T.celebrate(CUR)}if(T)T.load();$('pHi').innerHTML='<span class="hiS">Chào con! 👋</span>'+BANK.nameplate(CUR,'L');$('pGr').textContent=k.grade+' · Cố lên nhé, mỗi ngày một chút!';
   $('pBal').className='bal'+(tot<0?' neg':'');$('pBal').innerHTML='⭐ '+tot+' <small>sao thưởng</small>';
   var parts=Object.keys(td).filter(function(s){return td[s]>0}).map(function(s){return '<span>'+BANK.SRC[s].e+' '+BANK.SRC[s].n+' +'+td[s]+'</span>'});
   $('pToday').innerHTML=parts.length?'Hôm nay: '+parts.join(''):'Hôm nay con chưa nhận sao nào. Bắt đầu thôi!';
@@ -344,6 +352,7 @@ function renderParent(){if(!PARENT)return;
   $('pParSum').innerHTML=BANK.KIDS.map(function(k){var td=BANK.todayBySrc(k.id),t=Object.keys(td).filter(function(x){return td[x]}).map(function(x){return BANK.SRC[x].e+' +'+td[x]}).join(' · ');
     var ti=BANK.title(k.id);
     return '<div class="ks '+k.id+'"><div class="n">'+BANK.nameplate(k.id,'M',null,{av:true})+'</div>'+(ti&&ti.rank?'<div class="t" style="margin-top:6px">🏆 Cấp '+ti.rank+'/7 '+(ti.re||'')+' '+esc(ti.rn||'')+' · '+(ti.pts||0)+' điểm huy hiệu'+(ti.spe&&ti.spe.length?' · Đặc biệt: '+ti.spe.join(''):'')+'</div>':'')+'<div class="b">⭐ '+showTotal(k.id)+'</div><div class="t">Hôm nay: '+(t||'chưa nhận sao')+'</div></div>'}).join('');
+  var TD=window.THIDUA;if(TD){if(TD.data())$('pParLeague').innerHTML=TD.leagueHtml(null,true);TD.load()}
   var T=function(app,ic,t,sub,cls){return '<button class="tile '+(cls||'par')+'" data-app="'+app+'"><span class="ic">'+ic+'</span><span class="t">'+t+'</span><span class="s">'+sub+'</span><span class="go">Mở →</span></button>'};
   $('pParStar').innerHTML=T('p-sao','⭐','Thưởng · Phạt · Tiêu sao','Chấm sao việc nhà, việc tốt; phạt; đổi quà; hủy dòng sao nhầm. Xem lịch sử sao của cả hai con.','star')+
     T('p-report','📊','Báo cáo học từ vựng','Báo cáo tuần, tiến độ thuộc chắc của từng con.');
@@ -368,6 +377,7 @@ function bindPortal(){$('pPinOk').onclick=tryPin;$('pPinIn').onkeydown=function(
   $('pSwitch').onclick=function(){CUR=null;document.documentElement.style.setProperty('--soft','#FFF7ED');show('pWho');renderWho()}}
 bindPortal();P._restore=restorePortal;
 function renderSync(){var s=BANK.state;if(s==='off'&&window.__fbError){$('pSync').textContent='⚠️ Lỗi kết nối dữ liệu';$('pSync').title=String(window.__fbError);return}$('pSync')&&($('pSync').textContent=s==='ok'?'☁️ Đã đồng bộ':s==='off'?'💾 Chỉ trên máy này':s==='err'?'⚠️ Chưa đồng bộ':'☁️ Đang kết nối…')}
+if(window.THIDUA)THIDUA.onUpdate(function(){if(P.app)return;if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
 BANK.onChange(function(){if(P.app)return;renderSync();if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
 
 /* ---------- Khởi động ---------- */
