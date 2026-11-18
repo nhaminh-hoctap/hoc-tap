@@ -173,6 +173,11 @@
     '.td-box button{margin-top:14px;font-size:18px;font-weight:700;padding:12px 30px;border-radius:14px;border:0;background:#F59E0B;color:#fff;cursor:pointer}' +
     '.td-cf{position:fixed;top:-30px;z-index:100000;pointer-events:none;animation:tdFall linear forwards}@keyframes tdFall{to{transform:translateY(110vh) rotate(540deg)}}' +
     '@media (max-width:520px){.lg-row{grid-template-columns:1fr auto}.lg-row .lg-bar{grid-column:1/-1;grid-row:2}.pet-scene{width:96px;height:96px}}' +
+    '.lg-c>summary{list-style:none;cursor:pointer}.lg-c>summary::-webkit-details-marker{display:none}.lg-sum{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px;color:#334155;margin-top:4px}' +
+    '.lg-more{font-weight:700;color:#2563EB;font-size:14px;margin-left:auto}.lg-c[open] .lg-more{display:none}.lg-mini h3{margin-bottom:2px}' +
+    '.pet-line{margin-top:8px}.pet-line>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}.pet-line>summary::-webkit-details-marker{display:none}' +
+    '.pl-n{font-weight:800;font-size:16px}.pl-n small{font-weight:600;opacity:.85}.pl-bar{flex:1;min-width:120px;max-width:260px;height:10px;border-radius:99px;background:rgba(255,255,255,.35);overflow:hidden}.pl-bar i{display:block;height:100%;background:#FDE047;border-radius:99px}' +
+    '.pl-x{font-size:13.5px;opacity:.95}.pl-how{margin-top:8px;background:rgba(255,255,255,.18);border-radius:12px;padding:8px 12px;font-size:14px;line-height:1.6}' +
     '@media (prefers-reduced-motion:reduce){.pet-e,.pet-a,.td-box .big{animation:none}}';
   function css() { if (document.getElementById('tdCss')) return; var st = document.createElement('style'); st.id = 'tdCss'; st.textContent = CSS; document.head.appendChild(st); }
   var SCENE = {
@@ -195,8 +200,22 @@
       '<div>' + PETS[kid].map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
   }
 
+  function petScene(kid, px) {
+    var p = pet(kid); if (!p) return ''; css(); px = px || 140;
+    return '<div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="width:' + px + 'px;height:' + px + 'px;background:linear-gradient(160deg,' + SCENE[kid][p.i] + ')">' +
+      '<span class="pet-e" style="font-size:' + Math.round(px * (0.42 + p.i * 0.03)) + 'px">' + p.e + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span>' + (p.i >= 6 ? '<span class="pet-a a2">✨</span>' : '') : '') + '</div>';
+  }
+  function petLine(kid) {
+    var p = pet(kid); if (!p) return ''; css();
+    var pct = p.next ? Math.round((p.xp - p.from) / (p.next[0] - p.from) * 100) : 100, td = xpToday(kid);
+    return '<details class="pet-line"><summary><span class="pl-n">' + p.e + ' ' + esc(p.name) + ' <small>· cấp ' + (p.i + 1) + '/' + p.n + '</small></span>' +
+      '<span class="pl-bar"><i style="width:' + Math.max(3, pct) + '%"></i></span><span class="pl-x">' + (p.next ? 'còn ' + (p.next[0] - p.xp) + ' ⚡ nữa để lớn' : 'đã lớn hết cỡ 👑') + (td ? ' · hôm nay +' + td + ' ⚡' : '') + ' ⓘ</span></summary>' +
+      '<div class="pl-how"><b>Linh vật lớn lên nhờ năng lượng ⚡</b><br>Học đủ bài tiếng Anh +10 · Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' +5 · Mở rương báu +3 · Cúp tuần +20<br>' +
+      PETS[kid].map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details>';
+  }
+
   var TODAY_LBL = { en: ['📘', 'Học đủ bài tiếng Anh', 5], sub: ['🧮', 'Đạt mục tiêu môn chính', 4], acc: ['🎯', 'Chính xác từ 90%', 2], chest: ['🎁', 'Đủ điều kiện rương báu', 2], more: ['💪', 'Học vượt gấp đôi mục tiêu', 2] };
-  function leagueHtml(focus, withHist) {
+  function leagueHtml(focus, withHist, mode) {
     if (!D) return ''; css();
     var t = today(), wk = monday(t), left = 6 - Math.round((parse(t) - parse(wk)) / 864e5);
     var s = {}; KIDS.forEach(function (k) { s[k] = weekPts(k, wk); });
@@ -206,8 +225,14 @@
       return '<div class="lg-row"><div style="min-width:0">' + plate(k) + '</div>' +
         '<div class="lg-bar"><i class="' + k + '" style="width:' + Math.min(100, s[k] / 105 * 100) + '%"></i></div><div class="lg-pt">' + (lead ? '<span title="' + (s.anhphong === s.thanhnghi ? 'Ngang điểm' : 'Đang dẫn') + '">👑</span> ' : '') + s[k] + ' <small>/105</small></div></div>';
     }).join('');
-    var h = '<div class="td-card"><h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3>' + rows +
-      '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️ khiên</b></div>';
+    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3>' + rows;
+    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️ khiên</b></div>';
+    if (mode === 'mini') return '<div class="td-card lg-mini">' + head + meta + '</div>';
+    var h;
+    if (mode === 'compact') {
+      var tp = focus ? dayPts(focus, t).t : 0;
+      h = '<details class="td-card lg-c"><summary>' + head + '<div class="lg-sum"><span>' + (focus ? 'Hôm nay con được <b>' + tp + '/15</b> điểm' : '') + '</span><span class="lg-more">Xem chi tiết ▾</span></div></summary>' + meta;
+    } else h = '<div class="td-card">' + head + meta;
     if (focus) {
       var p = dayPts(focus, t);
       h += '<div class="lg-today">' + Object.keys(TODAY_LBL).map(function (key) {
@@ -218,7 +243,7 @@
           if (key === 'chest') hint = ' (' + Math.min(p.ch.nw, NEWW) + '/' + NEWW + ' từ · ' + (p.ch.rv ? 'ôn ✓' : 'chưa ôn') + ' · ' + Math.min(p.ch.pr, 2) + '/2 luyện · ' + Math.min(p.ch.ls, 1) + '/1 nói)';
         }
         return '<span class="' + (got ? 'ok' : '') + '">' + (got ? '✅ ' : '') + L[0] + ' ' + L[1] + ' <b>' + (got ? '+' + got : '+' + L[2]) + '</b>' + hint + '</span>';
-      }).join('') + '</div><div class="lg-meta">Hôm nay con đã được <b>' + p.t + '/15</b> điểm.</div>';
+      }).join('') + '</div>' + (mode === 'compact' ? '' : '<div class="lg-meta">Hôm nay con đã được <b>' + p.t + '/15</b> điểm.</div>');
     }
     var lw = addD(wk, -7), L = D.lg[lw];
     if (L) {
@@ -238,7 +263,7 @@
       '<li>Mỗi con được chấm theo <b>mục tiêu riêng của mình</b>, nên anh và em có cơ hội thắng như nhau.</li>' +
       '<li>Mỗi ngày tối đa <b>15 điểm</b>: 📘 học đủ bài tiếng Anh +5 · 🧮 đạt mục tiêu ' + 'Toán/Tiếng Việt hoặc Toán/Ngữ văn (' + D.goal.anhphong + ' / ' + D.goal.thanhnghi + ' câu) +4 · 🎯 đúng từ 90% (từ 80%: +1) +2 · 🎁 đủ điều kiện rương báu +2 · 💪 làm gấp đôi mục tiêu môn chính +2.</li>' +
       '<li>Tuần chốt hết Chủ nhật. Con nhiều điểm hơn (ít nhất ' + WIN_MIN + ' điểm) nhận <b>cúp vô địch +' + CUP + ' sao</b>. Bằng điểm thì cả hai cùng nhận.</li>' +
-      '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥 cho con.</li></ul></details></div>';
+      '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥 cho con.</li></ul></details>' + (mode === 'compact' ? '</details>' : '</div>');
     return h;
   }
 
@@ -270,7 +295,7 @@
 
   window.THIDUA = {
     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
-    pet: pet, petHtml: petHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
+    pet: pet, petHtml: petHtml, petScene: petScene, petLine: petLine, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
     RULE: { START: START, CUP: CUP, WIN_MIN: WIN_MIN, SHIELD_MIN: SHIELD_MIN, SHIELD_MAX: SHIELD_MAX, NEWW: NEWW }
   };

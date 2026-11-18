@@ -11,7 +11,7 @@
 html,body{margin:0;background:var(--soft);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
 body{min-height:100vh;transition:background .2s}
 button{font:inherit;color:inherit;cursor:pointer}
-.wrap{max-width:760px;margin:0 auto;padding:18px 16px 40px}
+.wrap{max-width:900px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-right)) 40px max(16px,env(safe-area-inset-left))}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .brand{font-size:20px;font-weight:800;letter-spacing:-.01em}
 .brand small{display:block;font-size:13px;font-weight:500;color:var(--ink2)}
@@ -89,6 +89,23 @@ h2{font-size:19px;margin:24px 2px 10px}
 .recent .ln{margin:2px 0;line-height:1.4}.recent .mu{color:var(--ink2)}.recent .no{color:#94A3B8;font-style:italic}
 @media (max-width:520px){.recent table{font-size:13px}.recent th:first-child,.recent td:first-child{width:56px}}
 .hide{display:none!important}
+/* ===== Bố cục mới, tối ưu cho iPad ===== */
+.hero{align-items:center}.hero .av{width:150px;height:150px;flex:none;display:grid;place-items:center}.hero .av .pet-scene{box-shadow:0 0 0 4px rgba(255,255,255,.55);width:100%!important;height:100%!important}
+.hinfo{flex:1;min-width:0}.hiS{font-size:16px;font-weight:700;opacity:.95;margin-bottom:6px}.hiS span{font-weight:600;opacity:.9}
+.hrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px}.hrow .bal{margin-top:0}.hrow .today{margin-top:0}
+.tiles.learn .tile{min-height:190px;padding:22px 22px 20px}.tiles.learn .ic{font-size:54px}.tiles.learn .t{font-size:24px}.tiles.learn .s{font-size:15.5px}
+.tiles.learn .go{font-size:18px;padding:12px 22px;border-radius:14px}
+.mini2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.mini2 button{display:flex;align-items:center;gap:12px;min-height:76px;padding:12px 18px;border-radius:20px;border:2px solid var(--line);background:#fff;text-align:left;box-shadow:0 4px 0 var(--line)}
+.mini2 button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.mini2 .mi{font-size:36px;line-height:1}.mini2 b{display:block;font-size:19px}.mini2 small{display:block;color:var(--ink2);font-size:14px;margin-top:2px}
+.mini2 .star{background:#FFFBEB;border-color:#FCD34D;box-shadow:0 4px 0 #FCD34D}
+.setList{background:#fff;border:2px solid var(--line);border-radius:20px;overflow:hidden}
+.setList button{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:12px 18px;border:0;border-top:1px solid var(--line);background:#fff;text-align:left}
+.setList button:first-child{border-top:0}.setList button:active{background:#F8FAFC}
+.setList .si{font-size:30px;width:40px;text-align:center}.setList b{display:block;font-size:17px}.setList small{display:block;color:var(--ink2);font-size:14px}.setList .ar{margin-left:auto;font-size:22px;color:#94A3B8}
+.kidsum .ks{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+@media (max-width:640px){.hero{flex-direction:column;text-align:center}.hero .av{width:120px;height:120px}.hrow{justify-content:center}.mini2{grid-template-columns:1fr}.tiles.learn .tile{min-height:0}}
 @media (max-width:520px){.tiles{grid-template-columns:1fr}.tile{min-height:0}.whoBtn .av{font-size:58px}.whoBtn .nm{font-size:22px}.hero .av{font-size:52px}.hero h1{font-size:23px}}
 @media (min-width:700px){.wrap{padding-top:28px}.tile .t{font-size:22px}}
 </style>
@@ -120,7 +137,6 @@ h2{font-size:19px;margin:24px 2px 10px}
     <p>Bấm vào tên của con nhé</p>
     <div class="whoGrid" id="pWhoGrid"></div>
     <div id="pLeagueW"></div>
-    <div class="recent" id="pRecent"></div>
   </section>
 
   <section id="pPin" class="hide"><div class="pinBox"><div style="font-size:46px">👨‍👩‍👧</div><h2 style="margin:6px 0">Góc bố mẹ</h2><div style="color:var(--ink2);font-size:15px">Nhập mã bố mẹ để vào</div>
@@ -130,32 +146,30 @@ h2{font-size:19px;margin:24px 2px 10px}
   <section id="pPar" class="hide">
     <div style="display:flex;align-items:center;gap:12px;margin:6px 0 14px"><button class="ghost" id="pParBack" aria-label="Quay lại">⬅</button><h1 style="font-size:26px;margin:0">👨‍👩‍👧 Góc bố mẹ</h1></div>
     <div class="kidsum" id="pParSum"></div>
-    <div id="pParLeague"></div>
-    <h2>Sao thưởng</h2>
+    <h2>⭐ Sao thưởng</h2>
     <div class="tiles" id="pParStar"></div>
-    <h2>Thiết lập các ứng dụng</h2>
-    <div class="tiles" id="pParSet"></div>
+    <div id="pParLeague"></div>
+    <div class="recent" id="pRecent"></div>
+    <h2>⚙️ Cài đặt các ứng dụng</h2>
+    <div class="setList" id="pParSet"></div>
     <div class="foot"><button class="ghost" id="pParOut">🚪 Thoát Góc bố mẹ</button><span>Các con không thấy các mục chấm sao, phạt sao và cài đặt.</span></div>
   </section>
 
   <section id="pKid" class="hide">
     <div class="hero">
       <div class="av" id="pAv"></div>
-      <div style="flex:1;min-width:0">
+      <div class="hinfo">
+        <div class="hiS">Chào con! 👋 <span id="pGr"></span></div>
         <h1 id="pHi"></h1>
-        <div class="gr" id="pGr"></div>
-        <div class="bal" id="pBal"></div>
-        <div class="today" id="pToday"></div>
+        <div id="pPetLine"></div>
+        <div class="hrow"><div class="bal" id="pBal"></div><div class="today" id="pToday"></div></div>
       </div>
     </div>
 
-    <div id="pPet"></div>
-    <h2>Hôm nay con học gì?</h2>
-    <div class="tiles" id="pTiles"></div>
+    <h2>📚 Hôm nay con học gì?</h2>
+    <div class="tiles learn" id="pTiles"></div>
+    <div class="mini2" id="pMini"></div>
     <div id="pLeague"></div>
-
-    <h2>⭐ Cách nhận sao thưởng</h2>
-    <details class="rules" id="pRules"><summary>Xem cách nhận sao ở từng môn</summary><div id="pRulesBody"></div></details>
 
     <div class="foot">
       <button class="ghost" id="pSwitch">⬅ Quay lại · Đổi bạn khác</button>
@@ -190,7 +204,8 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
     showLoading();location.reload();
     setTimeout(restorePortal,2500); // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
   },
-  homeBtnHtml:function(style){var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';
+  homeBtnHtml:function(style){if(document.getElementById('pbar'))return ''; // đã có thanh trên cùng chung
+    var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';
     // Lớp 2 / Lớp 6: thêm tên bé kèm danh hiệu ngay cạnh nút về trang chính (Từ vựng tự hiện ở nút tên bé)
     if(P.kid&&!P.parent&&P.app&&APPS[P.app]&&APPS[P.app].file!=='tuvung.html'&&window.BANK&&BANK.nameplate)h+='<span class="portal-np" style="display:inline-flex;align-items:center;margin-right:10px;vertical-align:middle;max-width:46vw">'+BANK.nameplate(P.kid,'S',null,{av:true})+'</span>';
     return h}
@@ -212,6 +227,7 @@ async function mount(app,kid,mode){
   var sty=document.createElement('style');
   sty.textContent='@media (max-width:480px){.top .brand .portal-np{display:none!important}}.portal-home{font-size:20px;line-height:1;width:44px;height:44px;border-radius:14px;border:2px solid rgba(0,0,0,.12);background:#fff;cursor:pointer;display:inline-grid;place-items:center;padding:0;flex:none;vertical-align:middle;box-shadow:0 2px 0 rgba(0,0,0,.08)}';
   document.head.appendChild(sty);
+  var bsty=document.createElement('style');bsty.textContent=BAR_CSS;document.head.appendChild(bsty);
   [].slice.call(doc.body.attributes).forEach(function(a){document.body.setAttribute(a.name,a.value)});
   document.body.innerHTML='';
   var scripts=[];
@@ -220,6 +236,8 @@ async function mount(app,kid,mode){
     var c=document.importNode(n,true);
     if(c.querySelectorAll)c.querySelectorAll('script').forEach(function(s){scripts.push(s);s.remove()});
     document.body.appendChild(c)});
+  var bar=document.createElement('div');bar.id='pbar';document.body.insertBefore(bar,document.body.firstChild);
+  document.documentElement.classList.add('pbar');renderBar();
   // các ứng dụng chờ sự kiện "trang đã tải" -> chạy ngay vì trang đã tải xong
   var dAdd=document.addEventListener.bind(document),wAdd=window.addEventListener.bind(window);
   document.addEventListener=function(t,f,o){if(t==='DOMContentLoaded'){setTimeout(function(){f.call(document,new Event(t))},0);return}return dAdd(t,f,o)};
@@ -228,6 +246,36 @@ async function mount(app,kid,mode){
   setTimeout(function(){document.addEventListener=dAdd;window.addEventListener=wAdd},50);
   window.scrollTo(0,0);
 }
+
+/* ---------- Thanh trên cùng chung cho cả ba ứng dụng ---------- */
+var BAR_CSS='#pbar{position:sticky;top:0;z-index:900;display:flex;align-items:center;gap:12px;min-height:68px;padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));'+
+  'background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:3px solid var(--pbk,#CBD5E1);box-shadow:0 2px 12px rgba(15,23,42,.07);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#1E293B;line-height:1.2;box-sizing:border-box}'+
+  '#pbar *{box-sizing:border-box}#pbar .pb-home{display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 16px 0 12px;border-radius:15px;border:2px solid #E2E8F0;background:#fff;font-size:24px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 #E2E8F0;flex:none;color:#1E293B;font-family:inherit}'+
+  '#pbar .pb-home:active{transform:translateY(2px);box-shadow:0 1px 0 #E2E8F0}#pbar .pb-home span{font-size:16px}'+
+  '#pbar .pb-who{flex:none;min-width:0;max-width:34%}#pbar .pb-par{font-weight:800;font-size:16px;background:#EEF2FF;color:#4338CA;border-radius:99px;padding:6px 12px;white-space:nowrap}'+
+  '#pbar .pb-title{flex:1;min-width:0;font-size:19px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}'+
+  '#pbar .pb-star{flex:none;font-weight:800;font-size:19px;color:#B45309;background:#FFFBEB;border:2px solid #FCD34D;border-radius:99px;padding:6px 14px;white-space:nowrap}#pbar .pb-star.neg{color:#B91C1C}'+
+  '#pbar .pb-sync{flex:none;width:12px;height:12px;border-radius:50%;background:#22C55E}#pbar .pb-sync.wait{background:#F59E0B}'+
+  '#pbar .pb-sync.err{width:auto;height:auto;background:#FEF2F2;color:#B91C1C;border-radius:99px;padding:5px 10px;font-size:13px;font-weight:700}'+
+  '@media (max-width:700px){#pbar .pb-home span{display:none}#pbar .pb-title{font-size:16px}}@media (max-width:520px){#pbar .pb-title{display:none}#pbar .pb-who{max-width:none;flex:1}}'+
+  /* ẩn phần trùng lặp trong từng ứng dụng */
+  'html.pbar #portalHome,html.pbar #appTitle,html.pbar body:not(.parent) #kidChip{display:none!important}'+
+  'html.pbar #syncBadge.ok,html.pbar #syncBadge.saving,html.pbar #syncBadge.loading{display:none!important}'+
+  'html.pbar .top .pill,html.pbar .top .sc-on,html.pbar .top .sc-wait{display:none!important}'+
+  'html.pbar .topbar .brand,html.pbar .topbar .starpill,html.pbar .topbar .syncpill.ok,html.pbar .topbar .syncpill.saving,html.pbar .topbar .syncpill.connecting{display:none!important}'+
+  'html.pbar .topbar{padding-top:8px;padding-bottom:0;min-height:0}';
+function barTitle(){var m=P.mode,a=P.app;
+  if(m==='parent-sao')return['⭐','Thưởng · Phạt · Tiêu sao'];if(m==='parent-report')return['📊','Báo cáo học từ vựng'];if(m==='parent-set')return['📘','Cài đặt Học từ vựng'];
+  if(m==='parent')return a==='lop2'?['🧮','Cài đặt Lớp 2']:['📐','Cài đặt Lớp 6'];var A=APPS[a]||{ic:'',t:''};return[A.ic,A.t]}
+function renderBar(){var b=$('pbar');if(!b)return;var t=barTitle(),st=BANK.state,k=P.kid&&kidById(P.kid);
+  b.style.setProperty('--pbk',P.parent?'#818CF8':k?k.color:'#CBD5E1');
+  var tot=P.parent||!P.kid?null:showTotal(P.kid);
+  b.innerHTML='<button class="pb-home" type="button" aria-label="Về trang chính">🏠<span>Trang chính</span></button>'+
+    '<div class="pb-who">'+(P.parent?'<span class="pb-par">👨‍👩‍👧 Góc bố mẹ</span>':BANK.nameplate(P.kid,'S',null,{av:true}))+'</div>'+
+    '<div class="pb-title">'+t[0]+' '+esc(t[1])+'</div>'+
+    (tot==null?'':'<div class="pb-star'+(tot<0?' neg':'')+'" title="Sao thưởng chung mọi môn">⭐ '+tot+'</div>')+
+    (st==='ok'?'<span class="pb-sync" title="Đã đồng bộ"></span>':st==='loading'?'<span class="pb-sync wait" title="Đang kết nối"></span>':'<span class="pb-sync err">⚠️ '+(st==='off'?'Chỉ trên máy này':'Chưa đồng bộ')+'</span>');
+  b.querySelector('.pb-home').onclick=function(){P.home()}}
 
 /* ---------- Trang chính ---------- */
 var CUR=null;
@@ -239,8 +287,7 @@ function renderWho(){
   $('pWhoGrid').insertAdjacentHTML('beforeend','<button class="parentBtn" id="pParBtn"><span class="av">👨‍👩‍👧</span><span><b>Góc bố mẹ</b><small>Theo dõi và quản lý việc học của các con</small><span class="chips"><i>⭐ Thưởng · phạt · tiêu sao</i><i>📊 Báo cáo</i><i>⚙️ Cài đặt</i></span></span><span class="lock">🔒 Vào</span></button>');
   $('pWhoGrid').querySelectorAll('.whoBtn').forEach(function(b){b.onclick=function(){openKid(b.dataset.k)}});
   $('pParBtn').onclick=openPin;
-  renderRecent();
-  var T=window.THIDUA;if(T){if(T.data())$('pLeagueW').innerHTML=T.leagueHtml(null);T.load()}
+  var T=window.THIDUA;if(T){if(T.data())$('pLeagueW').innerHTML=T.leagueHtml(null,false,'mini');T.load()}
 }
 function petE(k){var T=window.THIDUA,p=T&&T.pet(k.id);return p?p.e:k.av}
 function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
@@ -252,22 +299,21 @@ function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
   renderKid();window.scrollTo(0,0);
 }
 function renderKid(){
-  if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR);
-  $('pAv').textContent=petE(k);var T=window.THIDUA;
-  if(T&&T.data()){$('pPet').innerHTML=T.petHtml(CUR);$('pLeague').innerHTML=T.leagueHtml(CUR);T.celebrate(CUR)}if(T)T.load();$('pHi').innerHTML='<span class="hiS">Chào con! 👋</span>'+BANK.nameplate(CUR,'L');$('pGr').textContent=k.grade+' · Cố lên nhé, mỗi ngày một chút!';
+  if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR),T=window.THIDUA,has=T&&T.data();
+  $('pAv').innerHTML=has?T.petScene(CUR,150):'<span style="font-size:80px">'+k.av+'</span>';
+  $('pHi').innerHTML=BANK.nameplate(CUR,'L');$('pGr').textContent='· '+k.grade;
+  $('pPetLine').innerHTML=has?T.petLine(CUR):'';
   $('pBal').className='bal'+(tot<0?' neg':'');$('pBal').innerHTML='⭐ '+tot+' <small>sao thưởng</small>';
   var parts=Object.keys(td).filter(function(s){return td[s]>0}).map(function(s){return '<span>'+BANK.SRC[s].e+' '+BANK.SRC[s].n+' +'+td[s]+'</span>'});
   $('pToday').innerHTML=parts.length?'Hôm nay: '+parts.join(''):'Hôm nay con chưa nhận sao nào. Bắt đầu thôi!';
   var sub=APPS[k.app];
-  var tiles=[
-    ['tuvung',APPS.tuvung,''],
-    [k.app,sub,''],
-    ['sao',APPS.sao,'star'],
-    ['huyhieu',APPS.huyhieu,'']
-  ];
-  $('pTiles').innerHTML=tiles.map(function(x){return '<button class="tile '+x[2]+'" data-app="'+x[0]+'"><span class="ic">'+x[1].ic+'</span><span class="t">'+x[1].t+'</span><span class="s">'+x[1].s+'</span><span class="go">Mở →</span></button>'}).join('');
-  $('pTiles').querySelectorAll('.tile').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
-  $('pRulesBody').innerHTML='<div class="grp"><div style="font-weight:700;margin-bottom:4px">📘 Từ vựng tiếng Anh</div>Học từ mới, ôn tập, luyện thêm, thuộc chắc theo khối… (xem chi tiết trong mục Sao thưởng)</div><div class="grp">'+BANK.rulesHtml(CUR)+'</div>';
+  $('pTiles').innerHTML=[['tuvung',APPS.tuvung],[k.app,sub]].map(function(x){return '<button class="tile" data-app="'+x[0]+'"><span class="ic">'+x[1].ic+'</span><span class="t">'+x[1].t+'</span><span class="s">'+x[1].s+'</span><span class="go">Vào học →</span></button>'}).join('');
+  var ti=BANK.title(CUR);
+  $('pMini').innerHTML='<button class="star" data-app="sao"><span class="mi">⭐</span><span><b>Sao thưởng</b><small>Xem sao của mọi môn, đổi quà</small></span></button>'+
+    '<button data-app="huyhieu"><span class="mi">🏅</span><span><b>Huy hiệu & danh hiệu</b><small>'+(ti&&ti.rank?'Cấp '+ti.rank+'/7 · '+(ti.pts||0)+' điểm huy hiệu':'Bộ sưu tập · trang trí tên')+'</small></span></button>';
+  document.querySelectorAll('#pTiles .tile,#pMini button').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
+  $('pLeague').innerHTML=has?T.leagueHtml(CUR,false,'compact'):'';
+  if(has)T.celebrate(CUR);if(T)T.load();
 }
 function go(app){
   // mở thẳng ứng dụng trong trang (nhanh hơn tải lại); về trang chính thì tải lại trang cho sạch
@@ -353,13 +399,15 @@ function renderParent(){if(!PARENT)return;
     var ti=BANK.title(k.id);
     return '<div class="ks '+k.id+'"><div class="n">'+BANK.nameplate(k.id,'M',null,{av:true})+'</div>'+(ti&&ti.rank?'<div class="t" style="margin-top:6px">🏆 Cấp '+ti.rank+'/7 '+(ti.re||'')+' '+esc(ti.rn||'')+' · '+(ti.pts||0)+' điểm huy hiệu'+(ti.spe&&ti.spe.length?' · Đặc biệt: '+ti.spe.join(''):'')+'</div>':'')+'<div class="b">⭐ '+showTotal(k.id)+'</div><div class="t">Hôm nay: '+(t||'chưa nhận sao')+'</div></div>'}).join('');
   var TD=window.THIDUA;if(TD){if(TD.data())$('pParLeague').innerHTML=TD.leagueHtml(null,true);TD.load()}
+  renderRecent();
   var T=function(app,ic,t,sub,cls){return '<button class="tile '+(cls||'par')+'" data-app="'+app+'"><span class="ic">'+ic+'</span><span class="t">'+t+'</span><span class="s">'+sub+'</span><span class="go">Mở →</span></button>'};
   $('pParStar').innerHTML=T('p-sao','⭐','Thưởng · Phạt · Tiêu sao','Chấm sao việc nhà, việc tốt; phạt; đổi quà; hủy dòng sao nhầm. Xem lịch sử sao của cả hai con.','star')+
     T('p-report','📊','Báo cáo học từ vựng','Báo cáo tuần, tiến độ thuộc chắc của từng con.');
-  $('pParSet').innerHTML=T('p-tuvung','📘','Cài đặt Học từ vựng','Số từ mới, số từ ôn mỗi ngày, giọng đọc, micro, mã bố mẹ, sao lưu.')+
-    T('p-lop2','🧮','Cài đặt Lớp 2 (Anh Phong)','Số câu mỗi lượt, tự đọc đề, kết quả học và kiểm tra.')+
-    T('p-lop6','📐','Cài đặt Lớp 6 (Thanh Nghị)','Mục tiêu mỗi ngày, mã bố mẹ, đồng bộ, sao lưu, kết quả học.');
-  document.querySelectorAll('#pPar .tile').forEach(function(b){b.onclick=function(){goParent(b.dataset.app)}});
+  var R=function(app,ic,t,sub){return '<button data-app="'+app+'"><span class="si">'+ic+'</span><span><b>'+t+'</b><small>'+sub+'</small></span><span class="ar">›</span></button>'};
+  $('pParSet').innerHTML=R('p-tuvung','📘','Học từ vựng','Số từ mới, số từ ôn mỗi ngày, giọng đọc, micro, mã bố mẹ, sao lưu')+
+    R('p-lop2','🧮','Lớp 2 · Anh Phong','Số câu mỗi lượt, tự đọc đề, kết quả học và kiểm tra')+
+    R('p-lop6','📐','Lớp 6 · Thanh Nghị','Mục tiêu mỗi ngày, mã bố mẹ, đồng bộ, sao lưu, kết quả học');
+  document.querySelectorAll('#pPar .tile,#pParSet button').forEach(function(b){b.onclick=function(){goParent(b.dataset.app)}});
 }
 function goParent(app){pushNav({p:'app',app:app});if(!P.pin){try{P.pin=sessionStorage.getItem('portal_pin')}catch(e){}}P.pin=P.pin||'5789';var m={'p-sao':['tuvung','parent-sao'],'p-report':['tuvung','parent-report'],'p-tuvung':['tuvung','parent-set'],'p-lop2':['lop2','parent'],'p-lop6':['lop6','parent']}[app];if(!m)return;
   var kid=app==='p-lop2'?'anhphong':app==='p-lop6'?'thanhnghi':(lsGet('portal_last_kid')||'anhphong');
@@ -368,7 +416,7 @@ function restorePortal(){
   document.querySelectorAll('head style,head link[rel="stylesheet"]').forEach(function(e){e.remove()});
   document.head.appendChild(SHELL.style.cloneNode(true));
   [].slice.call(document.body.attributes).forEach(function(a){document.body.removeAttribute(a.name)});
-  document.body.innerHTML=SHELL.body;P.app=null;P.mode=null;document.title='Góc học tập';
+  document.documentElement.classList.remove('pbar');document.body.innerHTML=SHELL.body;P.app=null;P.mode=null;document.title='Góc học tập';
   bindPortal();renderSync();if(P.parent){P.parent=false;openParent()}else if(P.kid)openKid(P.kid);else renderWho();window.scrollTo(0,0);
 }
 function bindPortal(){$('pPinOk').onclick=tryPin;$('pPinIn').onkeydown=function(e){if(e.key==='Enter')tryPin()};$('pPinCancel').onclick=function(){show('pWho');renderWho()};
@@ -378,7 +426,7 @@ function bindPortal(){$('pPinOk').onclick=tryPin;$('pPinIn').onkeydown=function(
 bindPortal();P._restore=restorePortal;
 function renderSync(){var s=BANK.state;if(s==='off'&&window.__fbError){$('pSync').textContent='⚠️ Lỗi kết nối dữ liệu';$('pSync').title=String(window.__fbError);return}$('pSync')&&($('pSync').textContent=s==='ok'?'☁️ Đã đồng bộ':s==='off'?'💾 Chỉ trên máy này':s==='err'?'⚠️ Chưa đồng bộ':'☁️ Đang kết nối…')}
 if(window.THIDUA)THIDUA.onUpdate(function(){if(P.app)return;if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
-BANK.onChange(function(){if(P.app)return;renderSync();if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
+BANK.onChange(function(){if(P.app){renderBar();return}renderSync();if(PARENT)renderParent();else if(CUR)renderKid();else if(!$('pWho').classList.contains('hide'))renderWho()});
 
 /* ---------- Khởi động ---------- */
 if(!(window.WEB_FAMILY&&WEB_FAMILY.get())){
