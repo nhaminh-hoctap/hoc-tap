@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Nuôi thú</title>
+<style>
+/* ===== Nuôi thú: giao diện ===== */
+#nt{--ink:#1E293B;--mut:#64748B;--line:#E2E8F0;max-width:980px;margin:0 auto;padding:14px max(14px,env(safe-area-inset-left)) 40px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
+#nt *{box-sizing:border-box}
+#nt button{font-family:inherit;touch-action:manipulation;cursor:pointer}
+#nt .hide{display:none!important}
+#nt .card{background:#fff;border:2px solid var(--line);border-radius:24px;padding:16px;margin-top:14px;box-shadow:0 4px 0 var(--line)}
+#nt h2{font-size:21px;margin:0 0 10px}
+#nt .mu{color:var(--mut);font-size:15px}
+.nt-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:stretch}
+.nt-scene{position:relative;min-height:330px;border-radius:26px;overflow:hidden;border:3px solid rgba(0,0,0,.08);display:grid;place-items:center;user-select:none;-webkit-user-select:none}
+.nt-scene .pe{position:relative;line-height:1;transition:transform .2s;filter:drop-shadow(0 8px 6px rgba(0,0,0,.18));cursor:pointer}
+.nt-scene .pe.bob{animation:ntBob 2.4s ease-in-out infinite}
+.nt-scene .pe.sad{filter:grayscale(.35) drop-shadow(0 8px 6px rgba(0,0,0,.18))}
+.nt-scene .hat{position:absolute;left:50%;top:-.42em;transform:translateX(-50%);font-size:.42em}
+.nt-scene .toy{position:absolute;bottom:14px;right:18px;font-size:44px}
+.nt-scene .bgi{position:absolute;top:12px;left:16px;font-size:38px;opacity:.9}
+.nt-scene .acc{position:absolute;top:18px;right:20px;font-size:30px}
+.nt-bub{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#fff;border-radius:18px;padding:8px 14px;font-weight:800;font-size:16px;box-shadow:0 3px 0 rgba(0,0,0,.12);max-width:86%;text-align:center;opacity:0;transition:opacity .25s;pointer-events:none}
+.nt-bub.on{opacity:1}
+.nt-fx{position:absolute;font-size:30px;pointer-events:none;animation:ntUp 1.2s ease-out forwards}
+.nt-fly{position:absolute;font-size:46px;pointer-events:none;transition:all .7s cubic-bezier(.3,.7,.4,1)}
+@keyframes ntBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ntUp{0%{opacity:1;transform:translateY(0) scale(.8)}100%{opacity:0;transform:translateY(-110px) scale(1.3)}}
+@keyframes ntJump{0%,100%{transform:translateY(0)}30%{transform:translateY(-34px) scale(1.08)}60%{transform:translateY(0) scale(.96)}}
+.nt-info{display:flex;flex-direction:column;gap:10px}
+.nt-name{font-size:24px;font-weight:900}
+.nt-lv{font-weight:700;color:var(--mut);font-size:15px}
+.nt-bar{display:grid;grid-template-columns:120px 1fr 44px;align-items:center;gap:8px;font-weight:800;font-size:16px}
+.nt-bar .tr{height:16px;border-radius:99px;background:#F1F5F9;overflow:hidden;border:2px solid var(--line)}
+.nt-bar .tr i{display:block;height:100%;border-radius:99px;transition:width .5s}
+.nt-acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:4px}
+.nt-acts button,.nt-btn{min-height:60px;border-radius:18px;border:2px solid var(--line);background:#fff;font-weight:800;font-size:17px;box-shadow:0 4px 0 var(--line);display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 10px;color:var(--ink)}
+.nt-acts button:active,.nt-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.nt-acts button[disabled],.nt-btn[disabled]{opacity:.45}
+.nt-acts .eat{background:#FFF7ED;border-color:#FDBA74;box-shadow:0 4px 0 #FDBA74}
+.nt-acts .sp{background:#FDF2F8;border-color:#F9A8D4;box-shadow:0 4px 0 #F9A8D4}
+.nt-acts .play{background:#EFF6FF;border-color:#93C5FD;box-shadow:0 4px 0 #93C5FD}
+.nt-acts .deco{background:#F5F3FF;border-color:#C4B5FD;box-shadow:0 4px 0 #C4B5FD}
+.nt-acts small{font-weight:700;color:var(--mut);font-size:13px}
+.nt-grow{background:#ECFDF5;border:2px solid #86EFAC;border-radius:16px;padding:10px 12px;font-size:15px;line-height:1.45}
+.nt-food{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.nt-src{border:2px solid var(--line);border-radius:18px;padding:12px;font-size:15px;line-height:1.45}
+.nt-src b{font-size:16px}
+.nt-src .nt-btn{margin-top:8px;width:100%;min-height:50px;font-size:16px}
+.nt-src.ok{background:#F0FDF4;border-color:#86EFAC}
+.nt-ch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.nt-ch button{min-height:170px;border-radius:24px;border:3px solid var(--line);background:#fff;box-shadow:0 5px 0 var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:900;font-size:20px;color:var(--ink)}
+.nt-ch button .eg{font-size:64px;line-height:1}
+.nt-ch button small{font-weight:700;color:var(--mut);font-size:14px}
+.nt-ch button.cur{border-color:#F59E0B;box-shadow:0 5px 0 #F59E0B}
+.nt-row{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 14px}
+.nt-row button{width:86px;min-height:86px;border-radius:18px;border:3px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:34px;box-shadow:0 3px 0 var(--line)}
+.nt-row button small{font-size:11.5px;font-weight:800;color:var(--mut)}
+.nt-row button.on{border-color:#8B5CF6;box-shadow:0 3px 0 #8B5CF6;background:#F5F3FF}
+.nt-row button.lock{opacity:.5}
+.nt-game{position:relative;height:min(62vh,520px);border-radius:24px;overflow:hidden;border:3px solid rgba(0,0,0,.08);touch-action:none;user-select:none;-webkit-user-select:none}
+.nt-ghead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;font-weight:900;font-size:19px}
+.nt-ghead .nt-btn{min-height:50px;padding:6px 16px}
+.nt-star{position:absolute;font-size:38px;line-height:1;pointer-events:none}
+.nt-catch{position:absolute;bottom:10px;font-size:64px;line-height:1;transform:translateX(-50%);pointer-events:none}
+.nt-boxes{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.nt-box{position:absolute;width:110px;height:110px;border-radius:22px;border:none;background:transparent;font-size:86px;line-height:1;transition:left .32s ease,transform .2s}
+.nt-peek{position:absolute;font-size:64px;transition:opacity .3s,transform .3s;pointer-events:none}
+.nt-msg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;border-radius:24px;padding:20px 24px;text-align:center;box-shadow:0 6px 0 rgba(0,0,0,.15);font-weight:800;font-size:20px;min-width:260px;max-width:90%}
+.nt-msg .nt-btn{margin:12px auto 0;min-width:180px}
+.nt-dlg{position:fixed;inset:0;background:rgba(15,23,42,.45);display:grid;place-items:center;z-index:950;padding:20px}
+.nt-dlg>div{background:#fff;border-radius:24px;padding:22px;max-width:420px;width:100%;text-align:center;font-size:18px;font-weight:700;line-height:1.45}
+.nt-dlg .big{font-size:56px}
+.nt-dlg .row2{display:flex;gap:10px;margin-top:14px}.nt-dlg .row2 .nt-btn{flex:1}
+.nt-dlg .ok{background:#22C55E;border-color:#16A34A;color:#fff;box-shadow:0 4px 0 #15803D}
+@media (max-width:760px){.nt-top{grid-template-columns:1fr}.nt-scene{min-height:270px}.nt-food{grid-template-columns:1fr}}
+@media (max-width:420px){.nt-bar{grid-template-columns:96px 1fr 40px;font-size:14px}.nt-acts button{font-size:15px}.nt-ch button{min-height:140px}}
+@media (prefers-reduced-motion:reduce){.nt-scene .pe.bob{animation:none}}
+</style>
+</head>
+<body>
+<div id="nt">
+  <!-- chọn trứng -->
+  <section id="ntChoose" class="hide">
+    <div class="card"><h2>🥚 Con chọn một quả trứng để ấp nhé!</h2>
+      <p class="mu" style="margin:0 0 12px">Trứng lớn lên nhờ <b>năng lượng ⚡ từ việc học</b>. Năng lượng con đã có vẫn giữ nguyên. Chọn rồi thì không đổi được nữa, con chọn thật kĩ nhé!</p>
+      <div class="nt-ch" id="ntChList"></div></div>
+  </section>
+  <!-- chuồng chính -->
+  <section id="ntHome" class="hide">
+    <div class="nt-top">
+      <div class="nt-scene" id="ntScene"></div>
+      <div class="card nt-info" style="margin-top:0">
+        <div><div class="nt-name" id="ntName"></div><div class="nt-lv" id="ntLv"></div></div>
+        <div class="nt-bar"><span>🍖 No bụng</span><span class="tr"><i id="ntFull" style="background:#FB923C"></i></span><span id="ntFullN"></span></div>
+        <div class="nt-bar"><span>💖 Vui vẻ</span><span class="tr"><i id="ntHap" style="background:#EC4899"></i></span><span id="ntHapN"></span></div>
+        <div class="nt-acts">
+          <button class="eat" id="ntEatN">🍖 Cho ăn <small id="ntCntN"></small></button>
+          <button class="sp" id="ntEatS">🍰 Món đặc biệt <small id="ntCntS"></small></button>
+          <button class="play" id="ntPlay">🎮 Chơi cùng thú</button>
+          <button class="deco" id="ntDecoBtn">🎨 Trang trí</button>
+        </div>
+        <div class="nt-grow" id="ntGrow"></div>
+      </div>
+    </div>
+    <div class="card"><h2>🧺 Kiếm thức ăn cho thú</h2><div class="nt-food" id="ntFood"></div>
+      <p class="mu" style="margin:12px 0 0">Chạm vào thú để vuốt ve. Thú không bao giờ ốm, chỉ buồn khi đói lâu. Trò chơi này để thư giãn, không cộng sao hay điểm đấu trường.</p></div>
+  </section>
+  <!-- chọn trò chơi -->
+  <section id="ntGames" class="hide">
+    <div class="nt-ghead"><span>🎮 Chơi cùng thú</span><button class="nt-btn" data-back>⬅ Về chuồng</button></div>
+    <div class="nt-food">
+      <div class="nt-src"><b>⭐ Hứng sao</b><br>Kéo thú sang trái, sang phải để hứng sao rơi. Tránh đám mây mưa nhé!<br><span class="mu" id="ntG1Left"></span><button class="nt-btn play" id="ntG1Go">▶ Chơi</button></div>
+      <div class="nt-src"><b>🎁 Thú trốn ở đâu?</b><br>Thú trốn dưới một hộp quà, các hộp đổi chỗ. Nhìn kĩ rồi chọn đúng hộp!<br><span class="mu" id="ntG2Left"></span><button class="nt-btn play" id="ntG2Go">▶ Chơi</button></div>
+    </div>
+  </section>
+  <section id="ntG1" class="hide">
+    <div class="nt-ghead"><span>⭐ Hứng sao · <span id="ntG1S">0</span> điểm · <span id="ntG1T">25</span> giây</span><button class="nt-btn" data-back>⬅ Thôi</button></div>
+    <div class="nt-game" id="ntG1Box"></div>
+  </section>
+  <section id="ntG2" class="hide">
+    <div class="nt-ghead"><span>🎁 Thú trốn ở đâu? · Vòng <span id="ntG2R">1</span>/5 · Đúng <span id="ntG2S">0</span></span><button class="nt-btn" data-back>⬅ Thôi</button></div>
+    <div class="nt-game" id="ntG2Box"></div>
+  </section>
+  <!-- trang trí -->
+  <section id="ntDeco" class="hide">
+    <div class="nt-ghead"><span>🎨 Trang trí chỗ ở</span><button class="nt-btn" data-back>⬅ Về chuồng</button></div>
+    <div class="card" style="margin-top:0"><p class="mu" style="margin:0 0 8px">Thú lớn lên cấp mới thì mở khóa thêm đồ trang trí.</p><div id="ntDecoList"></div></div>
+  </section>
+</div>
+<script>
+/* ===== Nuôi thú (thú lớn nhờ học; thức ăn từ nhiệm vụ, huy hiệu, danh hiệu, mua bằng sao) ===== */
+(function(){
+'use strict';
+var KID=(window.PORTAL&&PORTAL.kid)||'anhphong',T=window.THIDUA,B=window.BANK;
+var $=function(id){return document.getElementById(id)};
+function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function pad(n){return String(n).padStart(2,'0')}
+function today(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function lsGet(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function nm(){var k=B&&B.kid(KID);return k?k.name:'con'}
+
+/* ---------- con số (bố mẹ chốt 19/11/2026) ---------- */
+var CFG={missionFood:3,       // xong đủ Nhiệm vụ hôm nay: 3 phần ăn thường
+  badgeFood:1,rankFood:3,     // mỗi huy hiệu: 1 món đặc biệt; mỗi lần lên cấp danh hiệu: 3 món đặc biệt
+  priceN:1,priceS:5,buyPerDay:3, // mua bằng sao: 1 sao/phần thường, 5 sao/món đặc biệt, tối đa 3 lần mua/ngày
+  eatN:25,eatS:50,              // no bụng tăng khi ăn
+  hapN:5,hapS:20,hapPat:5,patPerDay:10, // vui vẻ tăng khi ăn, khi vuốt ve (tính 10 lần/ngày)
+  fullDrop:20,hapDrop:15,       // mỗi ngày no bụng giảm 20, vui vẻ giảm 15
+  playPerDay:3};                // mỗi trò chơi 3 lượt/ngày
+/* đồ trang trí: mở khóa theo cấp linh vật (1–9) */
+var DECO={
+  bg:[{id:'',n:'Mặc định',e:'🏡',lv:1},{id:'co',n:'Đồng cỏ',e:'🌼',lv:1,c:'#DCFCE7,#86EFAC'},{id:'bien',n:'Bãi biển',e:'🏖️',lv:2,c:'#E0F2FE,#FDE68A'},{id:'rung',n:'Khu rừng',e:'🌲',lv:3,c:'#BBF7D0,#166534'},
+      {id:'tuyet',n:'Xứ tuyết',e:'❄️',lv:4,c:'#F8FAFC,#BAE6FD'},{id:'nui',n:'Núi lửa',e:'🌋',lv:5,c:'#FED7AA,#9A3412'},{id:'vutru',n:'Vũ trụ',e:'🪐',lv:6,c:'#312E81,#020617'},{id:'lau',n:'Lâu đài',e:'🏰',lv:8,c:'#FDE68A,#A855F7'}],
+  hat:[{id:'',n:'Không đội',e:'⭕',lv:1},{id:'🎀',n:'Nơ xinh',e:'🎀',lv:1},{id:'🧢',n:'Mũ lưỡi trai',e:'🧢',lv:3},{id:'🎩',n:'Mũ ảo thuật',e:'🎩',lv:4},{id:'🎓',n:'Mũ tốt nghiệp',e:'🎓',lv:5},{id:'⛑️',n:'Mũ thám hiểm',e:'⛑️',lv:6},{id:'👑',n:'Vương miện',e:'👑',lv:7}],
+  toy:[{id:'',n:'Không có',e:'⭕',lv:1},{id:'⚽',n:'Quả bóng',e:'⚽',lv:1},{id:'🧸',n:'Gấu bông',e:'🧸',lv:2},{id:'🪁',n:'Diều',e:'🪁',lv:3},{id:'🎈',n:'Bóng bay',e:'🎈',lv:4},{id:'🛸',n:'Đĩa bay',e:'🛸',lv:6},{id:'🏆',n:'Cúp vàng',e:'🏆',lv:8}]};
+var SPN={dino:'Khủng long',dragon:'Rồng',phoenix:'Phượng hoàng',unicorn:'Kỳ lân'};
+var SPD={dino:'Hiền lành, khỏe mạnh',dragon:'Bay lượn, phun lửa',phoenix:'Rực rỡ như lửa',unicorn:'Phép thuật cầu vồng'};
+
+/* ---------- lưu trữ: thu-cung/<bé> trên kho + bản trên máy ---------- */
+function blank(){return{sp:'',t:0,full:60,fAt:Date.now(),hap:60,hAt:Date.now(),eatN:0,eatS:0,claim:{},buy:{},pat:{},play:{},deco:{bg:'',hat:'',toy:''}}}
+var S=Object.assign(blank(),lsGet('thu_cung_v1',{})[KID]||{}),BADGES=null,saveT=0;
+function save(){S.t=Date.now();var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a);
+  clearTimeout(saveT);saveT=setTimeout(function(){if(B&&B.db)B.db.doc('thu-cung/'+KID).set({json:JSON.stringify(S),t:S.t}).catch(function(){})},600)}
+async function loadRemote(){
+  if(!B)return;await B.ready;if(!B.db)return;
+  try{var sn=await B.db.doc('thu-cung/'+KID).get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
+    if(r&&(+r.t||0)>(+S.t||0)){S=Object.assign(blank(),r);var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a)}}}catch(e){}
+  try{var sb=await B.db.doc('sync/vocab_badges_v1.'+KID).get();if(sb.exists){var y=sb.data()||{},s=typeof y.v==='string'?y.v:null;
+    if(!s&&y.c){s='';for(var i=0;i<y.c;i++){var p=await B.db.doc('sync/vocab_badges_v1.'+KID+'~'+i).get();s+=(p.exists?(p.data()||{}).p:'')||''}}
+    if(s)BADGES=JSON.parse(s)}}catch(e){}
+}
+
+/* ---------- tính toán ---------- */
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
+function fullNow(){return clamp(S.full-(Date.now()-S.fAt)/864e5*CFG.fullDrop)}
+function hapNow(){return clamp(S.hap-(Date.now()-S.hAt)/864e5*CFG.hapDrop)}
+function setFull(v){S.full=clamp(v);S.fAt=Date.now()}
+function setHap(v){S.hap=clamp(v);S.hAt=Date.now()}
+function badgeCount(){var b=BADGES||(lsGet('vocab_badges_v1',{})[KID])||{};return Object.keys(b).filter(function(k){return k!=='_i'}).length}
+function rank(){var t=B&&B.title&&B.title(KID);return Math.max(1,+(t&&t.rank)||1)}
+function sumBuy(k){return Object.keys(S.buy).reduce(function(a,d){return a+((S.buy[d]||{})[k]||0)},0)}
+function buysToday(){var b=S.buy[today()]||{};return (b.n||0)+(b.s?b.s:0)}
+function haveN(){return Object.keys(S.claim).length*CFG.missionFood+sumBuy('n')-S.eatN}
+function haveS(){return badgeCount()*CFG.badgeFood+(rank()-1)*CFG.rankFood+sumBuy('s')-S.eatS}
+function missionDone(){if(!T||!T.tasks)return false;var L=T.tasks(KID).filter(function(x){return !x.bonus});return L.length>0&&L.every(function(x){return x.n>=x.of})}
+function pet(){return T&&T.pet?T.pet(KID):null}
+function lvl(){var p=pet();return p?p.i+1:1}
+function spChosen(){return !!(S.sp&&SPN[S.sp])}
+
+/* ---------- vẽ ---------- */
+function show(id){['ntChoose','ntHome','ntGames','ntG1','ntG2','ntDeco'].forEach(function(x){$(x).classList.toggle('hide',x!==id)});window.scrollTo(0,0)}
+function bgOf(){var b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];var p=pet();
+  if(b&&b.c)return 'linear-gradient(160deg,'+b.c+')';
+  var sp=T&&T.SPECIES&&T.SPECIES[T.spOf(KID)];return sp?'linear-gradient(160deg,'+sp.S[p?p.i:0]+')':'#FEF3C7'}
+function sceneHtml(size){var p=pet()||{e:'🥚',i:0,acc:''},f=fullNow(),hat=S.deco.hat,toy=S.deco.toy,b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];
+  return '<div class="nt-bub" id="ntBub"></div>'+(b&&b.id?'<span class="bgi">'+b.e+'</span>':'')+(p.acc?'<span class="acc">'+p.acc+'</span>':'')+
+    '<span class="pe bob'+(f<30?' sad':'')+'" id="ntPet" style="font-size:'+(size+p.i*6)+'px">'+p.e+(hat&&p.i>=2?'<span class="hat">'+hat+'</span>':'')+'</span>'+(toy?'<span class="toy">'+toy+'</span>':'')}
+function render(){
+  if(!spChosen()){renderChoose();show('ntChoose');return}
+  var p=pet(),f=fullNow(),h=hapNow(),n=haveN(),s=haveS();
+  $('ntScene').style.background=bgOf();$('ntScene').innerHTML=sceneHtml(120);
+  $('ntName').textContent=(p?p.name:'Quả trứng')+' của '+nm();
+  $('ntLv').textContent=p?('Cấp '+(p.i+1)+'/'+p.n+' · ⚡ '+p.xp+' năng lượng'):'';
+  $('ntFull').style.width=f+'%';$('ntFullN').textContent=f;$('ntHap').style.width=h+'%';$('ntHapN').textContent=h;
+  $('ntCntN').textContent='còn '+Math.max(0,n);$('ntCntS').textContent='còn '+Math.max(0,s);
+  $('ntEatN').disabled=n<=0;$('ntEatS').disabled=s<=0;
+  $('ntGrow').innerHTML=p&&p.next?'🌱 Thú <b>lớn lên nhờ việc học</b> của con: còn <b>'+(p.next[0]-p.xp)+' ⚡</b> nữa là thành <b>'+p.next[1]+' '+esc(p.next[2])+'</b>. Thức ăn giúp thú no và vui, không làm thú lớn.':
+    p?'👑 Thú đã lớn hết cỡ. Con giỏi quá!':'';
+  var d=today(),md=missionDone(),cl=!!S.claim[d],bt=buysToday(),tot=B?B.total(KID):0;
+  $('ntFood').innerHTML=
+    '<div class="nt-src'+(cl?' ok':'')+'"><b>🎯 Xong Nhiệm vụ hôm nay</b><br>Làm đủ các việc trong Nhiệm vụ hôm nay: <b>+'+CFG.missionFood+' phần ăn</b> 🍖.'+
+      '<button class="nt-btn eat" id="ntClaim"'+(cl||!md?' disabled':'')+'>'+(cl?'✓ Đã nhận hôm nay':md?'🍖 Nhận '+CFG.missionFood+' phần ăn':'Làm xong nhiệm vụ để nhận')+'</button></div>'+
+    '<div class="nt-src"><b>🏅 Huy hiệu và danh hiệu</b><br>Mỗi huy hiệu: <b>+'+CFG.badgeFood+' món đặc biệt</b> 🍰. Mỗi lần lên cấp danh hiệu: <b>+'+CFG.rankFood+' món đặc biệt</b>.<br><span class="mu">Con đang có '+badgeCount()+' huy hiệu · danh hiệu cấp '+rank()+'.</span></div>'+
+    '<div class="nt-src" style="grid-column:1/-1"><b>⭐ Mua bằng sao</b> <span class="mu">(con đang có '+tot+' sao · hôm nay mua '+bt+'/'+CFG.buyPerDay+' lần)</span>'+
+      '<div class="nt-acts" style="margin-top:8px"><button class="eat" id="ntBuyN"'+(bt>=CFG.buyPerDay||tot<CFG.priceN?' disabled':'')+'>🍖 1 phần ăn · '+CFG.priceN+' ⭐</button><button class="sp" id="ntBuyS"'+(bt>=CFG.buyPerDay||tot<CFG.priceS?' disabled':'')+'>🍰 1 món đặc biệt · '+CFG.priceS+' ⭐</button></div></div>';
+  $('ntClaim').onclick=claim;$('ntBuyN').onclick=function(){buy('n')};$('ntBuyS').onclick=function(){buy('s')};
+  $('ntPet').onclick=pat;
+  show('ntHome');
+  if(f<30)say('Con ơi, tớ đói bụng quá…');else if(h<30)say('Chơi với tớ một chút nhé!');else say(['Chào '+nm()+'! 👋','Hôm nay con học chăm chưa?','Tớ thích được vuốt ve lắm!'][Math.floor(Math.random()*3)]);
+}
+function renderChoose(){
+  var cur=KID==='anhphong'?'dino':'';
+  $('ntChList').innerHTML=Object.keys(SPN).map(function(k){return '<button data-sp="'+k+'"'+(k===cur?' class="cur"':'')+'><span class="eg">🥚</span>Trứng '+SPN[k]+'<small>'+SPD[k]+(k===cur?' · trứng con đang ấp':'')+'</small></button>'}).join('');
+  $('ntChList').querySelectorAll('button').forEach(function(b){b.onclick=function(){var k=b.dataset.sp;
+    dlg('<div class="big">🥚</div>Con chọn <b>trứng '+SPN[k]+'</b> nhé? Chọn rồi không đổi được đâu.',[['Chọn lại',null],['Chọn trứng này',function(){S.sp=k;save();if(T&&T.load)T.load(true);celebrate('🎉','Quả trứng '+SPN[k]+' đã vào chuồng!');render()},'ok']])}})}
+
+/* ---------- hành động ---------- */
+var bubT=0;
+function say(t){var b=$('ntBub');if(!b)return;b.textContent=t;b.classList.add('on');clearTimeout(bubT);bubT=setTimeout(function(){b.classList.remove('on')},2600)}
+function fx(em,n){var sc=$('ntScene');if(!sc)return;for(var i=0;i<(n||1);i++){var e=document.createElement('span');e.className='nt-fx';e.textContent=em;
+  e.style.left=(35+Math.random()*30)+'%';e.style.top=(40+Math.random()*20)+'%';e.style.animationDelay=(i*0.12)+'s';sc.appendChild(e);setTimeout(function(x){return function(){x.remove()}}(e),1600)}}
+function jump(){var p=$('ntPet');if(!p)return;p.classList.remove('bob');p.style.animation='ntJump .6s ease';setTimeout(function(){p.style.animation='';p.classList.add('bob')},650)}
+function pat(){var d=today(),c=S.pat[d]||0;jump();fx('💖',2);
+  if(c<CFG.patPerDay){S.pat[d]=c+1;setHap(hapNow()+CFG.hapPat);save();refreshBars()}
+  say(['Hihi, nhột quá!','Tớ thương con lắm!','Vuốt nữa đi!','😊 Dễ chịu ghê!'][Math.floor(Math.random()*4)])}
+function refreshBars(){var f=fullNow(),h=hapNow();$('ntFull').style.width=f+'%';$('ntFullN').textContent=f;$('ntHap').style.width=h+'%';$('ntHapN').textContent=h}
+function eat(kind){var have=kind==='s'?haveS():haveN();if(have<=0)return;var f=fullNow();
+  if(f>=100){say('Tớ no căng bụng rồi! 😋');return}
+  var sc=$('ntScene'),e=document.createElement('span');e.className='nt-fly';e.textContent=kind==='s'?'🍰':'🍖';e.style.left='8%';e.style.top='82%';sc.appendChild(e);
+  requestAnimationFrame(function(){e.style.left='46%';e.style.top='42%';e.style.transform='scale(.4)';e.style.opacity='.2'});
+  setTimeout(function(){e.remove();if(kind==='s'){S.eatS++;setFull(f+CFG.eatS);setHap(hapNow()+CFG.hapS);fx('✨',4);say('Ngon tuyệt cú mèo! 🤩')}else{S.eatN++;setFull(f+CFG.eatN);setHap(hapNow()+CFG.hapN);fx('😋',1);say('Măm măm, ngon quá!')}
+    save();jump();render()},720)}
+function claim(){var d=today();if(S.claim[d]||!missionDone())return;S.claim[d]=1;save();celebrate('🍖','Con nhận được '+CFG.missionFood+' phần ăn cho thú. Giỏi lắm!');render()}
+function buy(k){var price=k==='s'?CFG.priceS:CFG.priceN,tot=B?B.total(KID):0;
+  if(buysToday()>=CFG.buyPerDay){dlg('Hôm nay con đã mua đủ '+CFG.buyPerDay+' lần rồi. Mai mua tiếp nhé!',[['Đồng ý',null,'ok']]);return}
+  if(tot<price){dlg('Con chưa đủ sao để mua. Học thêm để có sao nhé! 💪',[['Đồng ý',null,'ok']]);return}
+  dlg('<div class="big">'+(k==='s'?'🍰':'🍖')+'</div>Dùng <b>'+price+' ⭐</b> để mua '+(k==='s'?'1 món đặc biệt':'1 phần ăn')+' cho thú?<br><span class="mu">Sao sẽ bị trừ khỏi sao thưởng của con.</span>',
+    [['Thôi',null],['Mua',function(){if(!B||!B.add(KID,{v:-price,r:'🐾 Mua '+(k==='s'?'món ăn đặc biệt':'thức ăn')+' cho thú',src:'home',k:'petfood'})){dlg('Chưa mua được, con thử lại sau nhé.',[['Đồng ý',null,'ok']]);return}
+      var d=today(),b=S.buy[d]||(S.buy[d]={});b[k]=(b[k]||0)+1;save();render();say('Cảm ơn con! 🥰')},'ok']])}
+function dlg(html,btns){var w=document.createElement('div');w.className='nt-dlg';w.innerHTML='<div>'+html+'<div class="row2">'+btns.map(function(b,i){return '<button class="nt-btn '+(b[2]||'')+'" data-i="'+i+'">'+b[0]+'</button>'}).join('')+'</div></div>';
+  document.body.appendChild(w);w.querySelectorAll('button').forEach(function(x){x.onclick=function(){w.remove();var f=btns[+x.dataset.i][1];if(f)f()}})}
+function celebrate(em,t){dlg('<div class="big">'+em+'</div>'+t,[['Tuyệt!',null,'ok']])}
+
+/* ---------- trang trí ---------- */
+function renderDeco(){var L=lvl(),G=[['bg','🖼️ Phông nền'],['hat','🎩 Mũ (khi thú đã nở)'],['toy','🧸 Đồ chơi']];
+  $('ntDecoList').innerHTML=G.map(function(g){return '<b>'+g[1]+'</b><div class="nt-row">'+DECO[g[0]].map(function(x){var lock=x.lv>L,on=(S.deco[g[0]]||'')===x.id;
+    return '<button data-g="'+g[0]+'" data-id="'+x.id+'" class="'+(on?'on':'')+(lock?' lock':'')+'"'+(lock?' data-lv="'+x.lv+'"':'')+'>'+(lock?'🔒':x.e)+'<small>'+(lock?'Cấp '+x.lv:esc(x.n))+'</small></button>'}).join('')+'</div>'}).join('');
+  $('ntDecoList').querySelectorAll('button').forEach(function(b){b.onclick=function(){if(b.dataset.lv){dlg('Thú lên <b>cấp '+b.dataset.lv+'</b> sẽ mở khóa món này. Con học chăm để thú lớn nhé!',[['Đồng ý',null,'ok']]);return}
+    S.deco[b.dataset.g]=b.dataset.id;save();renderDeco()}})}
+
+/* ---------- trò chơi ---------- */
+function playsLeft(g){var p=S.play[today()]||{};return Math.max(0,CFG.playPerDay-(p[g]||0))}
+function usePlay(g){var d=today(),p=S.play[d]||(S.play[d]={});p[g]=(p[g]||0)+1;save()}
+function renderGames(){[['g1','ntG1'],['g2','ntG2']].forEach(function(x){var l=playsLeft(x[0]);$(x[1]+'Left').textContent=l?'Hôm nay còn '+l+' lượt':'Thú mệt rồi, mai chơi tiếp nhé!';$(x[1]+'Go').disabled=!l})}
+function gameEnd(box,score,txt,gain){setHap(hapNow()+gain);save();
+  var m=document.createElement('div');m.className='nt-msg';m.innerHTML='<div style="font-size:52px">🎉</div>'+txt+'<br><span class="mu">Thú vui thêm 💖 +'+gain+'</span><br><button class="nt-btn ok" style="background:#22C55E;color:#fff;border-color:#16A34A">Về chơi tiếp</button>';
+  box.appendChild(m);m.querySelector('button').onclick=function(){renderGames();show('ntGames')}}
+var G1=null;
+function startG1(){if(!playsLeft('g1'))return;usePlay('g1');show('ntG1');var box=$('ntG1Box'),p=pet()||{e:'🥚'},W,H,x=.5,score=0,left=25,items=[],last=0,spawn=0,run=true;
+  box.style.background=bgOf();box.innerHTML='<span class="nt-catch" id="ntCatch">'+p.e+'</span>';var ct=$('ntCatch');
+  function size(){W=box.clientWidth;H=box.clientHeight}size();
+  function mv(ev){var r=box.getBoundingClientRect(),t=ev.touches?ev.touches[0]:ev;x=Math.max(.06,Math.min(.94,(t.clientX-r.left)/r.width));ev.preventDefault&&ev.preventDefault()}
+  box.onpointermove=mv;box.onpointerdown=mv;box.ontouchmove=mv;
+  $('ntG1S').textContent=0;$('ntG1T').textContent=left;
+  var tick=setInterval(function(){left--;$('ntG1T').textContent=left;if(left<=0)stop()},1000);
+  function stop(){if(!run)return;run=false;clearInterval(tick);items.forEach(function(it){it.el.remove()});box.onpointermove=box.onpointerdown=box.ontouchmove=null;
+    gameEnd(box,score,'Con hứng được <b>'+score+'</b> điểm!',Math.min(20,5+Math.round(score/2)))}
+  G1={stop:function(){if(run){run=false;clearInterval(tick)}}};
+  function loop(ts){if(!run)return;var dt=last?Math.min(50,ts-last):16;last=ts;size();ct.style.left=(x*W)+'px';
+    spawn-=dt;if(spawn<=0){spawn=520+Math.random()*420;var bad=Math.random()<.18,e=document.createElement('span');e.className='nt-star';e.textContent=bad?'🌧️':(Math.random()<.15?'🌟':'⭐');
+      var it={el:e,x:.06+Math.random()*.88,y:-40,v:(0.14+Math.random()*.1)*(1+(25-left)/40),bad:bad,big:e.textContent==='🌟'};box.appendChild(e);items.push(it)}
+    items=items.filter(function(it){it.y+=it.v*dt;it.el.style.left=(it.x*W-19)+'px';it.el.style.top=it.y+'px';
+      if(it.y>H-90&&it.y<H-20&&Math.abs(it.x-x)*W<52){it.el.remove();if(it.bad){score=Math.max(0,score-2)}else score+=it.big?3:1;$('ntG1S').textContent=score;return false}
+      if(it.y>H){it.el.remove();return false}return true});
+    requestAnimationFrame(loop)}
+  requestAnimationFrame(loop)}
+var G2=null;
+function startG2(){if(!playsLeft('g2'))return;usePlay('g2');show('ntG2');var box=$('ntG2Box'),p=pet()||{e:'🥚'},round=1,score=0,run=true,pos=[0,1,2],hid=0,busy=true;
+  box.style.background=bgOf();box.innerHTML='<div class="nt-boxes"><span class="nt-peek" id="ntPeek">'+p.e+'</span>'+[0,1,2].map(function(i){return '<button class="nt-box" data-b="'+i+'">🎁</button>'}).join('')+'</div>';
+  var bx=box.querySelectorAll('.nt-box'),pk=$('ntPeek');
+  function place(){var W=box.clientWidth,gap=Math.min(170,W/3.3);bx.forEach(function(b,i){b.style.left=(W/2-55+(pos[i]-1)*gap)+'px';b.style.top=(box.clientHeight/2-55)+'px'})}
+  function peekAt(i,on){var W=box.clientWidth,gap=Math.min(170,W/3.3);pk.style.left=(W/2-32+(pos[i]-1)*gap)+'px';pk.style.top=(box.clientHeight/2-(on?150:40))+'px';pk.style.opacity=on?1:0}
+  G2={stop:function(){run=false}};
+  function roundGo(){if(!run)return;$('ntG2R').textContent=round;$('ntG2S').textContent=score;busy=true;hid=Math.floor(Math.random()*3);place();peekAt(hid,true);
+    setTimeout(function(){if(!run)return;peekAt(hid,false);var n=3+round*2,sp=Math.max(220,520-round*60),k=0;
+      bx.forEach(function(b){b.style.transition='left '+(sp/1000*.9)+'s ease'});
+      var t=setInterval(function(){if(!run){clearInterval(t);return}var a=Math.floor(Math.random()*3),c=(a+1+Math.floor(Math.random()*2))%3,ia=pos.indexOf(a),ic=pos.indexOf(c);var tmp=pos[ia];pos[ia]=pos[ic];pos[ic]=tmp;place();
+        if(++k>=n){clearInterval(t);setTimeout(function(){busy=false},sp)}},sp)},1100)}
+  bx.forEach(function(b,i){b.onclick=function(){if(busy||!run)return;busy=true;var ok=i===hid;peekAt(hid,true);b.style.transform='translateY(-18px)';if(ok)score++;
+    $('ntG2S').textContent=score;setTimeout(function(){b.style.transform='';if(!run)return;if(round>=5){run=false;gameEnd(box,score,'Con tìm đúng <b>'+score+'/5</b> lần!',score*3+2);return}round++;roundGo()},ok?900:1400)}});
+  setTimeout(roundGo,200)}
+function stopGames(){if(G1)G1.stop();if(G2)G2.stop()}
+
+/* ---------- nối nút ---------- */
+$('ntEatN').onclick=function(){eat('n')};$('ntEatS').onclick=function(){eat('s')};
+$('ntPlay').onclick=function(){renderGames();show('ntGames')};
+$('ntDecoBtn').onclick=function(){renderDeco();show('ntDeco')};
+$('ntG1Go').onclick=startG1;$('ntG2Go').onclick=startG2;
+document.querySelectorAll('#nt [data-back]').forEach(function(b){b.onclick=function(){var inGame=!$('ntG1').classList.contains('hide')||!$('ntG2').classList.contains('hide');stopGames();if(inGame){renderGames();show('ntGames')}else render()}});
+window.addEventListener('resize',function(){});
+
+(async function(){
+  if(T&&T.load){try{await T.load()}catch(e){}}
+  await loadRemote();
+  render();
+  if(window.PORTAL&&PORTAL.mounted)PORTAL.mounted();
+  setInterval(function(){if(!$('ntHome').classList.contains('hide'))refreshBars()},60000);
+})();
+})();
+</script>
+</body>
+</html>
