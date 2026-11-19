@@ -1,0 +1,272 @@
+diff --git a/bank.js b/bank.js
+index 35dd0a1..9fcb291 100644
+--- a/bank.js
++++ b/bank.js
+@@ -20,3 +20,3 @@
+     home: { e: '🏠', n: 'Bố mẹ thưởng / đổi quà' },
+-    cup: { e: '🏆', n: 'Cúp tuần' }
++    cup: { e: '🏆', n: 'Đấu trường tuần' }
+   };
+diff --git a/index.html b/index.html
+index 92aa9a5..6c1e651 100644
+--- a/index.html
++++ b/index.html
+@@ -42,4 +42,4 @@ button{font:inherit;color:inherit;cursor:pointer}
+ .bal.neg{color:#B91C1C}
+-.today{margin-top:8px;font-size:15px;opacity:.97}
+-.today span{display:inline-block;background:rgba(255,255,255,.22);border-radius:99px;padding:2px 9px;margin:3px 4px 0 0}
++.today{margin-top:8px;font-size:16px;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.25)}
++.today span{display:inline-block;background:rgba(0,0,0,.2);border-radius:99px;padding:3px 10px;margin:3px 4px 0 0}
+ h2{font-size:19px;margin:24px 2px 10px}
+@@ -96,3 +96,3 @@ h2{font-size:19px;margin:24px 2px 10px}
+ .hero{align-items:center}.hero .av{width:150px;height:150px;flex:none;display:grid;place-items:center}.hero .av .pet-scene{box-shadow:0 0 0 4px rgba(255,255,255,.55);width:100%!important;height:100%!important}
+-.hinfo{flex:1;min-width:0}.hiS{font-size:16px;font-weight:700;opacity:.95;margin-bottom:6px}.hiS span{font-weight:600;opacity:.9}
++.hinfo{flex:1;min-width:0}.hiS{font-size:17px;font-weight:700;margin-bottom:6px;text-shadow:0 1px 2px rgba(0,0,0,.25)}.hiS span{font-weight:600;opacity:.9}
+ .hrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px}.hrow .bal{margin-top:0}.hrow .today{margin-top:0}
+@@ -117,5 +117,5 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=15"></script>
+-<script src="bank.js?v=15"></script>
+-<script src="thidua.js?v=15"></script>
++<script src="claude-shim.js?v=16"></script>
++<script src="bank.js?v=16"></script>
++<script src="thidua.js?v=16"></script>
+ <link rel="manifest" href="manifest.json">
+@@ -151,2 +151,3 @@ h2{font-size:19px;margin:24px 2px 10px}
+     <div class="kidsum" id="pParSum"></div>
++    <div id="pParAlert"></div>
+     <h2>⭐ Sao thưởng</h2>
+@@ -172,3 +173,4 @@ h2{font-size:19px;margin:24px 2px 10px}
+ 
+-    <h2>📚 Hôm nay con học gì?</h2>
++    <div id="pMission"></div>
++    <h2>📚 Vào học</h2>
+     <div class="tiles learn" id="pTiles"></div>
+@@ -341,2 +343,5 @@ function renderKid(){
+   $('pLeague').innerHTML=has?T.leagueHtml(CUR,false,'compact'):'';
++  $('pMission').innerHTML=has?T.missionHtml(CUR):'';
++  document.querySelectorAll('#pMission .ms-it').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
++  var sy=document.querySelector('#pMission .ms-say');if(sy)sy.onclick=function(){T.say(T.missionSpeech(CUR))};
+   if(has)T.celebrate(CUR);if(T)T.load();
+@@ -427,3 +432,3 @@ function renderParent(){if(!PARENT)return;
+     return '<div class="ks '+k.id+'"><div class="n">'+BANK.nameplate(k.id,'M',null,{av:true})+'</div>'+(ti&&ti.rank?'<div class="t" style="margin-top:6px">🏆 Cấp '+ti.rank+'/7 '+(ti.re||'')+' '+esc(ti.rn||'')+' · '+(ti.pts||0)+' điểm huy hiệu'+(ti.spe&&ti.spe.length?' · Đặc biệt: '+ti.spe.join(''):'')+'</div>':'')+'<div class="b">⭐ '+showTotal(k.id)+'</div><div class="t">Hôm nay: '+(t||'chưa nhận sao')+'</div></div>'}).join('');
+-  var TD=window.THIDUA;if(TD){if(TD.data())$('pParLeague').innerHTML=TD.leagueHtml(null,true);TD.load()}
++  var TD=window.THIDUA;if(TD){if(TD.data()){$('pParLeague').innerHTML=TD.leagueHtml(null,true);$('pParAlert').innerHTML=TD.alertsHtml()}TD.load()}
+   renderRecent();
+diff --git a/thidua.js b/thidua.js
+index fae7f6c..ce7a01b 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -11,2 +11,3 @@
+   var START = '2026-11-16', CUP = 30, WIN_MIN = 50, SHIELD_MIN = 75, SHIELD_MAX = 2, NEWW = 5;
++  var GOOD = 15, GOOD_MIN = 60; // bé không vô địch nhưng đạt từ 60 điểm: +15 sao
+   var KIDS = ['anhphong', 'thanhnghi'];
+@@ -34,3 +35,3 @@
+   /* ---------- đọc dữ liệu ---------- */
+-  var D = null, AT = 0, LOADING = null, subs = [];
++  var D = null, AT = 0, LOADING = null, subs = [], WORDS = null;
+   async function readDoc(db, path) {
+@@ -54,3 +55,5 @@
+         readDoc(db, 'sync/vocab_shield_v1.anhphong'), readDoc(db, 'sync/vocab_shield_v1.thanhnghi'),
+-        db.collection('league').get().catch(function () { return null; })]);
++        db.collection('league').get().catch(function () { return null; }),
++        WORDS || fetch('words.json').then(function (r) { return r.json(); }).catch(function () { return null; })]);
++      if (R[9]) WORDS = R[9];
+       var lg = {}; if (R[8]) R[8].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
+@@ -105,3 +108,4 @@
+         var top = Math.max(s.anhphong, s.thanhnghi);
+-        doc = { wk: wk, s: s, win: top >= WIN_MIN ? KIDS.filter(function (k) { return s[k] === top; }) : [], sh: KIDS.filter(function (k) { return s[k] >= SHIELD_MIN; }), at: Date.now() };
++        var win = top >= WIN_MIN ? KIDS.filter(function (k) { return s[k] === top; }) : [];
++        doc = { wk: wk, s: s, win: win, good: KIDS.filter(function (k) { return win.indexOf(k) < 0 && s[k] >= GOOD_MIN; }), sh: KIDS.filter(function (k) { return s[k] >= SHIELD_MIN; }), at: Date.now() };
+         try { await db.doc('league/' + wk).set(doc); } catch (e) { }
+@@ -109,3 +113,3 @@
+       }
+-      if (!(doc.win || []).length) continue;
++      if (!(doc.win || []).length && !(doc.good || []).length) continue;
+       if (ext === null) ext = await BANK.extReady;
+@@ -116,2 +120,6 @@
+       });
++      (doc.good || []).forEach(function (k) {
++        var id = 'good-' + wk;
++        if (!BANK.hasId(k, id)) BANK.add(k, { id: id, v: GOOD, r: '💪 Làm tốt tuần ' + dm(wk) + '–' + dm(addD(wk, 6)) + ' (' + doc.s[k] + ' điểm)', src: 'cup', k: 'cup', key: id });
++      });
+     }
+@@ -180,2 +188,16 @@
+     '.pl-x{font-size:13.5px;opacity:.95}.pl-how{margin-top:8px;background:rgba(255,255,255,.18);border-radius:12px;padding:8px 12px;font-size:14px;line-height:1.6}' +
++    '.lg-meta{font-size:15px!important}.lg-today span{font-size:14.5px!important}.lg-self{margin-top:8px;font-size:15px;background:#ECFDF5;border-radius:12px;padding:7px 12px;color:#14532D}' +
++    '.pl-x{font-size:15px!important;background:rgba(0,0,0,.22);border-radius:99px;padding:3px 10px}.pl-n{font-size:17px!important;text-shadow:0 1px 2px rgba(0,0,0,.25)}' +
++    '.ms{padding:16px 18px}.ms-h{display:flex;align-items:center;gap:14px}.ms-ht{flex:1;min-width:0}.ms-ht h3{margin:0 0 2px;font-size:21px}.ms-sub{font-size:16px;color:#334155}' +
++    '.ms-ring{--p:0;width:64px;height:64px;flex:none;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#22C55E calc(var(--p)*1%),#E2E8F0 0)}.ms-ring b{width:50px;height:50px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:17px}' +
++    '.ms-say{flex:none;width:56px;height:56px;border-radius:16px;border:2px solid #E2E8F0;background:#fff;font-size:26px;cursor:pointer;box-shadow:0 3px 0 #E2E8F0;touch-action:manipulation}.ms-say:active{transform:translateY(2px);box-shadow:0 1px 0 #E2E8F0}' +
++    '.ms-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}' +
++    '.ms-it{display:flex;align-items:center;gap:10px;min-height:60px;padding:8px 14px;border-radius:16px;border:2px solid #E2E8F0;background:#fff;text-align:left;font-family:inherit;color:#1E293B;cursor:pointer;box-shadow:0 3px 0 #E2E8F0;touch-action:manipulation}' +
++    '.ms-it:active{transform:translateY(2px);box-shadow:0 1px 0 #E2E8F0}.ms-ck{width:30px;height:30px;flex:none;border-radius:50%;border:3px solid #CBD5E1;display:grid;place-items:center;font-weight:900;color:#fff;font-size:16px}' +
++    '.ms-it.ok{background:#F0FDF4;border-color:#86EFAC;box-shadow:0 3px 0 #86EFAC}.ms-it.ok .ms-ck{background:#22C55E;border-color:#22C55E}.ms-it.ok .ms-t{color:#166534}' +
++    '.ms-ic{font-size:26px;flex:none}.ms-t{flex:1;font-size:17px;font-weight:700;line-height:1.25}.ms-t small{display:block;font-weight:600;font-size:13.5px;color:#64748B}.ms-n{font-weight:800;font-size:16px;color:#475569;flex:none}' +
++    '.ms-it.bonus{grid-column:1/-1;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:#FCD34D;box-shadow:0 3px 0 #FCD34D}.ms-it.lock{opacity:.75}.ms-it.lock .ms-ck{border:0;font-size:18px}' +
++    '.al h3{margin-bottom:10px}.al-it{display:flex;gap:8px;align-items:flex-start;font-size:15.5px;line-height:1.5;padding:8px 12px;border-radius:12px;margin-top:6px}.al-it.warn{background:#FEF2F2;color:#7F1D1D}.al-it.info{background:#EFF6FF;color:#1E3A8A}.al-it.good{background:#F0FDF4;color:#14532D}' +
++    '.td-box p .pm-row{display:flex;gap:12px;align-items:center;text-align:left;background:#FFFBEB;border-radius:14px;padding:8px 12px}.pm-ic{font-size:34px;flex:none}.td-box p small{font-size:14px;color:#475569}' +
++    '@media (max-width:640px){.ms-list{grid-template-columns:1fr}}' +
+     '@media (prefers-reduced-motion:reduce){.pet-e,.pet-a,.td-box .big{animation:none}}';
+@@ -228,3 +250,3 @@
+     var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3><div class="lg-rows">' + rows + '</div>';
+-    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️ khiên</b></div>';
++    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + GOOD_MIN + ' điểm: <b>+' + GOOD + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️</b></div>';
+     if (mode === 'mini') return '<div class="td-card lg-mini">' + head + meta + '</div>';
+@@ -246,2 +268,4 @@
+       }).join('') + '</div>' + (mode === 'compact' ? '' : '<div class="lg-meta">Hôm nay con đã được <b>' + p.t + '/15</b> điểm.</div>');
++      var prev = D.lg[addD(wk, -7)], pv = prev ? (prev.s[focus] || 0) : null;
++      if (pv != null) { var nowS = s[focus], diff = nowS - pv; h += '<div class="lg-self">' + (diff >= 0 ? '🔥 Con đã hơn cả tuần trước của chính mình (' + pv + ' điểm) <b>+' + diff + '</b>!' : '📈 Tuần trước con được <b>' + pv + '</b> điểm, còn <b>' + (-diff) + '</b> điểm nữa là bằng.') + '</div>'; }
+     }
+@@ -252,2 +276,3 @@
+         (w.length ? '🏆 ' + w.map(nameOf).map(esc).join(' và ') + ' vô địch (+' + CUP + ' ⭐)' : 'chưa ai đạt ' + WIN_MIN + ' điểm để nhận cúp') +
++        ((L.good || []).length ? ' · 💪 ' + L.good.map(nameOf).map(esc).join(', ') + ' làm tốt (+' + GOOD + ' ⭐)' : '') +
+         ((L.sh || []).length ? ' · 🛡️ ' + L.sh.map(nameOf).map(esc).join(', ') + ' được 1 khiên' : '') + '</div>';
+@@ -258,3 +283,3 @@
+       if (ws.length) h += '<table class="lg-hist"><tr><th>Tuần</th><th>' + esc(nameOf('anhphong')) + '</th><th>' + esc(nameOf('thanhnghi')) + '</th><th>Kết quả</th></tr>' + ws.map(function (x) {
+-        var d = D.lg[x]; return '<tr><td>' + dm(x) + '–' + dm(addD(x, 6)) + '</td><td>' + (d.s.anhphong || 0) + '</td><td>' + (d.s.thanhnghi || 0) + '</td><td>' + ((d.win || []).length ? '🏆 ' + d.win.map(nameOf).map(esc).join(', ') : '—') + ((d.sh || []).length ? ' · 🛡️ ' + d.sh.map(nameOf).map(esc).join(', ') : '') + '</td></tr>';
++        var d = D.lg[x]; return '<tr><td>' + dm(x) + '–' + dm(addD(x, 6)) + '</td><td>' + (d.s.anhphong || 0) + '</td><td>' + (d.s.thanhnghi || 0) + '</td><td>' + ((d.win || []).length ? '🏆 ' + d.win.map(nameOf).map(esc).join(', ') : '—') + ((d.good || []).length ? ' · 💪 ' + d.good.map(nameOf).map(esc).join(', ') : '') + ((d.sh || []).length ? ' · 🛡️ ' + d.sh.map(nameOf).map(esc).join(', ') : '') + '</td></tr>';
+       }).join('') + '</table>';
+@@ -265,2 +290,3 @@
+       '<li>Tuần chốt hết Chủ nhật. Con nhiều điểm hơn (ít nhất ' + WIN_MIN + ' điểm) nhận <b>cúp vô địch +' + CUP + ' sao</b>. Bằng điểm thì cả hai cùng nhận.</li>' +
++      '<li>Con không vô địch nhưng đạt từ <b>' + GOOD_MIN + ' điểm</b> vẫn được <b>+' + GOOD + ' sao</b> vì đã làm tốt.</li>' +
+       '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥 cho con.</li></ul></details>' + (mode === 'compact' ? '</details>' : '</div>');
+@@ -269,2 +295,76 @@
+ 
++  /* ---------- Nhiệm vụ hôm nay ---------- */
++  function tasks(kid) {
++    var t = today(), r = D.vd[kid][t] || {}, ch = chestCheck(r, D.pl[kid], t), sj = D.sj[kid][t] || { q: 0 }, g = D.goal[kid];
++    var sub = kid === 'anhphong' ? 'Toán / Tiếng Việt lớp 2' : 'Toán / Ngữ văn lớp 6', subApp = kid === 'anhphong' ? 'lop2' : 'lop6';
++    return [
++      { ic: '📘', t: 'Học ' + NEWW + ' từ mới', n: Math.min(ch.nw, NEWW), of: NEWW, app: 'tuvung' },
++      { ic: '🔁', t: 'Ôn tập từ cũ', n: ch.rv ? 1 : 0, of: 1, app: 'tuvung' },
++      { ic: '🎯', t: '2 bài luyện thêm', n: Math.min(ch.pr, 2), of: 2, app: 'tuvung' },
++      { ic: '🗣️', t: '1 bài nghe & nói', n: Math.min(ch.ls, 1), of: 1, app: 'tuvung' },
++      { ic: kid === 'anhphong' ? '🧮' : '📐', t: g + ' câu ' + sub, n: Math.min(sj.q, g), of: g, app: subApp },
++      { ic: r.chest ? '🪙' : '🎁', t: 'Mở rương báu', n: r.chest ? 1 : 0, of: 1, app: 'tuvung', bonus: true, lock: !ch.ok && !r.chest }
++    ];
++  }
++  function missionHtml(kid) {
++    if (!D) return ''; css();
++    var L = tasks(kid), main = L.filter(function (x) { return !x.bonus; }), done = main.filter(function (x) { return x.n >= x.of; }).length;
++    var pct = Math.round(done / main.length * 100);
++    return '<div class="td-card ms"><div class="ms-h"><div class="ms-ring" style="--p:' + pct + '"><b>' + done + '/' + main.length + '</b></div><div class="ms-ht"><h3>🎯 Nhiệm vụ hôm nay</h3><div class="ms-sub">' +
++      (done === main.length ? 'Con đã làm xong hết! Giỏi quá! 🎉' : 'Còn <b>' + (main.length - done) + ' việc</b> nữa. Bấm vào việc nào là làm việc đó nhé!') + '</div></div>' +
++      '<button class="ms-say" type="button" aria-label="Đọc to nhiệm vụ">🔊</button></div><div class="ms-list">' +
++      L.map(function (x) {
++        var ok = x.n >= x.of;
++        return '<button class="ms-it' + (ok ? ' ok' : '') + (x.bonus ? ' bonus' : '') + (x.lock ? ' lock' : '') + '" data-app="' + x.app + '"><span class="ms-ck">' + (ok ? '✓' : x.lock ? '🔒' : '') + '</span><span class="ms-ic">' + x.ic + '</span><span class="ms-t">' + x.t +
++          (x.bonus ? ' <small>' + (ok ? 'đã mở' : x.lock ? 'làm xong 4 việc tiếng Anh để mở' : 'đã mở được rồi, vào lấy sao nào!') + '</small>' : '') + '</span><span class="ms-n">' + (x.of > 1 ? x.n + '/' + x.of : ok ? 'Xong' : '') + '</span></button>';
++      }).join('') + '</div></div>';
++  }
++  function missionSpeech(kid) {
++    var L = tasks(kid).filter(function (x) { return !x.bonus && x.n < x.of; });
++    var nm = nameOf(kid);
++    if (!L.length) return 'Chào ' + nm + '. Hôm nay con đã làm xong hết nhiệm vụ rồi. Giỏi quá!';
++    return 'Chào ' + nm + '. Hôm nay con còn ' + L.length + ' việc: ' + L.map(function (x) { return x.t.replace('/', ' và '); }).join('. ') + '.';
++  }
++  function say(text) {
++    try {
++      var ss = window.speechSynthesis; if (!ss) return; ss.cancel();
++      var u = new SpeechSynthesisUtterance(text); u.lang = 'vi-VN'; u.rate = 0.95;
++      var v = (ss.getVoices() || []).filter(function (x) { return /^vi/i.test(x.lang); })[0]; if (v) u.voice = v;
++      ss.speak(u);
++    } catch (e) { }
++  }
++
++  /* ---------- Cảnh báo cho bố mẹ ---------- */
++  function alerts() {
++    if (!D) return []; var out = [], t = today();
++    KIDS.forEach(function (k) {
++      var nm = nameOf(k), vd = D.vd[k], sj = D.sj[k], g = D.goal[k], sub = k === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn';
++      function lastDay(f) { for (var i = 0; i < 30; i++) { var d = addD(t, -i); if (f(d)) return i; } return 30; }
++      var en = lastDay(function (d) { return dayDone(vd[d]); }), sb = lastDay(function (d) { return sj[d] && sj[d].q > 0; });
++      if (en >= 2) out.push(['warn', nm + ' đã <b>' + (en >= 30 ? 'hơn 30' : en) + ' ngày</b> chưa học đủ bài tiếng Anh' + (en >= 30 ? '' : ' (lần gần nhất: ' + dm(addD(t, -en)) + ')') + '.']);
++      if (sb >= 3) out.push(['warn', nm + ' đã <b>' + (sb >= 30 ? 'hơn 30' : sb) + ' ngày</b> chưa làm bài ' + sub + '.']);
++      // độ chính xác 3 ngày gần nhất
++      var q = 0, c = 0; for (var i = 1; i <= 3; i++) { var d = addD(t, -i), r = vd[d] || {}, x = sj[d] || { q: 0, c: 0 }; q += (+r.q || 0) + x.q; c += (+r.ok || 0) + x.c; }
++      if (q >= 30 && c / q < 0.8) out.push(['warn', nm + ' làm đúng <b>' + Math.round(c / q * 100) + '%</b> trong 3 ngày qua, thấp hơn mức 80%. Nên cùng con xem lại các câu sai.']);
++      // bài làm dở
++      var part = (D.pl[k] || []).filter(function (e) { return e && e.t && e.total > 0 && e.done < e.total && (Date.now() - e.t) < 3 * 864e5; }).length;
++      if (part >= 2) out.push(['info', nm + ' bỏ dở <b>' + part + ' bài</b> luyện tập trong 3 ngày qua (bài làm dở không được tính).']);
++      // từ hay sai 7 ngày
++      var wl = WORDS && (WORDS.filter(function (x) { return x.id === k; })[0] || {}).words, cnt = {};
++      (D.pl[k] || []).forEach(function (e) { if (e && e.t && (Date.now() - e.t) < 7 * 864e5 && e.wrong) Object.keys(e.wrong).forEach(function (n) { cnt[n] = (cnt[n] || 0) + e.wrong[n]; }); });
++      var top = Object.keys(cnt).filter(function (n) { return cnt[n] >= 2; }).sort(function (a, b) { return cnt[b] - cnt[a]; }).slice(0, 6);
++      if (top.length && wl) out.push(['info', nm + ' hay sai các từ: ' + top.map(function (n) { var w = wl[n - 1]; return w ? '<b>' + esc(w[0]) + '</b> (' + esc(w[1]) + ') ×' + cnt[n] : ''; }).filter(Boolean).join(', ') + '.']);
++      // so tuần trước (cùng số ngày)
++      var wk = monday(t), lw = addD(wk, -7), di = Math.round((parse(t) - parse(wk)) / 864e5), a = 0, b = 0;
++      for (var j = 0; j <= di; j++) { a += dayPts(k, addD(wk, j)).t; b += dayPts(k, addD(lw, j)).t; }
++      if (b >= 10 && a < b * 0.7) out.push(['warn', nm + ' tuần này được <b>' + a + ' điểm</b>, thấp hơn cùng kỳ tuần trước (' + b + ' điểm).']);
++      if (en === 0 && lastDay(function (d) { return !dayDone(vd[d]); }) >= 5) out.push(['good', nm + ' học tiếng Anh đều đặn nhiều ngày liền. 👍']);
++    });
++    return out;
++  }
++  function alertsHtml() {
++    if (!D) return ''; css(); var A = alerts();
++    return '<div class="td-card al"><h3>🔔 Cần bố mẹ để ý</h3>' + (A.length ? A.map(function (a) { return '<div class="al-it ' + a[0] + '">' + (a[0] === 'warn' ? '⚠️' : a[0] === 'good' ? '✅' : 'ℹ️') + ' <span>' + a[1] + '</span></div>'; }).join('') : '<div class="al-it good">✅ <span>Mọi thứ đều ổn, hai con đang học đều.</span></div>') + '</div>';
++  }
++
+   /* ---------- chúc mừng ---------- */
+@@ -273,2 +373,7 @@
+   function pop(big, title, lines) { Q.push([big, title, lines]); if (Q.length === 1) showPop(); }
++  /* nhiều thành tích cùng lúc: một bảng tổng kết duy nhất */
++  function popMany(items) {
++    if (!items.length) return; if (items.length === 1) { pop(items[0][0], items[0][1], items[0][2]); return; }
++    pop('🎉', 'Con vừa đạt được ' + items.length + ' điều tuyệt vời!', items.map(function (x) { return '<span class="pm-row"><span class="pm-ic">' + x[0] + '</span><span><b>' + x[1] + '</b><br><small>' + x[2].join(' ') + '</small></span></span>'; }));
++  }
+   function showPop() {
+@@ -283,4 +388,5 @@
+     var seen = lsGet('td_seen_v1', {}), me = seen[kid] || (seen[kid] = {}), p = pet(kid), changed = false;
++    var items = [];
+     if (me.pet == null) { me.pet = p.i; changed = true; }
+-    else if (p.i > me.pet) { me.pet = p.i; changed = true; pop(p.e, 'Linh vật lớn rồi!', ['Linh vật của con đã thành <b>' + esc(p.name) + '</b> (cấp ' + (p.i + 1) + '/' + p.n + ')', 'Cứ học đều mỗi ngày, linh vật sẽ còn lớn nữa!']); }
++    else if (p.i > me.pet) { me.pet = p.i; changed = true; items.push([p.e, 'Linh vật lớn rồi!', ['Linh vật của con đã thành <b>' + esc(p.name) + '</b> (cấp ' + (p.i + 1) + '/' + p.n + ').']]); }
+     var lw = addD(monday(today()), -7), L = D.lg[lw];
+@@ -288,7 +394,9 @@
+       me.wk = lw; changed = true;
+-      var won = (L.win || []).indexOf(kid) >= 0, sh = (L.sh || []).indexOf(kid) >= 0;
+-      if (won) pop('🏆', 'Con vô địch tuần!', ['Tuần ' + dm(lw) + '–' + dm(addD(lw, 6)) + ': <b>' + L.s[kid] + ' điểm</b>', 'Phần thưởng: <b>+' + CUP + ' sao</b>' + (sh ? ' và <b>1 khiên 🛡️</b>' : '')]);
+-      else if (sh) pop('🛡️', 'Con nhận được 1 khiên!', ['Tuần trước con đạt <b>' + L.s[kid] + ' điểm</b>.', 'Khiên sẽ tự giữ chuỗi ngày học nếu con lỡ nghỉ một ngày.']);
++      var won = (L.win || []).indexOf(kid) >= 0, gd = (L.good || []).indexOf(kid) >= 0, sh = (L.sh || []).indexOf(kid) >= 0;
++      if (won) items.push(['🏆', 'Con vô địch tuần!', ['Tuần ' + dm(lw) + '–' + dm(addD(lw, 6)) + ': <b>' + L.s[kid] + ' điểm</b>, thưởng <b>+' + CUP + ' sao</b>.']]);
++      if (gd) items.push(['💪', 'Con làm tốt tuần qua!', ['Con đạt <b>' + L.s[kid] + ' điểm</b>, thưởng <b>+' + GOOD + ' sao</b>.']]);
++      if (sh) items.push(['🛡️', 'Con nhận được 1 khiên!', ['Khiên tự giữ chuỗi ngày học nếu con lỡ nghỉ một ngày.']]);
+     }
+     if (changed) { seen[kid] = me; lsSet('td_seen_v1', seen); }
++    popMany(items);
+   }
+@@ -297,3 +405,3 @@
+     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
+-    pet: pet, petHtml: petHtml, petScene: petScene, petLine: petLine, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
++    pet: pet, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
+     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
+diff --git a/tuvung.html b/tuvung.html
+index 1e21e95..843a599 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -292,2 +292,3 @@ body.in-portal:not(.parent) #stTabs{display:none}
+ .npLocked{flex-basis:100%;margin-top:4px;font-size:.92rem}.npLocked summary{cursor:pointer;font-weight:700;color:var(--muted);padding:6px 0}.npLocked div div{padding:3px 0;border-top:1px dashed #E2E8F0}
++.pml{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px;text-align:left;max-height:50vh;overflow:auto}.pmr{display:flex;gap:12px;align-items:center;background:#FFFBEB;border-radius:14px;padding:8px 12px}.pmi{font-size:32px;flex:none}.pmr small{color:#475569;font-size:.86rem}
+ .kidchip.hasnp{background:none;box-shadow:none;padding:0;color:inherit}
+@@ -1973,4 +1974,7 @@ function checkBadges(kd,silent){
+ }
+-function showNextBadge(){
++let SNB_T=0;
++function showNextBadge(){if(SNB_T)return;SNB_T=setTimeout(()=>{SNB_T=0;showNextBadge0()},400)} // chờ chút để gom các thành tích đến cùng lúc
++function showNextBadge0(){
+   if(!BQ.length||!$('bdPop').classList.contains('hide'))return;
++  if(BQ.length>1){showManyPop(BQ.splice(0));return} // nhiều thành tích cùng lúc: một bảng tổng kết
+   const [kd,b]=BQ.shift();
+@@ -1983,2 +1987,11 @@ function showNextBadge(){
+ }
++function showManyPop(list){const kd=list[0][0];
++  const row=(ic,t,d)=>`<div class="pmr"><span class="pmi">${ic}</span><span><b>${t}</b><br><small>${d}</small></span></div>`;
++  const rows=list.map(([k,b])=>{
++    if(b.k==='rank')return row(b.R.e,`Lên cấp ${b.R.r}: ${esc(b.R.n)}`,b.R.r>=3?'Khung tên mới: '+FRAMES[b.R.r]:'Danh hiệu mới trước tên con');
++    if(b.k==='sp')return row(b.S.e,'Danh hiệu đặc biệt: '+esc(b.S.n),esc(b.S.d));
++    if(b.k==='shield')return row('🛡️','Khiên đã giữ chuỗi ngày học',`Chuỗi 🔥 ${b.st} ngày vẫn còn`);
++    return row(b.e,'Huy hiệu mới: '+esc(b.n),`Hạng ${TIER[b.t].n} · ${esc(b.d)}`)}).join('');
++  $('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:64px;line-height:1.1">🎉</div><div class="bpT">Con vừa đạt được ${list.length} điều tuyệt vời!</div><div class="pml">${rows}</div><div class="bpK">${esc(kd.name)}</div>`;
++  $('bdPop').classList.remove('hide');confetti();setTimeout(confetti,1200);setTimeout(()=>speak('Amazing! Great job!'),400)}
+ function confetti(){const box=$('confetti');box.innerHTML='';const em=['🎉','⭐','✨','🎊','🌟','💫'];
