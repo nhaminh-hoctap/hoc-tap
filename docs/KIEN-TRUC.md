@@ -22,7 +22,7 @@ Tài liệu cho người sửa mã (thường là Claude). Cập nhật lần cu
 | `words.json` | Danh sách 3.000 từ của mỗi bé, đúng thứ tự học. |
 | `lop2.html` | "Vở Vui Lớp 2": Toán 2 và Tiếng Việt 2 (SGK Kết nối tri thức), bài giảng, luyện tập, kiểm tra, cộng trừ nhanh, bảng cửu chương. |
 | `lop6.html` | "Vở ôn luyện lớp 6": Toán 6 và Ngữ văn 6 (SGK Kết nối tri thức), bài giảng, Hỏi thầy, luyện tập, sổ lỗi sai, ôn đến hạn, luyện viết, kiểm tra. |
-| `nuoithu.html` | "Nuôi thú" (app `thu`): chọn loại trứng, cho ăn, vuốt ve, 2 trò chơi nhỏ, trang trí chỗ ở. Dùng `THIDUA.pet` để biết thú lớn tới đâu (lớn nhờ năng lượng ⚡ từ việc học); không cộng sao hay điểm. Mua thức ăn = `BANK.add` dòng sao âm (`k: petfood`). |
+| `nuoithu.html` | "Nuôi thú" (app `thu`): chọn loại trứng, cho ăn, vuốt ve, 2 trò chơi nhỏ, đổi phông nền chỗ ở (mũ, đồ chơi đã bỏ). Dùng `THIDUA.pet` để biết thú lớn tới đâu (lớn nhờ năng lượng ⚡ từ việc học); không cộng sao hay điểm. Mua thức ăn = `BANK.add` dòng sao âm (`k: petfood`). |
 | `sw.js` | Service worker: chạy như ứng dụng trên iPad, mở được khi mạng yếu. |
 | `manifest.json`, `icon.png` | Thông tin "Thêm vào màn hình chính". |
 | `.github/workflows/apply-patches.yml` | Tự áp dụng bản sửa trong `patches/`, xoá tệp patch, commit và yêu cầu GitHub Pages cập nhật. |

@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 20/11 | 0034 | Nuôi thú: bỏ phần trang trí **mũ** và **đồ chơi** (bố mẹ thấy chưa đẹp), chỉ giữ đổi **phông nền** chỗ ở. |
 | 19/11 | 0033 | Thêm **🐾 Nuôi thú** (`nuoithu.html`): mỗi bé chọn 1 loại trứng (khủng long, rồng, phượng hoàng, kỳ lân; giữ năng lượng); cho ăn, vuốt ve, 2 trò chơi (Hứng sao, Thú trốn ở đâu), trang trí chỗ ở theo cấp. Thức ăn: xong Nhiệm vụ hôm nay +3, huy hiệu +1 món đặc biệt, lên cấp danh hiệu +3, mua 1 ⭐/5 ⭐ (tối đa 3 lần/ngày). Thanh Nghị đổi từ tên lửa sang trứng. Không cộng sao/điểm. |
 | 19/11 | 0032 | Mở Học / Sao thưởng / Huy hiệu / Cài đặt (Từ vựng) không còn chớp qua trang có đủ 4 thẻ: trang chính che nội dung, hiện "Đang mở…" đến khi Từ vựng chọn xong đúng màn (`PORTAL.mounted`, tối đa 5 giây). |
 | 19/11 | 0031 | Trang Huy hiệu của bé: bỏ hai thẻ chuyển Anh Phong / Thanh Nghị (giống trang Sao thưởng), chỉ còn Bộ sưu tập · Trang trí tên. |

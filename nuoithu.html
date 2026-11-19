@@ -100,7 +100,7 @@
           <button class="eat" id="ntEatN">🍖 Cho ăn <small id="ntCntN"></small></button>
           <button class="sp" id="ntEatS">🍰 Món đặc biệt <small id="ntCntS"></small></button>
           <button class="play" id="ntPlay">🎮 Chơi cùng thú</button>
-          <button class="deco" id="ntDecoBtn">🎨 Trang trí</button>
+          <button class="deco" id="ntDecoBtn">🖼️ Đổi phông nền</button>
         </div>
         <div class="nt-grow" id="ntGrow"></div>
       </div>
@@ -126,8 +126,8 @@
   </section>
   <!-- trang trí -->
   <section id="ntDeco" class="hide">
-    <div class="nt-ghead"><span>🎨 Trang trí chỗ ở</span><button class="nt-btn" data-back>⬅ Về chuồng</button></div>
-    <div class="card" style="margin-top:0"><p class="mu" style="margin:0 0 8px">Thú lớn lên cấp mới thì mở khóa thêm đồ trang trí.</p><div id="ntDecoList"></div></div>
+    <div class="nt-ghead"><span>🖼️ Phông nền chỗ ở</span><button class="nt-btn" data-back>⬅ Về chuồng</button></div>
+    <div class="card" style="margin-top:0"><p class="mu" style="margin:0 0 8px">Thú lớn lên cấp mới thì mở khóa thêm phông nền mới.</p><div id="ntDecoList"></div></div>
   </section>
 </div>
 <script>
@@ -151,7 +151,7 @@ var CFG={missionFood:3,       // xong đủ Nhiệm vụ hôm nay: 3 phần ăn 
   hapN:5,hapS:20,hapPat:5,patPerDay:10, // vui vẻ tăng khi ăn, khi vuốt ve (tính 10 lần/ngày)
   fullDrop:20,hapDrop:15,       // mỗi ngày no bụng giảm 20, vui vẻ giảm 15
   playPerDay:3};                // mỗi trò chơi 3 lượt/ngày
-/* đồ trang trí: mở khóa theo cấp linh vật (1–9) */
+/* phông nền: mở khóa theo cấp linh vật (1–9); mũ và đồ chơi đã bỏ theo ý bố mẹ (20/11/2026) */
 var DECO={
   bg:[{id:'',n:'Mặc định',e:'🏡',lv:1},{id:'co',n:'Đồng cỏ',e:'🌼',lv:1,c:'#DCFCE7,#86EFAC'},{id:'bien',n:'Bãi biển',e:'🏖️',lv:2,c:'#E0F2FE,#FDE68A'},{id:'rung',n:'Khu rừng',e:'🌲',lv:3,c:'#BBF7D0,#166534'},
       {id:'tuyet',n:'Xứ tuyết',e:'❄️',lv:4,c:'#F8FAFC,#BAE6FD'},{id:'nui',n:'Núi lửa',e:'🌋',lv:5,c:'#FED7AA,#9A3412'},{id:'vutru',n:'Vũ trụ',e:'🪐',lv:6,c:'#312E81,#020617'},{id:'lau',n:'Lâu đài',e:'🏰',lv:8,c:'#FDE68A,#A855F7'}],
@@ -196,7 +196,7 @@ function show(id){['ntChoose','ntHome','ntGames','ntG1','ntG2','ntDeco'].forEach
 function bgOf(){var b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];var p=pet();
   if(b&&b.c)return 'linear-gradient(160deg,'+b.c+')';
   var sp=T&&T.SPECIES&&T.SPECIES[T.spOf(KID)];return sp?'linear-gradient(160deg,'+sp.S[p?p.i:0]+')':'#FEF3C7'}
-function sceneHtml(size){var p=pet()||{e:'🥚',i:0,acc:''},f=fullNow(),hat=S.deco.hat,toy=S.deco.toy,b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];
+function sceneHtml(size){var p=pet()||{e:'🥚',i:0,acc:''},f=fullNow(),hat='',toy='',b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];
   return '<div class="nt-bub" id="ntBub"></div>'+(b&&b.id?'<span class="bgi">'+b.e+'</span>':'')+(p.acc?'<span class="acc">'+p.acc+'</span>':'')+
     '<span class="pe bob'+(f<30?' sad':'')+'" id="ntPet" style="font-size:'+(size+p.i*6)+'px">'+p.e+(hat&&p.i>=2?'<span class="hat">'+hat+'</span>':'')+'</span>'+(toy?'<span class="toy">'+toy+'</span>':'')}
 function render(){
@@ -256,7 +256,7 @@ function dlg(html,btns){var w=document.createElement('div');w.className='nt-dlg'
 function celebrate(em,t){dlg('<div class="big">'+em+'</div>'+t,[['Tuyệt!',null,'ok']])}
 
 /* ---------- trang trí ---------- */
-function renderDeco(){var L=lvl(),G=[['bg','🖼️ Phông nền'],['hat','🎩 Mũ (khi thú đã nở)'],['toy','🧸 Đồ chơi']];
+function renderDeco(){var L=lvl(),G=[['bg','🖼️ Phông nền']];
   $('ntDecoList').innerHTML=G.map(function(g){return '<b>'+g[1]+'</b><div class="nt-row">'+DECO[g[0]].map(function(x){var lock=x.lv>L,on=(S.deco[g[0]]||'')===x.id;
     return '<button data-g="'+g[0]+'" data-id="'+x.id+'" class="'+(on?'on':'')+(lock?' lock':'')+'"'+(lock?' data-lv="'+x.lv+'"':'')+'>'+(lock?'🔒':x.e)+'<small>'+(lock?'Cấp '+x.lv:esc(x.n))+'</small></button>'}).join('')+'</div>'}).join('');
   $('ntDecoList').querySelectorAll('button').forEach(function(b){b.onclick=function(){if(b.dataset.lv){dlg('Thú lên <b>cấp '+b.dataset.lv+'</b> sẽ mở khóa món này. Con học chăm để thú lớn nhé!',[['Đồng ý',null,'ok']]);return}
