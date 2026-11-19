@@ -426,7 +426,7 @@
     '.hw-x .ic{font-size:36px;line-height:1;flex:none}.hw-x b{display:block;font-size:17.5px;margin-bottom:2px}.hw-x span{font-size:15.5px;line-height:1.5;color:#334155}' +
     '.hw-day{margin-top:16px;background:#ECFDF5;border:2px solid #86EFAC;border-radius:18px;padding:12px 16px;font-size:17px;line-height:1.5;color:#14532D}' +
     '.hw details{margin-top:14px;background:#fff;border:2px solid #E2E8F0;border-radius:18px;padding:10px 16px;font-size:15.5px}.hw summary{cursor:pointer;font-weight:800;font-size:16.5px}' +
-    '@media (max-width:860px){.hw-main{grid-template-columns:1fr}.hw-ex{grid-template-columns:1fr}}';
+    '@media (max-width:860px){.hw-main{grid-template-columns:1fr}.hw-ex{grid-template-columns:1fr}}@media (max-width:480px){.hw-h h1{font-size:23px}.hw-lead{font-size:16.5px}.hw-c{padding:14px}.hw-c .ic{font-size:40px}}';
   function howHtml(kid) {
     css(); if (!document.getElementById('hwCss')) { var st = document.createElement('style'); st.id = 'hwCss'; st.textContent = HOW_CSS; document.head.appendChild(st); }
     var sub = kid === 'anhphong' ? 'Toán và Tiếng Việt lớp 2' : 'Toán và Ngữ văn lớp 6', g = D ? D.goal[kid] : 20;
@@ -529,13 +529,13 @@
       '<span class="wr-nav"><button type="button" data-wk="' + addD(wk, -7) + '"' + (canPrev ? '' : ' disabled') + '>◀ Tuần trước</button><button type="button" data-wk="' + addD(wk, 7) + '"' + (canNext ? '' : ' disabled') + '>Tuần sau ▶</button></span></div>' +
       '<div class="wr-grid">' + cards + '</div></div>';
   }
-  CSS += '.wr-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.wr-top h3{flex:1;margin:0}.wr-nav{display:flex;gap:8px}.wr-nav button{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid #E2E8F0;background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:#1E293B;touch-action:manipulation}.wr-nav button:disabled{opacity:.4}' +
+  CSS += '.wr-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.wr-top h3{flex:1 1 240px;margin:0}.wr-nav{display:flex;gap:8px}.wr-nav button{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid #E2E8F0;background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:#1E293B;touch-action:manipulation}.wr-nav button:disabled{opacity:.4}' +
     '.wr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}.wr-k{border:2px solid #E2E8F0;border-radius:18px;padding:12px 14px;font-size:15px;line-height:1.5}.wr-k.anhphong{border-color:#FDBA74}.wr-k.thanhnghi{border-color:#86EFAC}' +
     '.wr-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}.wr-pt{font-weight:800;font-size:18px;white-space:nowrap}.wr-pt small{font-size:12px;color:#64748B;font-weight:600}.wr-res{margin-top:6px;font-weight:700;color:#B45309}' +
     '.wr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 4px}.wr-stats div{background:#F8FAFC;border-radius:12px;padding:6px;text-align:center}.wr-stats b{display:block;font-size:19px}.wr-stats small{display:block;font-size:12px;color:#64748B;line-height:1.25}' +
     '.wr-k h4{margin:10px 0 2px;font-size:16px}.wr-k ul{margin:2px 0;padding-left:20px}.wr-mu{color:#64748B}.wr-warn{color:#B45309;font-weight:700}.wr-k details{margin-top:6px}' +
     '.wr-nx{margin-top:10px}.wr-nx div{border-radius:12px;padding:6px 10px;margin-top:6px}.wr-nx .g{background:#ECFDF5;color:#14532D}.wr-nx .n{background:#FFF7ED;color:#7C2D12}.wr-nx .mu{color:#64748B}' +
-    '@media (max-width:760px){.wr-grid{grid-template-columns:1fr}}';
+    '@media (max-width:760px){.wr-grid{grid-template-columns:1fr}}@media (max-width:480px){.wr-nav{width:100%}.wr-nav button{flex:1}.wr-stats b{font-size:17px}.wr-k{padding:10px 12px}}';
 
   window.THIDUA = {
     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },

@@ -20,7 +20,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 /* Chọn bé */
 .who h1{font-size:28px;text-align:center;margin:26px 0 6px}
 .who p{text-align:center;color:var(--ink2);margin:0 0 22px}
-.whoGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.whoGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.whoBtn{min-width:0}
 .whoBtn{border:0;border-radius:28px;padding:26px 12px 22px;color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 8px 0 rgba(0,0,0,.18);transition:transform .08s}
 .whoBtn:active{transform:translateY(4px);box-shadow:0 4px 0 rgba(0,0,0,.18)}
 .whoBtn .av{font-size:76px;line-height:1.1}
@@ -118,14 +118,16 @@ h2{font-size:19px;margin:24px 2px 10px}
 .kidsum .ks{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 @media (max-width:640px){.hero{flex-direction:column;text-align:center}.hero .av{width:120px;height:120px}.hrow{justify-content:center}.mini2{grid-template-columns:1fr}.tiles.learn .tile{min-height:0}}
 @media (max-width:520px){.tiles{grid-template-columns:1fr}.tile{min-height:0}.whoBtn .av{font-size:58px}.whoBtn .nm{font-size:22px}.hero .av{font-size:52px}.hero h1{font-size:23px}}
+/* Điện thoại: thẻ chọn bé xếp dọc, ảnh bên trái, tên bên phải */
+@media (max-width:560px){.who h1{font-size:24px;margin-top:16px}.whoGrid{grid-template-columns:minmax(0,1fr);gap:14px}.whoBtn{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:'av nm nm' 'av gr st';column-gap:12px;row-gap:4px;align-items:center;justify-items:start;padding:14px 16px;border-radius:24px;text-align:left}.whoBtn .av{grid-area:av;font-size:54px}.whoBtn .nm{grid-area:nm;margin:0;font-size:18px;min-width:0;max-width:100%}.whoBtn .gr{grid-area:gr}.whoBtn .st{grid-area:st;margin:0;font-size:16px;padding:4px 12px}.whoBtn .np.L{font-size:17px;white-space:normal;flex-wrap:wrap;row-gap:2px}.parentBtn{padding:14px 16px;gap:12px}.parentBtn .av{width:52px;height:52px;font-size:28px}.parentBtn b{font-size:20px}.parentBtn .lock{padding:7px 10px}}
 @media (min-width:700px){.wrap{padding-top:28px}.tile .t{font-size:22px}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=18"></script>
-<script src="bank.js?v=18"></script>
-<script src="thidua.js?v=18"></script>
+<script src="claude-shim.js?v=19"></script>
+<script src="bank.js?v=19"></script>
+<script src="thidua.js?v=19"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">

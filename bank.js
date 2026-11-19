@@ -166,6 +166,7 @@
     '.np.f7::before{content:"👑";position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:18px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}.np.f7.L::before{font-size:24px;top:-24px}' +
     '@keyframes npShift{to{background-position:0 0,300% 0}}@keyframes npSweep{0%{left:-60%}60%,100%{left:130%}}@keyframes npTw{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}' +
     '@media (prefers-reduced-motion:reduce){.np,.np::after,.np::before{animation:none!important}}' +
+    '.np>.npN{overflow:hidden;max-width:100%}.np .npN>small{overflow:hidden;text-overflow:ellipsis;max-width:100%}.np>.npT,.np>.npB{flex:none}' +
     '@media (max-width:520px){.np.S .npB{display:none}.np.L{font-size:19px}}';
   function npCss() { if (document.getElementById('npCss')) return; var st = document.createElement('style'); st.id = 'npCss'; st.textContent = NP_CSS; document.head.appendChild(st); }
   /* size: 'L' (thẻ lớn: danh hiệu trên tên), 'M', 'S' (thanh tiêu đề) ; data: ghi đè dữ liệu (ứng dụng Từ vựng truyền thẳng) */
