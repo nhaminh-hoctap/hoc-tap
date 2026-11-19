@@ -131,9 +131,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=31"></script>
-<script src="bank.js?v=31"></script>
-<script src="thidua.js?v=31"></script>
+<script src="claude-shim.js?v=32"></script>
+<script src="bank.js?v=32"></script>
+<script src="thidua.js?v=32"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -236,6 +236,7 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
     var go=function(){if(go.d)return;go.d=1;location.reload();setTimeout(restorePortal,2500)};
     try{var f=window.__beforeHome&&window.__beforeHome();if(f&&f.then){f.then(go,go);setTimeout(go,3000)}else go()}catch(e){go()} // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
   },
+  mounted:function(){clearTimeout(P._mt);requestAnimationFrame(function(){document.documentElement.classList.remove('pmount')})}, // ứng dụng con báo đã hiện đúng màn
   homeBtnHtml:function(style){if(document.getElementById('pbar'))return ''; // đã có thanh trên cùng chung
     var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';
     // Lớp 2 / Lớp 6: thêm tên bé kèm danh hiệu ngay cạnh nút về trang chính (Từ vựng tự hiện ở nút tên bé)
@@ -262,6 +263,10 @@ async function mount(app,kid,mode){
   var bsty=document.createElement('style');bsty.textContent=BAR_CSS;document.head.appendChild(bsty);
   [].slice.call(doc.body.attributes).forEach(function(a){document.body.setAttribute(a.name,a.value)});
   document.body.innerHTML='';
+  /* Từ vựng (Học, Sao thưởng, Huy hiệu, Cài đặt) tải dữ liệu xong mới tự chọn đúng màn: che tạm nội dung để không chớp trang có đủ 4 thẻ */
+  clearTimeout(P._mt);
+  if(A.file==='tuvung.html'){document.documentElement.classList.add('pmount');document.body.classList.add('in-portal','pm-'+P.mode);if(P.parent)document.body.classList.add('parent');
+    P._mt=setTimeout(P.mounted,5000)}else document.documentElement.classList.remove('pmount');
   var scripts=[];
   [].slice.call(doc.body.childNodes).forEach(function(n){
     if(n.nodeName==='SCRIPT'){scripts.push(n);return}
@@ -280,7 +285,8 @@ async function mount(app,kid,mode){
 }
 
 /* ---------- Thanh trên cùng chung cho cả ba ứng dụng ---------- */
-var BAR_CSS='#pbar{position:sticky;top:0;z-index:900;display:flex;align-items:center;gap:12px;min-height:68px;padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));'+
+var BAR_CSS='html.pmount body>*:not(#pbar){visibility:hidden!important}html.pmount body::after{content:"Đang mở…";position:fixed;top:45%;left:0;right:0;text-align:center;font:700 18px system-ui,-apple-system,sans-serif;color:#64748B}'+
+  '#pbar{position:sticky;top:0;z-index:900;display:flex;align-items:center;gap:12px;min-height:68px;padding:calc(8px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 8px max(16px,env(safe-area-inset-left));'+
   'background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:3px solid var(--pbk,#CBD5E1);box-shadow:0 2px 12px rgba(15,23,42,.07);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#1E293B;line-height:1.2;box-sizing:border-box}'+
   '#pbar *{box-sizing:border-box}#pbar .pb-back{display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 18px 0 14px;border-radius:15px;border:2px solid #1E293B;background:#1E293B;color:#fff;font-size:22px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 #0F172A;flex:none;font-family:inherit;touch-action:manipulation}'+
   '#pbar .pb-back[hidden]{display:none}#pbar .pb-back span{font-size:17px}#pbar .pb-back:active{transform:translateY(2px);box-shadow:0 1px 0 #0F172A}'+

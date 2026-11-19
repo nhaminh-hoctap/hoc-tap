@@ -2285,6 +2285,7 @@ $('fFix').onclick=()=>{const w=S.newWords&&S.newWords[S.fi];if(w)openFix(w)};$('
     else if(PORTAL.mode==='badges'){$('appTitle').textContent='🏅 Huy hiệu';document.title='Huy hiệu';openBadges()}
     else{renderHome();show('home')}
     if(window.BANK)BANK.onChange(()=>{try{refreshAfterRemote()}catch(e){}});
+    if(PORTAL.mounted)PORTAL.mounted(); // đã chọn đúng màn → bỏ che trang
   }else{$('kidChip').onclick=openWho;openWho()} // mỗi lần mở ứng dụng: hỏi “Ai đang học?”
   if(syncMode!=='off'){syncLive();if(syncMode==='empty')syncPushAll()}
 })();

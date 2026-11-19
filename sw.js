@@ -2,8 +2,8 @@
    - Trang và ứng dụng: lấy bản mới nhất từ mạng; mạng chậm (quá 4 giây) hoặc mất mạng thì dùng bản đã lưu
    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
-const V = 'hoc-tap-v31';
-const CORE = ['./', 'index.html', 'claude-shim.js?v=31', 'bank.js?v=31', 'thidua.js?v=31', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+const V = 'hoc-tap-v32';
+const CORE = ['./', 'index.html', 'claude-shim.js?v=32', 'bank.js?v=32', 'thidua.js?v=32', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V)
