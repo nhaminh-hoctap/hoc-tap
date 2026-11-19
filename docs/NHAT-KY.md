@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0020 | Âm thanh trên iPad/iPhone vẫn phát khi máy để chế độ im lặng (trước chỉ nghe được khi cắm tai nghe): khối "ÂM THANH TRÊN iPAD, iPHONE" đầu 4 trang. |
 | 19/11 | — | Thêm tài liệu `docs/` và công cụ `tools/hoctap.py` (kiểm tra, nâng phiên bản, tạo bản sửa, thử trên trình duyệt). Không đổi ứng dụng. |
 | 19/11 | 0019 | Giao diện tự đổi cho iPhone: màn chọn bé, khung tên, báo cáo tuần, Cách chơi. (Lần đầu lỗi khoảng trắng, đẩy lại tệp đúng.) |
 | 19/11 | 0018a, 0018b | Trang của bé có 3 ô chính (sao, chuỗi ngày, điểm tuần); trang Cách chơi; báo cáo tuần cho bố mẹ; nút Sao lưu; chuỗi ngày tính cả ngày dùng khiên. |

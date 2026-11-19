@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>/* ===== ÂM THANH TRÊN iPAD, iPHONE: vẫn phát tiếng khi máy đang để chế độ im lặng ===== */
+(function(){function set(){try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}}
+set();var done=false;function unlock(){set();if(done)return;done=true;
+try{if(!navigator.audioSession){var a=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=');a.setAttribute('playsinline','');var p=a.play();if(p&&p.catch)p.catch(function(){done=false;});}}catch(e){done=false;}}
+['touchend','click','keydown'].forEach(function(t){document.addEventListener(t,unlock,{capture:true,passive:true});});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)set();});})();</script>
 <title>Học từ vựng có phát âm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
