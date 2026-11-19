@@ -1,0 +1,13 @@
+diff --git a/index.html b/index.html
+index 3e3cfdb..92aa9a5 100644
+--- a/index.html
++++ b/index.html
+@@ -117,5 +117,5 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js"></script>
+-<script src="bank.js"></script>
+-<script src="thidua.js"></script>
++<script src="claude-shim.js?v=15"></script>
++<script src="bank.js?v=15"></script>
++<script src="thidua.js?v=15"></script>
+ <link rel="manifest" href="manifest.json">
