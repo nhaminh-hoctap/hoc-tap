@@ -74,7 +74,7 @@ Ba tệp `claude-shim.js`, `bank.js`, `thidua.js` được nạp kèm `?v=N`; `s
 | `sync/<khóa>` hoặc `sync/<khóa>.<bé>` | Từ vựng | Mỗi khóa `localStorage` trong `SYNC_KEYS` là một tài liệu `{v: "<json>", t, d}`. Dữ liệu theo bé tách `.anhphong` / `.thanhnghi`. Quá 60.000 ký tự thì chia mảnh: tài liệu chính `{c: số mảnh}` và các mảnh `sync/<id>~0`, `~1`… `{p: "…"}`. |
 | `bankx/<bé>/e/<id>` | `bank.js` | Mỗi lần nhận sao Toán / Tiếng Việt / Ngữ văn / cúp tuần là **một tài liệu riêng** `{id, t, v, r, src, k, key, day, void?}` để nhiều máy ghi cùng lúc không đè nhau. Huỷ một dòng = đặt `void: true`. |
 | `league/<thứ Hai yyyy-mm-dd>` | `thidua.js` | Kết quả tuần `{wk, s:{bé: điểm}, win, good, sh, at}`; tự chốt khi mở trang vào tuần sau. |
-| `data/users/gia-dinh/sync` | Lớp 2 | Tiến độ Lớp 2 (các lượt luyện, bài kiểm tra, luyện nhanh, cài đặt). `…/progress` là bản cũ. |
+| `data/users/gia-dinh/sync` | Lớp 2 | Tiến độ Lớp 2 (các lượt luyện, bài kiểm tra, luyện nhanh, cài đặt), lưu dạng `{json: "<chuỗi JSON>", t}` vì Firestore không nhận mảng lồng mảng. `…/progress` là bản cũ. |
 | `tien-do/hoc-sinh` | Lớp 6 | Tiến độ Lớp 6. `data/users/gia-dinh/tien-do` là vị trí cũ, chỉ đọc. |
 
 Các khóa Từ vựng quan trọng: `vocab_progress_v1` (đã học đến từ số mấy), `vocab_srs_v1` (lịch ôn, **khóa theo số thứ tự từ**), `vocab_daily_v1` (nhật ký từng ngày), `vocab_practice_log_v1` (các bài luyện thêm, nghe nói), `vocab_stars_v1` (sổ sao Từ vựng + sao bố mẹ chấm + `paidB` các khối đã thưởng), `vocab_badges_v1`, `vocab_title_v1` (danh hiệu, khung tên), `vocab_shield_v1` (khiên đã dùng), `vocab_pin` (mã bố mẹ).

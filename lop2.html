@@ -2025,7 +2025,10 @@ const sync={state:'local',ref:null,legacyRef:null,busy:false,timer:0,fails:0,las
 const hasPending=()=>S.L.rounds.length>0||S.L.tests.length>0||S.L.drills.length>0||!!S.L.pref.nameAt||!!S.L.pref.setAt||!!S.L.resetAt||sync.needReg;
 function setSync(st){sync.state=st;renderSyncChip();}
 function scheduleFlush(ms){if(!sync.ref)return;clearTimeout(sync.timer);sync.timer=setTimeout(flush,ms);}
-async function migrateBase(){const cand=[];try{const s=await sync.legacyRef.get();if(s.exists)cand.push(normalize(clone(s.data())));}catch(e){}
+/* Kho Firebase không nhận mảng lồng mảng (các lượt luyện lưu dạng [giờ, máy, bài, đúng, tổng, sao]) → gói cả tài liệu thành một chuỗi JSON khi gửi, mở ra khi đọc */
+const decDoc=d=>{if(d&&typeof d.json==='string'){try{return JSON.parse(d.json);}catch(e){return null;}}return d;};
+const encDoc=N=>({json:JSON.stringify(N),t:Date.now()});
+async function migrateBase(){const cand=[];try{const s=await sync.legacyRef.get();if(s.exists)cand.push(normalize(clone(decDoc(s.data()))));}catch(e){}
   if(S.legacy)cand.push(S.legacy);const p=cand.filter(x=>x.rounds>0||x.name).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))[0];
   if(!p)return null;return {v:4,base:p.rounds>0?{...legacyBase(p),at:+p.updatedAt||1}:null,rounds:[],foldedUpTo:0,pref:{name:p.name||'',nameAt:1,settings:normSettings(p.settings),setAt:1},resetAt:0,devs:{}};}
 async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
@@ -2034,9 +2037,9 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
     try{const a=await sync.ref.acquire({holder:S.dev,ttlMs:6000});if(a&&a.acquired!==false)leased=true;if(a&&a.acquired===false){retry=a.expiresAt?Math.max(400,Date.parse(a.expiresAt)-Date.now()):1500;}}
     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
     if(!retry){
-      const snap=await sync.ref.get();let R=snap.exists?clone(snap.data()):null;if(!R||R.v!==4)R=await migrateBase();
+      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
-      await sync.ref.set(N);
+      await sync.ref.set(encDoc(N));
       if(leased)sync.ref.acquire({holder:S.dev,ttlMs:1000}).catch(()=>{});
       const ids=new Set(sent.rounds.map(r=>r[0]+'|'+r[1]));S.L.rounds=S.L.rounds.filter(r=>!ids.has(r[0]+'|'+r[1]));
       const tids=new Set((sent.tests||[]).map(r=>r[0]+'|'+r[1]));S.L.tests=S.L.tests.filter(r=>!tids.has(r[0]+'|'+r[1]));
@@ -2055,7 +2058,7 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
   if(hasPending())scheduleFlush(300);}
 function applySnap(snap,live){const cached=!!(snap.metadata&&snap.metadata.fromCache);
   if(!cached)clearTimeout(sync.loadTimer);
-  if(snap.exists){const d=snap.data();if(d&&d.v===4){S.D=clone(d);S.legacy=null;}}else if(cached)return;
+  if(snap.exists){const d=decDoc(snap.data());if(d&&d.v===4){S.D=clone(d);S.legacy=null;}}else if(cached)return;
   const first=!sync.got&&!cached;if(first){sync.got=true;sync.last=Date.now();const me=S.D&&S.D.devs&&S.D.devs[S.dev];
     if(LS_OK&&(!me||me.label!==devLabel()||Date.now()-(me.seen||0)>12*3600e3))sync.needReg=true;
     if(!S.D&&S.legacy)sync.needReg=true;}
