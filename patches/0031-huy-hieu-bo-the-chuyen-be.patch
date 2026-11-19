@@ -1,0 +1,49 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 313b2c1..e49d3b3 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 19/11 | 0031 | Trang Huy hiệu của bé: bỏ hai thẻ chuyển Anh Phong / Thanh Nghị (giống trang Sao thưởng), chỉ còn Bộ sưu tập · Trang trí tên. |
+ | 19/11 | 0030 | "Học 5 từ mới" (Nhiệm vụ hôm nay, rương báu) chỉ tính xong khi bé làm hết cả bước kiểm tra từ mới; mở từ ra học chưa xong thì hiện "Còn bước kiểm tra từ mới, làm nốt nhé!". Bảng 3 ngày qua của bố mẹ ghi "chưa xong bước kiểm tra". Rương đã mở trước đây vẫn giữ điểm. |
+ | 19/11 | 0029 | Bỏ điều kiện "khối 100 từ đã thưởng theo quy tắc cũ thì không thưởng lại": sao bố mẹ thưởng trước đây (theo số từ đã học) không ảnh hưởng, mọi khối 50 từ được thưởng theo thuộc chắc thật. |
+diff --git a/index.html b/index.html
+index f77439d..c581bbc 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=30"></script>
+-<script src="bank.js?v=30"></script>
+-<script src="thidua.js?v=30"></script>
++<script src="claude-shim.js?v=31"></script>
++<script src="bank.js?v=31"></script>
++<script src="thidua.js?v=31"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/sw.js b/sw.js
+index d0899ca..67f8bae 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v30';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=30', 'bank.js?v=30', 'thidua.js?v=30', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v31';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=31', 'bank.js?v=31', 'thidua.js?v=31', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/tuvung.html b/tuvung.html
+index e0f8d1b..219fe4f 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -290,5 +290,5 @@ html[data-kid="thanhnghi"]{--kbg:#E2F6E8;--kc:#16A34A;--ksoft:#BBF7D0}
+ body.in-portal:not(.parent) header{display:none}
+ body.in-portal:not(.parent) #sLearned,body.in-portal:not(.parent) .pbar,body.in-portal:not(.parent) #sWeek,body.in-portal:not(.parent) #sReport,body.in-portal:not(.parent) #sBadge{display:none!important}
+-body.in-portal:not(.parent) #stTabs{display:none}
++body.in-portal:not(.parent) #stTabs,body.in-portal:not(.parent) #bdTabs{display:none} /* trang của bé: chỉ xem của mình, không hiện thẻ chuyển sang anh/em */
+ #chestCard{margin-top:14px}
+ .bdSeg{grid-template-columns:1fr 1fr;margin-top:12px}.bdSeg button{padding:12px 8px;font-size:1.02rem;min-height:48px;cursor:pointer;font-family:inherit;color:var(--ink)}
