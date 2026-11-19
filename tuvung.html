@@ -290,6 +290,7 @@ body.in-portal:not(.parent) #stTabs{display:none}
 .bdRow .bdItem{flex:0 0 108px;scroll-snap-align:start}
 .bdItem.nextb{outline:3px dashed #F59E0B;outline-offset:-3px}
 .npLocked{flex-basis:100%;margin-top:4px;font-size:.92rem}.npLocked summary{cursor:pointer;font-weight:700;color:var(--muted);padding:6px 0}.npLocked div div{padding:3px 0;border-top:1px dashed #E2E8F0}
+.pml{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px;text-align:left;max-height:50vh;overflow:auto}.pmr{display:flex;gap:12px;align-items:center;background:#FFFBEB;border-radius:14px;padding:8px 12px}.pmi{font-size:32px;flex:none}.pmr small{color:#475569;font-size:.86rem}
 .kidchip.hasnp{background:none;box-shadow:none;padding:0;color:inherit}
 .npPrev{display:flex;justify-content:center;align-items:center;min-height:74px;padding:22px 8px 14px;margin:10px 0;border-radius:18px;background:linear-gradient(135deg,#FEF3C7,#FCE7F3 50%,#E0F2FE)}
 .npSec{margin-top:14px}.npSec h4{margin:0 0 7px;font-size:1rem}
@@ -1971,8 +1972,11 @@ function checkBadges(kd,silent){
   titleRefresh(kd,!first&&!silent); // danh hiệu: tính lại, báo lên cấp (sau các huy hiệu mới)
   if(BQ.length)showNextBadge();
 }
-function showNextBadge(){
+let SNB_T=0;
+function showNextBadge(){if(SNB_T)return;SNB_T=setTimeout(()=>{SNB_T=0;showNextBadge0()},400)} // chờ chút để gom các thành tích đến cùng lúc
+function showNextBadge0(){
   if(!BQ.length||!$('bdPop').classList.contains('hide'))return;
+  if(BQ.length>1){showManyPop(BQ.splice(0));return} // nhiều thành tích cùng lúc: một bảng tổng kết
   const [kd,b]=BQ.shift();
   if(b.k){showTitlePop(kd,b);return}
   const t=TIER[b.t];
@@ -1981,6 +1985,15 @@ function showNextBadge(){
     <div class="bpTier ${t.c}">Hạng ${t.n}</div><div class="bpK">${esc(kd.name)}</div>`;
   $('bdPop').classList.remove('hide');confetti();setTimeout(()=>speak(pick(['Congratulations!','Well done!','Amazing!','Great job!'])),400);
 }
+function showManyPop(list){const kd=list[0][0];
+  const row=(ic,t,d)=>`<div class="pmr"><span class="pmi">${ic}</span><span><b>${t}</b><br><small>${d}</small></span></div>`;
+  const rows=list.map(([k,b])=>{
+    if(b.k==='rank')return row(b.R.e,`Lên cấp ${b.R.r}: ${esc(b.R.n)}`,b.R.r>=3?'Khung tên mới: '+FRAMES[b.R.r]:'Danh hiệu mới trước tên con');
+    if(b.k==='sp')return row(b.S.e,'Danh hiệu đặc biệt: '+esc(b.S.n),esc(b.S.d));
+    if(b.k==='shield')return row('🛡️','Khiên đã giữ chuỗi ngày học',`Chuỗi 🔥 ${b.st} ngày vẫn còn`);
+    return row(b.e,'Huy hiệu mới: '+esc(b.n),`Hạng ${TIER[b.t].n} · ${esc(b.d)}`)}).join('');
+  $('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:64px;line-height:1.1">🎉</div><div class="bpT">Con vừa đạt được ${list.length} điều tuyệt vời!</div><div class="pml">${rows}</div><div class="bpK">${esc(kd.name)}</div>`;
+  $('bdPop').classList.remove('hide');confetti();setTimeout(confetti,1200);setTimeout(()=>speak('Amazing! Great job!'),400)}
 function confetti(){const box=$('confetti');box.innerHTML='';const em=['🎉','⭐','✨','🎊','🌟','💫'];
   for(let i=0;i<36;i++){const s=document.createElement('span');s.textContent=pick(em);s.style.left=Math.random()*100+'%';s.style.animationDelay=(Math.random()*0.8)+'s';s.style.fontSize=(14+Math.random()*18)+'px';s.style.animationDuration=(1.8+Math.random()*1.4)+'s';box.appendChild(s)}
   setTimeout(()=>box.innerHTML='',3600)}

@@ -18,7 +18,7 @@
     tv: { e: '📖', n: 'Tiếng Việt' },
     van: { e: '📚', n: 'Ngữ văn' },
     home: { e: '🏠', n: 'Bố mẹ thưởng / đổi quà' },
-    cup: { e: '🏆', n: 'Cúp tuần' }
+    cup: { e: '🏆', n: 'Đấu trường tuần' }
   };
   /* Quy tắc nhận sao cho Toán – Tiếng Việt – Ngữ văn.
      cap: số lần tối đa có sao trong một ngày (tính chung các môn của ứng dụng đó) */

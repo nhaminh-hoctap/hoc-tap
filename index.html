@@ -40,8 +40,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .bal{display:inline-flex;align-items:baseline;gap:6px;background:#fff;color:var(--gold);border-radius:99px;padding:6px 16px;margin-top:10px;font-weight:800;font-size:24px}
 .bal small{font-size:14px;font-weight:600;color:#92400E}
 .bal.neg{color:#B91C1C}
-.today{margin-top:8px;font-size:15px;opacity:.97}
-.today span{display:inline-block;background:rgba(255,255,255,.22);border-radius:99px;padding:2px 9px;margin:3px 4px 0 0}
+.today{margin-top:8px;font-size:16px;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.today span{display:inline-block;background:rgba(0,0,0,.2);border-radius:99px;padding:3px 10px;margin:3px 4px 0 0}
 h2{font-size:19px;margin:24px 2px 10px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .tile{position:relative;text-align:left;background:#fff;border:2px solid var(--line);border-radius:24px;padding:18px 18px 16px;min-height:150px;display:flex;flex-direction:column;gap:6px;box-shadow:0 5px 0 var(--line);transition:transform .08s}
@@ -94,7 +94,7 @@ h2{font-size:19px;margin:24px 2px 10px}
 .backBtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 /* ===== Bố cục mới, tối ưu cho iPad ===== */
 .hero{align-items:center}.hero .av{width:150px;height:150px;flex:none;display:grid;place-items:center}.hero .av .pet-scene{box-shadow:0 0 0 4px rgba(255,255,255,.55);width:100%!important;height:100%!important}
-.hinfo{flex:1;min-width:0}.hiS{font-size:16px;font-weight:700;opacity:.95;margin-bottom:6px}.hiS span{font-weight:600;opacity:.9}
+.hinfo{flex:1;min-width:0}.hiS{font-size:17px;font-weight:700;margin-bottom:6px;text-shadow:0 1px 2px rgba(0,0,0,.25)}.hiS span{font-weight:600;opacity:.9}
 .hrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:10px}.hrow .bal{margin-top:0}.hrow .today{margin-top:0}
 .tiles.learn .tile{min-height:190px;padding:22px 22px 20px}.tiles.learn .ic{font-size:54px}.tiles.learn .t{font-size:24px}.tiles.learn .s{font-size:15.5px}
 .tiles.learn .go{font-size:18px;padding:12px 22px;border-radius:14px}
@@ -115,9 +115,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=15"></script>
-<script src="bank.js?v=15"></script>
-<script src="thidua.js?v=15"></script>
+<script src="claude-shim.js?v=16"></script>
+<script src="bank.js?v=16"></script>
+<script src="thidua.js?v=16"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Học tập">
@@ -149,6 +149,7 @@ h2{font-size:19px;margin:24px 2px 10px}
   <section id="pPar" class="hide">
     <div style="display:flex;align-items:center;gap:12px;margin:6px 0 14px"><button class="backBtn" id="pParBack" aria-label="Quay lại">⬅ Quay lại</button><h1 style="font-size:26px;margin:0">👨‍👩‍👧 Góc bố mẹ</h1></div>
     <div class="kidsum" id="pParSum"></div>
+    <div id="pParAlert"></div>
     <h2>⭐ Sao thưởng</h2>
     <div class="tiles" id="pParStar"></div>
     <div id="pParLeague"></div>
@@ -170,7 +171,8 @@ h2{font-size:19px;margin:24px 2px 10px}
       </div>
     </div>
 
-    <h2>📚 Hôm nay con học gì?</h2>
+    <div id="pMission"></div>
+    <h2>📚 Vào học</h2>
     <div class="tiles learn" id="pTiles"></div>
     <div class="mini2" id="pMini"></div>
     <div id="pLeague"></div>
@@ -339,6 +341,9 @@ function renderKid(){
     '<button data-app="huyhieu"><span class="mi">🏅</span><span><b>Huy hiệu & danh hiệu</b><small>'+(ti&&ti.rank?'Cấp '+ti.rank+'/7 · '+(ti.pts||0)+' điểm huy hiệu':'Bộ sưu tập · trang trí tên')+'</small></span></button>';
   document.querySelectorAll('#pTiles .tile,#pMini button').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
   $('pLeague').innerHTML=has?T.leagueHtml(CUR,false,'compact'):'';
+  $('pMission').innerHTML=has?T.missionHtml(CUR):'';
+  document.querySelectorAll('#pMission .ms-it').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
+  var sy=document.querySelector('#pMission .ms-say');if(sy)sy.onclick=function(){T.say(T.missionSpeech(CUR))};
   if(has)T.celebrate(CUR);if(T)T.load();
 }
 function go(app){
@@ -425,7 +430,7 @@ function renderParent(){if(!PARENT)return;
   $('pParSum').innerHTML=BANK.KIDS.map(function(k){var td=BANK.todayBySrc(k.id),t=Object.keys(td).filter(function(x){return td[x]}).map(function(x){return BANK.SRC[x].e+' +'+td[x]}).join(' · ');
     var ti=BANK.title(k.id);
     return '<div class="ks '+k.id+'"><div class="n">'+BANK.nameplate(k.id,'M',null,{av:true})+'</div>'+(ti&&ti.rank?'<div class="t" style="margin-top:6px">🏆 Cấp '+ti.rank+'/7 '+(ti.re||'')+' '+esc(ti.rn||'')+' · '+(ti.pts||0)+' điểm huy hiệu'+(ti.spe&&ti.spe.length?' · Đặc biệt: '+ti.spe.join(''):'')+'</div>':'')+'<div class="b">⭐ '+showTotal(k.id)+'</div><div class="t">Hôm nay: '+(t||'chưa nhận sao')+'</div></div>'}).join('');
-  var TD=window.THIDUA;if(TD){if(TD.data())$('pParLeague').innerHTML=TD.leagueHtml(null,true);TD.load()}
+  var TD=window.THIDUA;if(TD){if(TD.data()){$('pParLeague').innerHTML=TD.leagueHtml(null,true);$('pParAlert').innerHTML=TD.alertsHtml()}TD.load()}
   renderRecent();
   var T=function(app,ic,t,sub,cls){return '<button class="tile '+(cls||'par')+'" data-app="'+app+'"><span class="ic">'+ic+'</span><span class="t">'+t+'</span><span class="s">'+sub+'</span><span class="go">Mở →</span></button>'};
   $('pParStar').innerHTML=T('p-sao','⭐','Thưởng · Phạt · Tiêu sao','Chấm sao việc nhà, việc tốt; phạt; đổi quà; hủy dòng sao nhầm. Xem lịch sử sao của cả hai con.','star')+
