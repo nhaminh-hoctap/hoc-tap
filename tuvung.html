@@ -278,6 +278,18 @@ html[data-kid="anhphong"]{--kbg:#FFEBD6;--kc:#EA580C;--ksoft:#FED7AA}
 html[data-kid="thanhnghi"]{--kbg:#E2F6E8;--kc:#16A34A;--ksoft:#BBF7D0}
 .kidchip{border:none;border-radius:999px;padding:3px 12px 3px 8px;font-weight:800;font-size:.95rem;background:var(--kc,#999);color:#fff;vertical-align:middle;box-shadow:0 2px 0 rgba(0,0,0,.15)}
 .kidchip:empty{display:none}
+.stp{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.95);color:var(--ink);font-size:1rem;font-weight:900;margin-right:8px;vertical-align:2px;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.stp.ok{background:#22C55E;color:#fff}
+.sst{display:inline-block;font-size:.8rem;font-weight:800;background:rgba(255,255,255,.25);border-radius:99px;padding:2px 9px;margin-left:6px;vertical-align:3px}.sst:empty{display:none}.sst.ok{background:#fff;color:#15803D}
+body.in-portal:not(.parent) header{display:none}
+body.in-portal:not(.parent) #sLearned,body.in-portal:not(.parent) .pbar,body.in-portal:not(.parent) #sWeek,body.in-portal:not(.parent) #sReport,body.in-portal:not(.parent) #sBadge{display:none!important}
+body.in-portal:not(.parent) #stTabs{display:none}
+#chestCard{margin-top:14px}
+.bdSeg{grid-template-columns:1fr 1fr;margin-top:12px}.bdSeg button{padding:12px 8px;font-size:1.02rem;min-height:48px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.bdRow{display:flex!important;overflow-x:auto;gap:10px;padding:2px 2px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.bdRow .bdItem{flex:0 0 108px;scroll-snap-align:start}
+.bdItem.nextb{outline:3px dashed #F59E0B;outline-offset:-3px}
+.npLocked{flex-basis:100%;margin-top:4px;font-size:.92rem}.npLocked summary{cursor:pointer;font-weight:700;color:var(--muted);padding:6px 0}.npLocked div div{padding:3px 0;border-top:1px dashed #E2E8F0}
 .kidchip.hasnp{background:none;box-shadow:none;padding:0;color:inherit}
 .npPrev{display:flex;justify-content:center;align-items:center;min-height:74px;padding:22px 8px 14px;margin:10px 0;border-radius:18px;background:linear-gradient(135deg,#FEF3C7,#FCE7F3 50%,#E0F2FE)}
 .npSec{margin-top:14px}.npSec h4{margin:0 0 7px;font-size:1rem}
@@ -348,16 +360,15 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <div class="journey" id="sJourney"></div>
   </div>
 
-  <div class="card chestcard" id="chestCard"></div>
   <div class="parts">
     <div class="part new">
-      <h2>📘 Học từ mới</h2>
+      <h2><span class="stp" id="st1">1</span>📘 Học từ mới <span class="sst" id="ss1"></span></h2>
       <div id="nBody"></div>
       <div class="pc">Mỗi ngày: <span id="nPer"></span></div>
       <button class="go" id="nGo"></button>
     </div>
     <div class="part rev">
-      <h2>🔁 Ôn tập</h2>
+      <h2><span class="stp" id="st2">2</span>🔁 Ôn tập <span class="sst" id="ss2"></span></h2>
       <div id="rBody"></div>
       <div class="pc rv hide" id="rOldWrap">Từ cũ mỗi ngày: <span id="rOld"></span></div>
       <button class="plgo hide" id="plGo"></button>
@@ -373,7 +384,7 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
 
   <div class="part prac" style="margin-top:14px;min-height:0">
     <div class="row" style="justify-content:space-between;align-items:flex-start">
-      <div><h2>🎯 Luyện thêm theo ý mình</h2><div class="sub" id="pLast"></div><div class="sub" id="pOut" style="font-weight:800"></div></div>
+      <div><h2><span class="stp" id="st3">3</span>🎯 Luyện thêm theo ý mình <span class="sst" id="ss3"></span></h2><div class="sub" id="pLast"></div><div class="sub" id="pOut" style="font-weight:800"></div></div>
       <button class="ghostw" id="pHist">📜 Lịch sử</button>
     </div>
     <div class="seg" id="pSeg"><button data-v="range" class="on">📚 Khoảng từ</button><button data-v="weak">❗ Từ hay sai</button></div>
@@ -386,12 +397,13 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
 
   <div class="part ls" style="margin-top:14px;min-height:0">
     <div class="row" style="justify-content:space-between;align-items:flex-start">
-      <div><h2>🗣️ Luyện nghe & nói</h2><div class="sub" id="lsSub"></div></div>
+      <div><h2><span class="stp" id="st4">4</span>🗣️ Luyện nghe & nói <span class="sst" id="ss4"></span></h2><div class="sub" id="lsSub"></div></div>
       <div class="pc ls">Mức: <span id="lsLv"></span></div>
     </div>
     <div class="sub" id="lsDesc"></div>
     <button class="go" id="lsGo">▶ Bắt đầu</button>
   </div>
+  <div class="card chestcard" id="chestCard"></div>
 
 </section>
 
@@ -403,8 +415,9 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <div class="row" style="gap:18px;align-items:flex-end"><div><div class="num" id="bdNum"></div><div class="sub">huy hiệu đã đạt</div></div>
       <div class="sub" id="bdLast"></div></div>
   </div>
-  <div class="card npcard" id="npCard" style="margin-top:14px"></div>
-  <div class="card" style="margin-top:14px"><b id="bdTitle" style="font-size:1.1rem"></b><div id="bdGrid"></div></div>
+  <div class="seg2 bdSeg" id="bdSeg"><button data-v="col" class="on">🏅 Bộ sưu tập</button><button data-v="deco">✨ Trang trí tên</button></div>
+  <div class="card npcard hide" id="npCard" style="margin-top:12px"></div>
+  <div class="card" id="bdCol" style="margin-top:12px"><b id="bdTitle" style="font-size:1.1rem"></b><div id="bdGrid"></div></div>
 </section>
 <section id="report" class="hide">
   <div class="card">
@@ -500,11 +513,6 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <div class="row" style="gap:18px;align-items:flex-end"><div><div class="num" id="stBal"></div><div class="sub">sao đang có</div></div>
       <div class="sub" id="stToday"></div></div>
   </div>
-  <details class="card rulecard" id="stRuleBox" style="margin-top:14px">
-    <summary><b style="font-size:1.05rem">📋 Sao tự động trong ứng dụng</b> <span class="hint">(bấm để xem)</span></summary>
-    <div class="rlist" id="stRules"></div>
-    <p class="hint" style="margin:6px 0 0">Chỉ tính câu bé tự làm đúng (không dùng 💡 gợi ý). Làm sai không bị trừ sao.</p>
-  </details>
   <div class="card pgcard">
     <div class="row" style="justify-content:space-between"><b style="font-size:1.1rem">👨‍👩‍👧 Bố mẹ chấm sao</b><span class="hint">Theo “Quy tắc tích sao – V3”</span></div>
     <div class="seg2" id="pgTabs"><button data-g="earn" class="on">➕ Tích sao</button><button data-g="pen">➖ Phạt sao</button><button data-g="spend">🎁 Tiêu sao</button></div>
@@ -528,6 +536,11 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
       <input type="password" id="undoPin" inputmode="numeric" maxlength="6" placeholder="Mã bố mẹ" style="width:130px;font-family:inherit;font-size:1rem;padding:6px 10px;border-radius:10px;border:2px solid var(--line)">
       <button class="btn" style="background:#E5484D;box-shadow:0 4px 0 #A61B20" id="undoOk">Hủy dòng này</button><button class="btn ghost" id="undoCancel">Thôi</button></div></div>
     <div id="stLedger" style="margin-top:8px"></div></div>
+  <details class="card rulecard" id="stRuleBox" style="margin-top:14px">
+    <summary><b style="font-size:1.05rem">📋 Sao tự động trong ứng dụng</b> <span class="hint">(bấm để xem)</span></summary>
+    <div class="rlist" id="stRules"></div>
+    <p class="hint" style="margin:6px 0 0">Chỉ tính câu bé tự làm đúng (không dùng 💡 gợi ý). Làm sai không bị trừ sao.</p>
+  </details>
 </section>
 
 <!-- ============ HISTORY ============ -->
@@ -1161,7 +1174,7 @@ function renderStars(){
   const kd=kid(),s=starsOf(kd);$('stKid').textContent=kd.name;$('stBal').textContent=s.bal;$('stBal').style.color=s.bal<0?'#7F1D1D':'';
   $('stToday').textContent=`Hôm nay: +${todayStars(kd)} sao`;
   const T=(h,v,sub)=>`<div class="rl"><span class="rh">${h}</span><span class="rv">${v}</span>${sub?`<span class="rs">${String(sub).replace(/<br>/g,' · ')}</span>`:''}</div>`;
-  $('stRuleBox').open=!document.body.classList.contains('parent');
+  $('stRuleBox').open=false;
   $('stRules').innerHTML=
     (()=>{const B=BLOCK_SPLIT[kd.id],bp=blockProgress(kd),done=allBlocks(kd).filter(b=>b.paid).length;
       return T('🏆 Thuộc chắc theo khối',`100 ⭐ / 100 từ · 150 ⭐ / 50 từ`,`Từ 1–${B}: mỗi 100 từ thuộc chắc = +100 ⭐<br>Từ ${B+1} trở đi: mỗi 50 từ = +150 ⭐<br>`+
@@ -1977,7 +1990,10 @@ function openBadgeInfo(id){const kd=kid(),b=badgeDefs(kd).find(x=>x.id===id);if(
     <div class="bpTier ${t.c}">Hạng ${t.n}</div>`+
     (b.ok?`<div class="bpK">🏅 Đạt ngày ${when?when.split('-').reverse().join('/'):''}</div>`:(!b.secret?`<div class="bprog"><i style="width:${Math.round(b.v/b.goal*100)}%"></i></div><div class="bpK">${b.v}/${b.goal}</div>`:''));
   $('bdPop').classList.remove('hide')}
+let BDV='col';
+function setBdView(v){BDV=v;$('bdSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));$('npCard').classList.toggle('hide',v!=='deco');$('bdCol').classList.toggle('hide',v!=='col')}
 function renderBadges(){
+  if(!$('bdSeg').dataset.b){$('bdSeg').dataset.b=1;$('bdSeg').onclick=e=>{const b=e.target.closest('button');if(b)setBdView(b.dataset.v)}}setBdView(BDV);
   const kd=kid(),B=badgeDefs(kd),got=earnedBadges(kd);B.forEach(b=>{if(got[b.id])b.ok=true});
   const n=B.filter(b=>b.ok).length;
   $('bdTitle').innerHTML=`🏅 Bộ sưu tập huy hiệu <span class="bdCount">${n}/${B.length}</span>`;
@@ -1985,7 +2001,7 @@ function renderBadges(){
   renderNameCard();
   $('bdGrid').innerHTML=`<div class="bdLegend">${Object.entries(TIER).map(([k,t])=>`<span class="tierdot ${t.c}"></span>${t.n} <small style="opacity:.75">${TPTS[k]}đ</small>`).join(' ')} <span style="opacity:.8">· huy hiệu không kèm sao</span></div>`+
     Object.entries(groups).map(([g,list])=>`<div class="bdGroup"><div class="bdGh">${BGROUP[g]} <small>${list.filter(b=>b.ok).length}/${list.length}</small></div><div class="bdRow">`+
-    list.map(b=>`<button class="bdItem ${b.ok?'on':''}" data-id="${b.id}">${medal(b)}<div class="bn">${b.ok||!b.secret?esc(b.n):'???'}</div>`+
+    [...list.filter(b=>b.ok),...list.filter(b=>!b.ok)].map((b,i,arr)=>`<button class="bdItem ${b.ok?'on':''} ${!b.ok&&(i===0||arr[i-1].ok)?'nextb':''}" data-id="${b.id}">${medal(b)}<div class="bn">${b.ok||!b.secret?esc(b.n):'???'}</div>`+
       (!b.ok&&!b.secret?`<div class="bprog"><i style="width:${Math.round(b.v/b.goal*100)}%"></i></div>`:'')+`</button>`).join('')+`</div></div>`).join('');
 }
 function renderBadgePill(){const kd=kid(),B=badgeDefs(kd),got=earnedBadges(kd);const n=B.filter(b=>b.ok||got[b.id]).length;
@@ -2074,8 +2090,10 @@ function renderChest(kd){const box=$('chestCard');if(!box)return;if(PORTAL_PAREN
   const st=chestState(kd),it=(ok,t)=>`<span class="${ok?'ok':''}">${ok?'✅':'⬜'} ${t}</span>`;
   const items=[it(st.nw>=CHEST_NEW,`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
   const left=[st.nw>=CHEST_NEW,st.rv,st.pr>=2,st.ls>=1].filter(x=>!x).length;
+  [[st.nw>=CHEST_NEW,`${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW} từ`],[st.rv,''],[st.pr>=2,`${Math.min(st.pr,2)}/2 bài`],[st.ls>=1,`${Math.min(st.ls,1)}/1 bài`]].forEach(([ok,t],i)=>{
+    const a=$('st'+(i+1)),b=$('ss'+(i+1));if(!a)return;a.classList.toggle('ok',!!ok);a.textContent=ok?'✓':String(i+1);b.textContent=ok?'Xong':t;b.classList.toggle('ok',!!ok)});
   box.className='card chestcard '+(st.opened?'open':st.ok?'ready':'');
-  box.innerHTML=`<div class="chIc">${st.opened?'🪙':'🎁'}</div><div class="chB"><b>Rương báu hôm nay</b> <span class="sub">· mở ra được 5–10 ⭐</span><div class="chL">${items.join('')}</div>
+  box.innerHTML=`<div class="chIc">${st.opened?'🪙':'🎁'}</div><div class="chB"><b>Rương báu hôm nay</b> <span class="sub">· làm xong 4 bước để mở, được 5–10 ⭐</span><div class="chL">${items.join('')}</div>
     ${CHEST_NEW>logOf(kd).per&&st.nw<CHEST_NEW&&recToday(kd).newDone?`<div class="sub" style="margin-top:4px">Bấm “Học thêm” ở phần Học từ mới để đủ ${CHEST_NEW} từ nhé.</div>`:''}</div>
     <button class="btn" id="chestGo" ${st.opened||!st.ok?'disabled':''}>${st.opened?`Đã mở: +${st.opened} ⭐`:st.ok?'🎁 Mở rương!':`Còn ${left} việc`}</button>`;
   $('chestGo').onclick=()=>openChest(kd)}
@@ -2113,11 +2131,15 @@ function renderNameCard(){
   const can=canDecorate(kd);
   const chip=(attr,on,lock,inner,tip)=>`<button class="npc ${on?'on':''} ${lock?'lock':''}" ${attr} ${tip?`data-tip="${esc(tip)}"`:''}>${inner}</button>`;
   const tSel=sel.t||'';
+  const rCond=x=>`cần ${x.p} điểm${x.q?' và '+x.q[1]+' huy hiệu '+TIER[x.q[0]].n+(x.q[0]<5?' trở lên':''):''}`;
+  const lockR=RANKS.filter(x=>x.r>c.rank),lockS=SPECIALS.filter(x=>!c.sp.includes(x.id));
   const tChips=chip('data-t=""',!tSel,false,'⚡ Tự động (cấp cao nhất)')+
-    RANKS.map(x=>chip(`data-t="r${x.r}"`,tSel==='r'+x.r,x.r>c.rank,`${x.r>c.rank?'🔒':x.e} ${esc(x.n)}`,x.r>c.rank?`Cấp ${x.r}: cần ${x.p} điểm${x.q?' và '+x.q[1]+' huy hiệu '+TIER[x.q[0]].n+(x.q[0]<5?' trở lên':''):''}`:'')).join('')+
-    SPECIALS.map(x=>{const ok=c.sp.includes(x.id);return chip(`data-t="${x.id}"`,tSel===x.id,!ok,`${ok?x.e:'🔒'} ${esc(x.n)}`,ok?'':x.d)}).join('');
+    RANKS.filter(x=>x.r<=c.rank).map(x=>chip(`data-t="r${x.r}"`,tSel==='r'+x.r,false,`${x.e} ${esc(x.n)}`,'')).join('')+
+    SPECIALS.filter(x=>c.sp.includes(x.id)).map(x=>chip(`data-t="${x.id}"`,tSel===x.id,false,`${x.e} ${esc(x.n)}`,'')).join('')+
+    (lockR.length+lockS.length?`<details class="npLocked"><summary>🔒 Còn ${lockR.length+lockS.length} danh hiệu chưa mở · xem điều kiện</summary><div>`+
+      lockR.map(x=>`<div>${x.e} <b>${esc(x.n)}</b> (cấp ${x.r}): ${rCond(x)}</div>`).join('')+lockS.map(x=>`<div>${x.e} <b>${esc(x.n)}</b>: ${esc(x.d)}</div>`).join('')+`</div></details>`:'');
   const fChips=chip('data-f="0"',!sel.f,false,'⚡ Theo cấp')+
-    Object.keys(FRAMES).map(Number).map(f=>chip(`data-f="${f}"`,sel.f===f,f>c.rank,(window.BANK&&BANK.nameplate?BANK.nameplate(kd.id,'S',{show:{e:'',n:'',f,b:[]}}):'')+`<small>${f>c.rank?'🔒 ':''}${FRAMES[f]}</small>`,f>c.rank?`Mở khi lên cấp ${f}`:'')).join('');
+    Object.keys(FRAMES).map(Number).filter(f=>f<=c.rank).map(f=>chip(`data-f="${f}"`,sel.f===f,f>c.rank,(window.BANK&&BANK.nameplate?BANK.nameplate(kd.id,'S',{show:{e:'',n:'',f,b:[]}}):'')+`<small>${f>c.rank?'🔒 ':''}${FRAMES[f]}</small>`,f>c.rank?`Mở khi lên cấp ${f}`:'')).join('')+(c.rank<7?`<span class="sub" style="align-self:center">🔒 Lên cấp ${c.rank+1} để mở khung “${FRAMES[c.rank+1]}”</span>`:'');
   const bIds=shownBadgeIds(c,sel);
   const bChips=chip('data-b="auto"',!Array.isArray(sel.b),false,'⚡ Tự động')+chip('data-b="none"',Array.isArray(sel.b)&&!sel.b.length,false,'Không hiện')+
     (c.list.length?c.list.slice().sort((x,y)=>y.t-x.t).map(b=>chip(`data-b="${b.id}"`,bIds.includes(b.id)&&Array.isArray(sel.b),false,`<span class="npBd">${b.e}</span><small>${TIER[b.t].n}</small>`,'')).join(''):'<span class="sub">Chưa có huy hiệu nào.</span>');
