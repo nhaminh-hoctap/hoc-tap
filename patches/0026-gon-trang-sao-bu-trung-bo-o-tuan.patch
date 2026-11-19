@@ -1,0 +1,100 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index bd6f267..479770c 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 19/11 | 0026 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: bỏ các thẻ Báo cáo, Cài đặt phía trên, chỉ còn phần sao. Vở Vui Lớp 2: bỏ ô "Tiếng Việt · Tuần … (theo lịch 35 tuần)" ở trang chính (đã có Toán 2, Tiếng Việt 2). Bù +5 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đạt mục tiêu Toán/TV hôm đó, không cộng trùng; danh sách ngày bù `SUB_BU` trong `thidua.js`). |
+ | 19/11 | 0025 | Sửa lỗi Vở Vui Lớp 2 không gửi được tiến độ lên kho (kho không nhận dạng lưu cũ) nên bảng "3 ngày qua", điểm tuần, báo cáo của Anh Phong thiếu Toán / Tiếng Việt. Nay gói tiến độ thành một chuỗi khi gửi; các lượt đã làm còn trên iPad của bé sẽ tự gửi bù khi bé mở lại Lớp 2. |
+ | 19/11 | 0024 | Góc bố mẹ: "Các con đã học gì 3 ngày qua" đưa lên đầu (ngay dưới ô sao hai con); "Cần bố mẹ để ý" và "Báo cáo tuần" rút gọn thành một dòng tóm tắt (số việc cần chú ý; điểm tuần hai con), bấm vào mới mở chi tiết, chuyển tuần vẫn giữ trạng thái mở. |
+diff --git a/docs/SUA-NOI-DUNG.md b/docs/SUA-NOI-DUNG.md
+index 9d1128f..72554b5 100644
+--- a/docs/SUA-NOI-DUNG.md
++++ b/docs/SUA-NOI-DUNG.md
+@@ -104,5 +104,5 @@ Hằng số ở đầu tệp:
+ | `SHIELD_MIN`, `SHIELD_MAX` | 75, 2 | Tuần đạt từ 75 điểm được 1 khiên (nhận thứ Hai tuần sau, giữ tối đa 2); khiên giữ chuỗi khi lỡ một ngày |
+ | `NEWW` | 5 | Rương báu: học 5 từ mới + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn → ngẫu nhiên 5–10 sao |
+-| `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20 |
++| `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20. Bố mẹ bù ngày đạt mục tiêu môn lớp (khi dữ liệu bị thiếu) bằng cách thêm ngày vào `SUB_BU` |
+ 
+ Danh hiệu và khung tên (7 cấp, khung `f1`→`f7`) do Từ vựng tính từ điểm huy hiệu và lưu ở `vocab_title_v1`; `bank.js` chỉ vẽ (`BANK.nameplate`).
+diff --git a/index.html b/index.html
+index 42c1998..322bb87 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=25"></script>
+-<script src="bank.js?v=25"></script>
+-<script src="thidua.js?v=25"></script>
++<script src="claude-shim.js?v=26"></script>
++<script src="bank.js?v=26"></script>
++<script src="thidua.js?v=26"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/lop2.html b/lop2.html
+index d40f710..d8096b4 100644
+--- a/lop2.html
++++ b/lop2.html
+@@ -2205,8 +2205,4 @@ function perParentTable(){const cell=(s,i)=>{const a=perStats(s,i),pct=a.max?Mat
+ function renderHome(){
+   const ls=allToanLessons(),ws=allWeeks();const ts=ls.reduce((a,l)=>a+stat(l.id).best,0),vs=ws.reduce((a,w)=>a+stat(w.id).best,0);
+-  const wk=schoolWeek();let wkCard='';
+-  if(wk){const w=ws.find(x=>x.tuan===wk);const rv=UNITS.find(u=>u.review&&u.tuan===wk);
+-    if(w)wkCard=`<section class="week-card"><div class="ic">${icon('abc')}</div><div class="wtxt"><h2>Tiếng Việt · Tuần ${wk} (theo lịch 35 tuần)</h2><p>Bài ${w.b.join(' – ')}: ${esc(w.titles.join(' · '))} · Chữ hoa ${esc(w.hoa)}</p></div><button class="btn go" data-act="learn" data-t="${w.id}">Học tuần này</button></section>`;
+-    else if(rv)wkCard=`<section class="week-card"><div class="ic">${icon('star')}</div><div class="wtxt"><h2>Tiếng Việt · Tuần ${wk}</h2><p>${esc(rv.title)}</p></div><button class="btn go" data-act="start" data-t="${rv.id}">Ôn tập ngay</button></section>`;}
+   $app.className='app';
+   const inBar=!!document.getElementById('pbar');
+@@ -2217,5 +2213,4 @@ function renderHome(){
+     <button class="subj" style="background:#FFDEEB" data-act="tv"><span class="subj-name">Tiếng Việt 2</span><span class="subj-meta">35 tuần · 9 chủ điểm theo SGK Kết nối tri thức</span><span class="subj-meta">${vs}/${ws.length*3} sao</span><span class="bar"><i style="width:${Math.round(vs/(ws.length*3)*100)}%"></i></span><span class="art">${icon('abc')}</span></button>
+   </section>
+-  ${wkCard}
+   ${toolCards()}
+   <h2 class="sec-h">Tiến độ theo giai đoạn</h2>
+diff --git a/sw.js b/sw.js
+index 82e2750..686badb 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v25';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=25', 'bank.js?v=25', 'thidua.js?v=25', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v26';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=26', 'bank.js?v=26', 'thidua.js?v=26', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/thidua.js b/thidua.js
+index 07a14f2..036aded 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -181,11 +181,15 @@
+       [350, '🛰️', 'Vệ tinh quỹ đạo', '🌍'], [550, '🚀', 'Đáp xuống Mặt Trăng', '🌙'], [800, '🪐', 'Thám hiểm sao Thổ', '✨'], [1100, '🛸', 'Phi thuyền liên sao', '🌟'], [1500, '🛸', 'Chinh phục thiên hà', '👑']]
+   };
++  /* Bố mẹ bù năng lượng linh vật: những ngày này tính như đã đạt mục tiêu Toán/TV (+5 ⚡), không cộng trùng nếu dữ liệu sau đó về đủ.
++     19/11/2026: bù cho Anh Phong vì bài Toán/TV hôm đó chưa gửi được lên kho (lỗi đã sửa ở bản 0025). */
++  var SUB_BU = { anhphong: ['2026-11-19'], thanhnghi: [] };
++  function subOk(kid, k) { var s = D.sj[kid][k]; return (s && s.q >= D.goal[kid]) || (SUB_BU[kid] || []).indexOf(k) >= 0; }
+   function xpParts(kid) {
+     var o = { en: 0, sub: 0, chest: 0, cup: 0 }, vd = D.vd[kid], sj = D.sj[kid], g = D.goal[kid];
+     Object.keys(vd).forEach(function (k) { if (dayDone(vd[k])) o.en++; if (vd[k] && vd[k].chest) o.chest++; });
+-    Object.keys(sj).forEach(function (k) { if (sj[k].q >= g) o.sub++; });
++    var sd = {}; Object.keys(sj).concat(SUB_BU[kid] || []).forEach(function (k) { if (!sd[k] && subOk(kid, k)) { sd[k] = 1; o.sub++; } });
+     o.cup = cupsOf(kid); o.xp = o.en * 10 + o.sub * 5 + o.chest * 3 + o.cup * 20; return o;
+   }
+-  function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (dayDone(r) ? 10 : 0) + (s && s.q >= D.goal[kid] ? 5 : 0) + (r && r.chest ? 3 : 0); }
++  function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (dayDone(r) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
+   function pet(kid) {
+     if (!D) return null; var xp = xpParts(kid).xp, L = PETS[kid], i = 0;
+diff --git a/tuvung.html b/tuvung.html
+index 77cead2..c465a7c 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -332,4 +332,5 @@ body.in-portal:not(.parent) .pgcard,body.in-portal:not(.parent) .ux,body.in-port
+ body.parent #btnHome,body.parent #btnBadge{display:none}
+ body.parent #btnRep{display:inline-block!important}
++body.pm-parent-sao #nav{display:none!important} /* Góc bố mẹ → Thưởng · Phạt · Tiêu sao: chỉ giữ phần sao, bỏ thẻ Báo cáo, Cài đặt */
+ body.parent #stPin,body.parent #undoPin,body.parent #bkPin,body.parent #fixPin{display:none}
+ body.parent #kidChip::after{content:' ⇄';opacity:.8}
