@@ -2065,6 +2065,9 @@ function applySnap(snap,live){const cached=!!(snap.metadata&&snap.metadata.fromC
   if(sig()!==before)softRender();
   if(hasPending())scheduleFlush(first?400:1200);}
 function softRender(){if(['home','toan','chapter','tv','parent','tsetup','tresult','speed','mul','mtable'].includes(view.name)&&!modal){const a=document.activeElement;if(a&&a.tagName==='INPUT')return renderSyncChip();const y=window.scrollY;render();window.scrollTo({top:y});}else renderSyncChip();}
+/* về trang chính: gửi nốt các lượt vừa làm lên kho rồi mới chuyển trang (để nhiệm vụ, điểm tuần ghi nhận ngay) */
+window.__beforeHome=()=>{if(!sync.ref||(!hasPending()&&!sync.busy))return Promise.resolve();clearTimeout(sync.timer);
+  return new Promise(r=>{const t0=Date.now();(function w(){if(!sync.busy&&hasPending())flush();if((!hasPending()&&!sync.busy)||Date.now()-t0>2500)r();else setTimeout(w,120)})()})};
 function syncNow(){if(!sync.ref)return;if(hasPending())return scheduleFlush(0);setSync('syncing');sync.ref.get().then(s=>{applySnap(s);setSync('ok');},e=>setSync(navigator.onLine===false?'offline':'error'));}
 (async()=>{try{
   if(!window.claude||typeof window.claude.use!=='function')return;

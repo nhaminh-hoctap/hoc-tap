@@ -4046,6 +4046,12 @@ function schedulePush(delay) {
   clearTimeout(sync.timer);
   sync.timer = setTimeout(function () { sync.timer = null; push(); }, delay == null ? 1500 : delay);
 }
+/* về trang chính: gửi nốt tiến độ vừa làm lên kho rồi mới chuyển trang (để nhiệm vụ, điểm tuần ghi nhận ngay) */
+window.__beforeHome = function () {
+  if (!sync.ref || !sync.canWrite || (!sync.timer && !sync.busy)) return Promise.resolve();
+  if (sync.timer) { clearTimeout(sync.timer); sync.timer = null; push(); }
+  return new Promise(function (r) { var t0 = Date.now(); (function w() { if ((!sync.busy && !sync.timer && !sync.again) || Date.now() - t0 > 2500) r(); else setTimeout(w, 120); })(); });
+};
 function push() {
   if (!sync.ref || !sync.canWrite) return;
   if (sync.busy) { sync.again = true; return; }

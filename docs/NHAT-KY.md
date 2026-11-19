@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0022 | Nhiệm vụ hôm nay, điểm tuần (đua cúp) và linh vật (nở trứng) tính ngay cả phần bé vừa làm trên máy, kể cả khi chưa kịp gửi lên kho; Lớp 2, Lớp 6 gửi xong bài mới về trang chính. Luyện thêm ghi rõ "hôm nay đã làm N bài · còn X/4 lượt nhận sao (cần đúng từ 45/50)" và báo khi bài chưa đủ 45 câu đúng. Áp dụng cho cả hai bé. |
 | 19/11 | 0021 | Sửa lỗi mất sao Từ vựng: bé học xong rồi bấm về trang chính ngay thì sao (và tiến độ) chưa kịp gửi lên kho, lần mở sau bị dữ liệu cũ đè mất. Nay gửi tất cả cùng lúc, chờ gửi xong mới về trang chính, và không để dữ liệu cũ đè phần chưa gửi. |
 | 19/11 | 0020 | Âm thanh trên iPad/iPhone vẫn phát khi máy để chế độ im lặng (trước chỉ nghe được khi cắm tai nghe): khối "ÂM THANH TRÊN iPAD, iPHONE" đầu 4 trang. |
 | 19/11 | — | Thêm tài liệu `docs/` và công cụ `tools/hoctap.py` (kiểm tra, nâng phiên bản, tạo bản sửa, thử trên trình duyệt). Không đổi ứng dụng. |

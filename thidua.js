@@ -47,8 +47,8 @@
     if (D && !force && Date.now() - AT < 20000) return D;
     if (LOADING) return LOADING;
     LOADING = (async function () {
-      await BANK.ready; var db = BANK.db; if (!db) { LOADING = null; return D; }
-      var R = await Promise.all([
+      await BANK.ready; var db = BANK.db;
+      var R = !db ? [null, null, null, null, null, null, null, null, null, WORDS] : await Promise.all([
         readDoc(db, 'sync/vocab_daily_v1.anhphong'), readDoc(db, 'sync/vocab_practice_log_v1.anhphong'),
         readDoc(db, 'sync/vocab_daily_v1.thanhnghi'), readDoc(db, 'sync/vocab_practice_log_v1.thanhnghi'),
         readDoc(db, 'data/users/gia-dinh/sync'), readDoc(db, 'tien-do/hoc-sinh'),
@@ -62,6 +62,7 @@
         pl: { anhphong: R[1] || [], thanhnghi: R[3] || [] }, l2: R[4], l6: R[5], lg: lg,
         sh: { anhphong: R[6] || {}, thanhnghi: R[7] || {} }
       };
+      try { mergeLocal(n); } catch (e) { console.error(e); }
       n.sj = { anhphong: subjDays('anhphong', n), thanhnghi: subjDays('thanhnghi', n) };
       n.goal = { anhphong: 20, thanhnghi: (n.l6 && n.l6.cfg && +n.l6.cfg.goal) || 20 };
       D = n; AT = Date.now(); LOADING = null;
@@ -70,6 +71,44 @@
       return D;
     })();
     return LOADING;
+  }
+  /* Gộp thêm phần bé vừa học trên máy này mà có thể chưa kịp gửi lên kho
+     (bé bấm về trang chính ngay, hoặc mạng yếu) — để nhiệm vụ, điểm tuần, linh vật cập nhật ngay */
+  function dayScore(r) { return r ? (r.new || []).length * 10 + (r.newDone ? 5 : 0) + (r.reviewDone || r.done ? 5 : 0) + (r.chest ? 3 : 0) + (+r.q || 0) / 1000 : -1; }
+  function mergeLocal(n) {
+    var vd = lsGet('vocab_daily_v1', {}), pl = lsGet('vocab_practice_log_v1', {});
+    KIDS.forEach(function (k) {
+      var ld = vd && vd[k] && vd[k].days || {}, cd = n.vd[k];
+      Object.keys(ld).forEach(function (d) { if (dayScore(ld[d]) > dayScore(cd[d])) cd[d] = ld[d]; });
+      var lp = pl && Array.isArray(pl[k]) ? pl[k] : [];
+      if (lp.length) {
+        var seen = {}, all = [];
+        n.pl[k].concat(lp).forEach(function (e) { if (!e || !e.t) return; var id = e.t + '|' + e.type, o = seen[id];
+          if (o === undefined) { seen[id] = all.length; all.push(e); } else if ((+e.done || 0) > (+all[o].done || 0)) all[o] = e; });
+        n.pl[k] = all.sort(function (a, b) { return b.t - a.t; });
+      }
+    });
+    /* Lớp 2: các lượt chưa gửi + bản kho đã lưu trên máy */
+    var s2 = lsGet('vovui-lop2-sync-v4', null);
+    if (s2 && typeof s2 === 'object') {
+      var c2 = n.l2 || {}, out = { rounds: [], tests: [] };
+      ['rounds', 'tests'].forEach(function (f) {
+        var seen = {};
+        [].concat(c2[f] || [], (s2.D && s2.D[f]) || [], (s2.L && s2.L[f]) || []).forEach(function (r) {
+          if (!Array.isArray(r)) return; var id = r[0] + '|' + r[1]; if (seen[id]) return; seen[id] = 1; out[f].push(r); });
+      });
+      n.l2 = Object.assign({}, c2, out);
+    }
+    /* Lớp 6: mỗi ngày, mỗi môn lấy số câu lớn hơn giữa máy này và kho */
+    var s6 = lsGet('vo-on-luyen-lop6-v1', null);
+    if (s6 && s6.days) {
+      var c6 = n.l6 = n.l6 || { days: {} }; c6.days = c6.days || {};
+      Object.keys(s6.days).forEach(function (d) {
+        var L = s6.days[d] || {}, C = c6.days[d] = c6.days[d] || {};
+        Object.keys(L).forEach(function (sb) { var a = L[sb], b = C[sb]; if (a && typeof a === 'object' && (!b || (+a.q || 0) > (+b.q || 0))) C[sb] = a; });
+      });
+      if (!c6.cfg && s6.cfg) c6.cfg = s6.cfg;
+    }
   }
   /* số câu Toán/TV/Văn mỗi ngày {ngày: {q, c}} */
   function subjDays(kid, n) {

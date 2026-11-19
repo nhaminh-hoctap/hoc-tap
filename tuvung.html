@@ -780,7 +780,7 @@ function renderHome(){
   {const un=rp.untracked;$('plGo').classList.toggle('hide',!un);$('plGo').textContent=`🧭 Kiểm tra từ cũ (${un} từ chưa xếp)`;$('plGo').onclick=startPlacement}
   renderJourney();renderPhonCard();checkBadges(kd);renderBadgePill();
   renderLsCard();renderStarPill();
-  {const pl=plogOf(kd).filter(e=>e.type!=='ls');$('pLast').textContent='Nghe → nghĩa · Nghĩa → từ'+(pl.length?` · lần trước ${pl[0].score}/${pl[0].done}`:'')+` · hôm nay còn ${pracStarLeft(kd)}/${STAR.pracPerDay} bài được sao`;}
+  {const pl=plogOf(kd).filter(e=>e.type!=='ls');$('pLast').textContent='Nghe → nghĩa · Nghĩa → từ'+(pl.length?` · lần trước ${pl[0].score}/${pl[0].done}`:'')+` · hôm nay đã làm ${pracDoneToday(kd)} bài · `+(pracStarLeft(kd)?`còn ${pracStarLeft(kd)}/${STAR.pracPerDay} lượt nhận sao (cần đúng từ 45/50 câu)`:`đã nhận đủ sao ${STAR.pracPerDay} bài`);}
   // practice defaults
   syncPracticeRange(kd);
   applyKidTheme();
@@ -1123,7 +1123,8 @@ function finishSession(){
      if(v){ if(S.items.length<PRACTICE_N)S.starNote='Chưa đủ 50 câu nên chưa tính sao.';
        else if(distinct<STAR.pracMinWords)S.starNote=`Bài có dưới ${STAR.pracMinWords} từ khác nhau (từ bị lặp nhiều) nên chưa tính sao — chọn khoảng rộng hơn nhé.`;
        else if(starFlag(kd,'prac')>=STAR.pracPerDay)S.starNote=`Hôm nay đã nhận sao cho ${STAR.pracPerDay} bài luyện thêm.`;
-       else addStars(kd,v,`🎯 Luyện thêm ${clean}/50 câu đúng`)}}
+       else addStars(kd,v,`🎯 Luyện thêm ${clean}/50 câu đúng`)}
+     else if(S.items.length>=PRACTICE_N)S.starNote=`Bài này đúng ${clean}/50 câu`+(S.hintOk?` (không tính ${S.hintOk} câu có gợi ý)`:'')+' — cần đúng từ 45 câu mới có sao.'}
     savePracticeLog(false);
     $('rTitle').textContent=`${S.score}/${S.items.length}`;
     {const l=pracStarLeft(kd);btns+=l?`<button class="btn" style="background:#0F9488" id="rbPrac">🎯 Làm tiếp bài nữa — còn ${l} bài được sao hôm nay</button>`:`<button class="btn ghost" id="rbPrac">🎯 Làm tiếp (hôm nay đã đủ ${STAR.pracPerDay} bài có sao)</button>`;
@@ -1161,6 +1162,7 @@ function finishSession(){
 
 // ================= SAO THƯỞNG =================
 const STAR={block:50,blockStars:150,bigStars:300,newDone:2,extra:1,revDone:1,revAcc:1,streak7:10,streak30:50,lsGood:3,lsPerfect:5,pracMinWords:20,pracPerDay:4,lsPerDay:2};
+const pracDoneToday=kd=>plogOf(kd).filter(e=>e.type!=='ls'&&e.total>0&&e.done>=e.total&&ymd(new Date(e.t))===today()).length; // số bài luyện thêm làm trọn vẹn hôm nay
 const pracStarLeft=kd=>Math.max(0,STAR.pracPerDay-(((recToday(kd).st)||{}).prac||0));
 const pracStars=c=>c>=49?5:c>=47?3:c>=45?1:0;   // luyện thêm 50 câu: 45–46 → 1, 47–48 → 3, 49–50 → 5
 function ownStars(kd){const a=store.get('vocab_stars_v1',{});return a[kd.id]||{bal:0,led:[]}}
