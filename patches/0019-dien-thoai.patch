@@ -58,3 +58,4 @@ index 837e801..c0fb182 100644
      '.wr-nx{margin-top:10px}.wr-nx div{border-radius:12px;padding:6px 10px;margin-top:6px}.wr-nx .g{background:#ECFDF5;color:#14532D}.wr-nx .n{background:#FFF7ED;color:#7C2D12}.wr-nx .mu{color:#64748B}' +
 -    '@media (max-width:760px){.wr-grid{grid-template-columns:1fr}}';
 +    '@media (max-width:760px){.wr-grid{grid-template-columns:1fr}}@media (max-width:480px){.wr-nav{width:100%}.wr-nav button{flex:1}.wr-stats b{font-size:17px}.wr-k{padding:10px 12px}}';
+ 
