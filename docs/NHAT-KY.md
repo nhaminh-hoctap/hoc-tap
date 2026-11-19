@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0028 | Bố mẹ chốt lại sao Từ vựng: bỏ "Học thêm từ mới" (mỗi ngày học đúng 5 từ, nút đổi thành "Đủ từ mới hôm nay"); bỏ "Kiểm tra từ cũ"; thuộc chắc từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao, sau đó mỗi 50 từ = 150 sao; khối 100 từ đã thưởng trước đây không thưởng lại; khối đã đủ từ trước được thưởng nốt ở lần thuộc chắc kế tiếp. Các quy tắc khác giữ nguyên. |
 | 19/11 | 0027 | Bù thêm +10 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đã học đủ bài tiếng Anh hôm đó, không cộng trùng; danh sách `EN_BU` trong `thidua.js`). |
 | 19/11 | 0026 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: bỏ các thẻ Báo cáo, Cài đặt phía trên, chỉ còn phần sao. Vở Vui Lớp 2: bỏ ô "Tiếng Việt · Tuần … (theo lịch 35 tuần)" ở trang chính (đã có Toán 2, Tiếng Việt 2). Bù +5 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đạt mục tiêu Toán/TV hôm đó, không cộng trùng; danh sách ngày bù `SUB_BU` trong `thidua.js`). |
 | 19/11 | 0025 | Sửa lỗi Vở Vui Lớp 2 không gửi được tiến độ lên kho (kho không nhận dạng lưu cũ) nên bảng "3 ngày qua", điểm tuần, báo cáo của Anh Phong thiếu Toán / Tiếng Việt. Nay gói tiến độ thành một chuỗi khi gửi; các lượt đã làm còn trên iPad của bé sẽ tự gửi bù khi bé mở lại Lớp 2. |
@@ -37,7 +38,8 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 - Mỗi bé học **5 từ mới/ngày**; mục tiêu 3.000 từ phổ thông mỗi bé, từ dễ đến khó; giữ thứ tự 1–700 của danh sách Thanh Nghị.
 - Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ.
 - Sao tính cho cả Toán, Tiếng Việt / Ngữ văn; Sao thưởng là mục riêng dùng chung cho mọi ứng dụng.
-- Thưởng thuộc chắc: khối kế tiếp (Anh Phong 401–500, Thanh Nghị 601–700) vẫn 300 sao (2 khối 50 từ × 150), sau đó cứ 50 từ = 150 sao. Trước đó bố mẹ đã thưởng ngoài ứng dụng đến từ 400 / 600.
+- Thưởng thuộc chắc (chốt 19/11): từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao; từ 401 / 601 trở đi mỗi 50 từ = 150 sao.
+- Từ vựng (chốt 19/11): mỗi ngày học đúng 5 từ, không có "Học thêm"; bỏ "Kiểm tra từ cũ" và Phonics.
 - Thi đua: danh hiệu / khung tên theo huy hiệu; đấu trường tuần (cúp +30 sao); rương báu mỗi ngày khi học đủ tiếng Anh (5 từ mới, ôn, 2 lần luyện thêm, 1 lần nghe nói → 5–10 sao); linh vật lớn lên; khiên giữ chuỗi chỉ thưởng khi bé hoàn thành tốt cả tuần; bé thua nhưng làm tốt cũng được +15 sao.
 - Lớp 6: bỏ gia sư AI; bài giảng chi tiết nhưng dễ hiểu. Lớp 2: tiến độ theo Giữa kì 1, Học kì 1, Giữa kì 2, Học kì 2; có luyện cộng trừ nhanh và bảng cửu chương.
 - Thiết kế ưu tiên iPad (cả dọc và ngang), dùng được trên iPhone; tiến độ đồng bộ giữa các máy.

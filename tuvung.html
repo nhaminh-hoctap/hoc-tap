@@ -757,7 +757,7 @@ function renderHome(){
   const np=newPlan(kd),per=logOf(kd).per;
   if(np.done){
     $('nBody').innerHTML=`<div class="done">✓ Hôm nay đã học xong ${np.count} từ mới</div><div class="sub">Ngày mai các từ này sẽ có trong phần Ôn tập.</div>`;
-    $('nGo').textContent=L>=N?'🏆 Đã học hết danh sách':`➕ Học thêm ${per} từ`;$('nGo').disabled=L>=N;$('nGo').onclick=()=>startNew(true);
+    $('nGo').textContent=L>=N?'🏆 Đã học hết danh sách':'✓ Đủ từ mới hôm nay, hẹn con ngày mai!';$('nGo').disabled=true;$('nGo').onclick=null; // bố mẹ chốt 19/11: mỗi ngày học đúng số từ quy định, bỏ “Học thêm”
   } else if(np.words.length){
     const a=np.words[0].n,b=np.words[np.words.length-1].n;
     $('nBody').innerHTML=`<div class="num">${np.words.length} từ</div><div class="sub">Từ số ${a}${b>a?'–'+b:''} · nghe, đọc theo, rồi làm bài kiểm tra nhanh</div>`+(np.light?`<div class="sub">⚖️ Hôm nay giảm còn ${np.words.length} từ vì đang có nhiều từ chờ ôn — ôn xong sẽ học lại ${per} từ/ngày</div>`:'');
@@ -778,7 +778,8 @@ function renderHome(){
   const oldN=logOf(kd).old;$('rOldWrap').classList.toggle('hide',!rp.untracked);
   $('rOld').innerHTML=[5,10,15,20].map(n=>`<button class="${n===oldN?'on':''}" data-n="${n}">${n}</button>`).join('')+` <span style="opacity:.9">(còn ${rp.untracked} từ cũ chưa ôn)</span>`;
   $('rOld').querySelectorAll('button').forEach(b=>b.onclick=()=>{const l=logOf(kd);l.old=+b.dataset.n;logSave(kd,l);renderHome()});
-  {const un=rp.untracked;$('plGo').classList.toggle('hide',!un);$('plGo').textContent=`🧭 Kiểm tra từ cũ (${un} từ chưa xếp)`;$('plGo').onclick=startPlacement}
+  {const un=rp.untracked;$('plGo').classList.toggle('hide',true); // bố mẹ chốt 19/11: bỏ “Kiểm tra từ cũ”, từ cũ vào dần bài Ôn tập
+  $('plGo').textContent=`🧭 Kiểm tra từ cũ (${un} từ chưa xếp)`;$('plGo').onclick=startPlacement}
   renderJourney();renderPhonCard();checkBadges(kd);renderBadgePill();
   renderLsCard();renderStarPill();
   {const pl=plogOf(kd).filter(e=>e.type!=='ls');$('pLast').textContent='Nghe → nghĩa · Nghĩa → từ'+(pl.length?` · lần trước ${pl[0].score}/${pl[0].done}`:'')+` · hôm nay đã làm ${pracDoneToday(kd)} bài · `+(pracStarLeft(kd)?`còn ${pracStarLeft(kd)}/${STAR.pracPerDay} lượt nhận sao (cần đúng từ 45/50 câu)`:`đã nhận đủ sao ${STAR.pracPerDay} bài`);}
@@ -1162,7 +1163,7 @@ function finishSession(){
 }
 
 // ================= SAO THƯỞNG =================
-const STAR={block:50,blockStars:150,bigStars:300,newDone:2,extra:1,revDone:1,revAcc:1,streak7:10,streak30:50,lsGood:3,lsPerfect:5,pracMinWords:20,pracPerDay:4,lsPerDay:2};
+const STAR={block:50,blockLow:50,blockStars:150,bigStars:300,newDone:2,extra:1,revDone:1,revAcc:1,streak7:10,streak30:50,lsGood:3,lsPerfect:5,pracMinWords:20,pracPerDay:4,lsPerDay:2};
 const pracDoneToday=kd=>plogOf(kd).filter(e=>e.type!=='ls'&&e.total>0&&e.done>=e.total&&ymd(new Date(e.t))===today()).length; // số bài luyện thêm làm trọn vẹn hôm nay
 const pracStarGot=kd=>{const d=today();return Math.max((((recToday(kd).st)||{}).prac||0),ownStars(kd).led.filter(e=>e.v>0&&String(e.r).startsWith('🎯 Luyện thêm')&&ymd(new Date(e.t))===d).length)};
 const pracStarLeft=kd=>Math.max(0,STAR.pracPerDay-pracStarGot(kd));
@@ -1188,15 +1189,14 @@ function renderStars(){
   $('stRuleBox').open=false;
   $('stRules').innerHTML=
     (()=>{const B=BLOCK_SPLIT[kd.id],bp=blockProgress(kd),done=allBlocks(kd).filter(b=>b.paid).length;
-      return T('🏆 Thuộc chắc theo khối',`100 ⭐ / 100 từ · 150 ⭐ / 50 từ`,`Từ 1–${B}: mỗi 100 từ thuộc chắc = +100 ⭐<br>Từ ${B+1} trở đi: mỗi 50 từ = +150 ⭐<br>`+
+      return T('🏆 Thuộc chắc theo khối',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Từ 1–${B}: mỗi 50 từ thuộc chắc = +${STAR.blockLow} ⭐<br>Từ ${B+1} trở đi: mỗi 50 từ = +${STAR.blockStars} ⭐<br>`+
         (bp?`Gần xong nhất: khối ${bp.from}–${bp.to}: <b>${bp.c}/${bp.size}</b> từ`:'Đã thưởng hết các khối 🎉')+(done?` · đã thưởng ${done} khối`:''))})()+
-    T('📘 Học từ mới',`+${STAR.newDone} ⭐ / ngày`,`Học thêm: +${STAR.extra}`)+
+    T('📘 Học từ mới',`+${STAR.newDone} ⭐ / ngày`,'1 lần/ngày')+
     T('🔁 Ôn tập',`+${STAR.revDone} ⭐ / ngày`,`Đúng ngay ≥ 90%: +${STAR.revAcc}`)+
     T('🔥 Học liên tục',`+${STAR.streak7} ⭐ / 7 ngày`,`Mỗi 30 ngày: +${STAR.streak30}`)+
     T('🎯 Luyện thêm 50 câu','+1 · +3 · +5 ⭐',`45–46 · 47–48 · 49–50 câu đúng<br>≥ ${STAR.pracMinWords} từ khác nhau · tối đa ${STAR.pracPerDay} bài/ngày`)+
     T('🗣️ Nghe & nói',`+${STAR.lsGood} · +${STAR.lsPerfect} ⭐`,`Đúng 80–90% · 91–100%<br>tối đa ${STAR.lsPerDay} bài/ngày`)+
     T('🎯 Mục tiêu tuần',`+${STAR2.week} ⭐ / tuần`,`Học đủ bài ${STAR2.weekDays}/7 ngày trong tuần (thứ Hai – Chủ nhật)`)+
-    T('🧭 Kiểm tra từ cũ',`+${STAR2.place} ⭐ / lượt`,`tối đa ${STAR2.placePerDay} lượt/ngày`)+
     (PHON_ON&&kd.young?T('🔤 Phonics',`+${STAR2.phon} ⭐ / bài`,'Qua bài lần đầu (đúng ≥ 80%)'):'')+
     (window.BANK?`<div class="rl wide"><span class="rh">${kd.young?'🧮 Toán · 📖 Tiếng Việt lớp 2':'🧮 Toán · 📚 Ngữ văn lớp 6'}</span><span class="rs">${BANK.rulesHtml(kd.id)}</span></div>`:'');
   $('undoBox').classList.add('hide');
@@ -1305,25 +1305,29 @@ $('btnBadge').onclick=openBadges;
 // --- Thưởng thuộc chắc theo khối: khối 100 từ đang dở = 300 sao, sau đó mỗi 50 từ = 150 sao ---
 // Bố mẹ đã thưởng ngoài ứng dụng: Anh Phong đến từ 400, Thanh Nghị đến từ 600
 // ---- Thưởng thuộc chắc theo khối (quy tắc chốt 18/11/2026) ----
-//  Anh Phong: từ 1–400 → mỗi khối 100 từ = 100 sao; từ 401 trở đi → mỗi khối 50 từ = 150 sao
-//  Thanh Nghị: từ 1–600 → mỗi khối 100 từ = 100 sao; từ 601 trở đi → mỗi khối 50 từ = 150 sao
+//  (đổi 19/11/2026) Anh Phong: từ 1–400 → mỗi khối 50 từ = 50 sao; từ 401 trở đi → mỗi khối 50 từ = 150 sao
+//  Thanh Nghị: từ 1–600 → mỗi khối 50 từ = 50 sao; từ 601 trở đi → mỗi khối 50 từ = 150 sao
+//  Khối 100 từ đã thưởng theo quy tắc cũ (mã "1-100"…) coi như đã thưởng cả hai khối 50 từ bên trong, không thưởng lại.
 //  Khối nào thuộc chắc đủ thì thưởng khối đó (không cần theo thứ tự), mỗi khối chỉ thưởng một lần.
 const BLOCK_SPLIT={anhphong:400,thanhnghi:600};
 function blockOf(kd,n){const B=BLOCK_SPLIT[kd.id]||0;
-  if(n<=B){const from=Math.floor((n-1)/100)*100+1;return{from,to:Math.min(from+99,B),size:Math.min(from+99,B)-from+1,stars:100}}
+  if(n<=B){const from=Math.floor((n-1)/50)*50+1,to=Math.min(from+49,B);return{from,to,size:to-from+1,stars:STAR.blockLow}}
   const from=B+Math.floor((n-B-1)/50)*50+1;return{from,to:from+49,size:50,stars:STAR.blockStars}}
 function paidBlocks(kd){return starsOf(kd).paidB||[]}
 function blockStat(kd,b){const srs=srsOf(kd);let c=0;for(let n=b.from;n<=Math.min(b.to,kd.words.length);n++)if(srs[n]&&srs[n].m)c++;
-  return Object.assign({},b,{c,paid:paidBlocks(kd).includes(b.from+'-'+b.to)})}
+  const pb=paidBlocks(kd),B=BLOCK_SPLIT[kd.id]||0,o100=Math.floor((b.from-1)/100)*100+1;
+  return Object.assign({},b,{c,paid:pb.includes(b.from+'-'+b.to)||(b.to<=B&&pb.includes(o100+'-'+Math.min(o100+99,B)))})}
 function allBlocks(kd){const out=[];let n=1;while(n<=kd.words.length){const b=blockOf(kd,n);out.push(blockStat(kd,b));n=b.to+1}return out}
 function blockProgress(kd){ // khối nên hiện: khối chưa thưởng có nhiều từ thuộc chắc nhất (ưu tiên khối đầu nếu bằng nhau)
   const open=allBlocks(kd).filter(b=>!b.paid);if(!open.length)return null;
   return open.reduce((a,b)=>b.c/b.size>a.c/a.size?b:a,open[0])}
+function payBlock(kd,b){const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});s.paidB=[...(s.paidB||[]),b.from+'-'+b.to];store.set('vocab_stars_v1',a);
+  addStars(kd,b.stars,`🏆 Thuộc chắc đủ ${b.size} từ (từ ${b.from}–${b.to})`)}
 function masteryReward(kd,w){
-  const b=blockStat(kd,blockOf(kd,w.n));if(b.paid)return;
-  if(b.c<b.size){S.blockNote=S.blockNote||{};S.blockNote[b.from]=`khối ${b.from}–${b.to}: ${b.c}/${b.size}`;return}
-  const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});s.paidB=[...(s.paidB||[]),b.from+'-'+b.to];store.set('vocab_stars_v1',a);
-  addStars(kd,b.stars,`🏆 Thuộc chắc đủ ${b.size} từ (từ ${b.from}–${b.to})`);
+  const b=blockStat(kd,blockOf(kd,w.n));
+  if(!b.paid){if(b.c<b.size){S.blockNote=S.blockNote||{};S.blockNote[b.from]=`khối ${b.from}–${b.to}: ${b.c}/${b.size}`}else payBlock(kd,b)}
+  // khối 50 từ đã đủ từ trước khi đổi quy tắc (19/11) thì thưởng nốt ở lần thuộc chắc kế tiếp
+  allBlocks(kd).forEach(x=>{if(!x.paid&&x.c>=x.size&&x.from!==b.from)payBlock(kd,x)});
 }
 
 // ================= LUYỆN NGHE & NÓI =================
@@ -1743,7 +1747,6 @@ function renderReport(){
   if(a.days<4)tips.push('Bé học chưa đều — đặt giờ học cố định (vd. 19h30) giúp tạo thói quen.');
   if(a.q&&acc<70)tips.push('Tỉ lệ đúng còn thấp — nên giảm số từ mới mỗi ngày và cho bé làm thêm phần “Từ hay sai”.');
   if(reviewPlan(kd).more>0)tips.push('Đang có từ chờ ôn — ưu tiên Ôn tập (hoặc Luyện thêm 50 câu, từ quá hạn được tính là đã ôn).');
-  if(untrackedWords(kd).length)tips.push(`Còn ${untrackedWords(kd).length} từ cũ chưa kiểm tra — làm “🧭 Kiểm tra từ cũ” vài lượt mỗi tuần.`);
   if(a.wrong.length)tips.push('Cùng bé đọc to 10 từ hay sai bên dưới 1–2 lần trong tuần tới.');
   if(!tips.length)tips.push('Bé học đều và chắc — có thể khen bé và giữ nhịp như hiện tại 👏');
   $('rpTips').innerHTML=tips.map(x=>`<li>${x}</li>`).join('');
@@ -2141,7 +2144,7 @@ function renderChest(kd){const box=$('chestCard');if(!box)return;if(PORTAL_PAREN
     const a=$('st'+(i+1)),b=$('ss'+(i+1));if(!a)return;a.classList.toggle('ok',!!ok);a.textContent=ok?'✓':String(i+1);b.textContent=ok?'Xong':t;b.classList.toggle('ok',!!ok)});
   box.className='card chestcard '+(st.opened?'open':st.ok?'ready':'');
   box.innerHTML=`<div class="chIc">${st.opened?'🪙':'🎁'}</div><div class="chB"><b>Rương báu hôm nay</b> <span class="sub">· làm xong 4 bước để mở, được 5–10 ⭐</span><div class="chL">${items.join('')}</div>
-    ${CHEST_NEW>logOf(kd).per&&st.nw<CHEST_NEW&&recToday(kd).newDone?`<div class="sub" style="margin-top:4px">Bấm “Học thêm” ở phần Học từ mới để đủ ${CHEST_NEW} từ nhé.</div>`:''}</div>
+    </div>
     <button class="btn" id="chestGo" ${st.opened||!st.ok?'disabled':''}>${st.opened?`Đã mở: +${st.opened} ⭐`:st.ok?'🎁 Mở rương!':`Còn ${left} việc`}</button>`;
   $('chestGo').onclick=()=>openChest(kd)}
 function openChest(kd){const st=chestState(kd);if(!st.ok||st.opened)return;
