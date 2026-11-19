@@ -1,0 +1,73 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 479770c..15bf51b 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 19/11 | 0027 | Bù thêm +10 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đã học đủ bài tiếng Anh hôm đó, không cộng trùng; danh sách `EN_BU` trong `thidua.js`). |
+ | 19/11 | 0026 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: bỏ các thẻ Báo cáo, Cài đặt phía trên, chỉ còn phần sao. Vở Vui Lớp 2: bỏ ô "Tiếng Việt · Tuần … (theo lịch 35 tuần)" ở trang chính (đã có Toán 2, Tiếng Việt 2). Bù +5 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đạt mục tiêu Toán/TV hôm đó, không cộng trùng; danh sách ngày bù `SUB_BU` trong `thidua.js`). |
+ | 19/11 | 0025 | Sửa lỗi Vở Vui Lớp 2 không gửi được tiến độ lên kho (kho không nhận dạng lưu cũ) nên bảng "3 ngày qua", điểm tuần, báo cáo của Anh Phong thiếu Toán / Tiếng Việt. Nay gói tiến độ thành một chuỗi khi gửi; các lượt đã làm còn trên iPad của bé sẽ tự gửi bù khi bé mở lại Lớp 2. |
+diff --git a/docs/SUA-NOI-DUNG.md b/docs/SUA-NOI-DUNG.md
+index 72554b5..6e0cdfa 100644
+--- a/docs/SUA-NOI-DUNG.md
++++ b/docs/SUA-NOI-DUNG.md
+@@ -104,5 +104,5 @@ Hằng số ở đầu tệp:
+ | `SHIELD_MIN`, `SHIELD_MAX` | 75, 2 | Tuần đạt từ 75 điểm được 1 khiên (nhận thứ Hai tuần sau, giữ tối đa 2); khiên giữ chuỗi khi lỡ một ngày |
+ | `NEWW` | 5 | Rương báu: học 5 từ mới + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn → ngẫu nhiên 5–10 sao |
+-| `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20. Bố mẹ bù ngày đạt mục tiêu môn lớp (khi dữ liệu bị thiếu) bằng cách thêm ngày vào `SUB_BU` |
++| `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20. Bố mẹ bù ngày đạt mục tiêu môn lớp (khi dữ liệu bị thiếu) bằng cách thêm ngày vào `SUB_BU` (+5) hoặc `EN_BU` (ngày học đủ tiếng Anh, +10) |
+ 
+ Danh hiệu và khung tên (7 cấp, khung `f1`→`f7`) do Từ vựng tính từ điểm huy hiệu và lưu ở `vocab_title_v1`; `bank.js` chỉ vẽ (`BANK.nameplate`).
+diff --git a/index.html b/index.html
+index 322bb87..f7f0632 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=26"></script>
+-<script src="bank.js?v=26"></script>
+-<script src="thidua.js?v=26"></script>
++<script src="claude-shim.js?v=27"></script>
++<script src="bank.js?v=27"></script>
++<script src="thidua.js?v=27"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/sw.js b/sw.js
+index 686badb..84608da 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v26';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=26', 'bank.js?v=26', 'thidua.js?v=26', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v27';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=27', 'bank.js?v=27', 'thidua.js?v=27', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/thidua.js b/thidua.js
+index 036aded..5fb5ab8 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -184,12 +184,17 @@
+      19/11/2026: bù cho Anh Phong vì bài Toán/TV hôm đó chưa gửi được lên kho (lỗi đã sửa ở bản 0025). */
+   var SUB_BU = { anhphong: ['2026-11-19'], thanhnghi: [] };
++  /* Bù tương tự cho phần tiếng Anh (+10 ⚡): ngày này tính như đã học đủ bài tiếng Anh, không cộng trùng.
++     19/11/2026: Anh Phong đã học 5 từ mới, ôn tập, mở rương báu nhưng phần năng lượng tiếng Anh chưa được ghi nhận; bố mẹ bù +10. */
++  var EN_BU = { anhphong: ['2026-11-19'], thanhnghi: [] };
++  function enOk(kid, k) { return dayDone(D.vd[kid][k]) || (EN_BU[kid] || []).indexOf(k) >= 0; }
+   function subOk(kid, k) { var s = D.sj[kid][k]; return (s && s.q >= D.goal[kid]) || (SUB_BU[kid] || []).indexOf(k) >= 0; }
+   function xpParts(kid) {
+     var o = { en: 0, sub: 0, chest: 0, cup: 0 }, vd = D.vd[kid], sj = D.sj[kid], g = D.goal[kid];
+-    Object.keys(vd).forEach(function (k) { if (dayDone(vd[k])) o.en++; if (vd[k] && vd[k].chest) o.chest++; });
++    Object.keys(vd).forEach(function (k) { if (vd[k] && vd[k].chest) o.chest++; });
++    var ed = {}; Object.keys(vd).concat(EN_BU[kid] || []).forEach(function (k) { if (!ed[k] && enOk(kid, k)) { ed[k] = 1; o.en++; } });
+     var sd = {}; Object.keys(sj).concat(SUB_BU[kid] || []).forEach(function (k) { if (!sd[k] && subOk(kid, k)) { sd[k] = 1; o.sub++; } });
+     o.cup = cupsOf(kid); o.xp = o.en * 10 + o.sub * 5 + o.chest * 3 + o.cup * 20; return o;
+   }
+-  function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (dayDone(r) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
++  function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (enOk(kid, t) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
+   function pet(kid) {
+     if (!D) return null; var xp = xpParts(kid).xp, L = PETS[kid], i = 0;
