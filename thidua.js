@@ -27,9 +27,10 @@
   /* Rương báu: đủ 5 từ mới + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn */
   function chestCheck(r, plog, k) {
     var lg = (plog || []).filter(function (e) { return e && e.t && dayOf(e.t) === k && e.total > 0 && e.done >= e.total; });
-    var nw = (r && r.new || []).length, rv = !!(r && (r.reviewDone || r.done));
+    /* từ mới chỉ tính khi bé học xong cả bước kiểm tra từ mới (có dấu newDone), mở ra học chưa tính */
+    var nd = !!(r && (r.newDone || r.done)), nw = nd ? (r.new || []).length : 0, part = !nd && !!(r && r.new && r.new.length), rv = !!(r && (r.reviewDone || r.done));
     var pr = lg.filter(function (e) { return e.type !== 'ls'; }).length, ls = lg.filter(function (e) { return e.type === 'ls'; }).length;
-    return { nw: nw, rv: rv, pr: pr, ls: ls, ok: nw >= NEWW && rv && pr >= 2 && ls >= 1 };
+    return { nw: nw, part: part, rv: rv, pr: pr, ls: ls, ok: nw >= NEWW && rv && pr >= 2 && ls >= 1 };
   }
 
   /* ---------- đọc dữ liệu ---------- */
@@ -128,7 +129,7 @@
   /* ---------- điểm ngày / tuần ---------- */
   function dayPts(kid, k) {
     var r = D.vd[kid][k], sj = D.sj[kid][k] || { q: 0, c: 0 }, goal = D.goal[kid], ch = chestCheck(r, D.pl[kid], k);
-    var p = { en: dayDone(r) ? 5 : 0, sub: sj.q >= goal ? 4 : 0, more: sj.q >= goal * 2 ? 2 : 0, acc: 0, chest: ch.ok ? 2 : 0, sq: sj.q, goal: goal, ch: ch };
+    var p = { en: dayDone(r) ? 5 : 0, sub: sj.q >= goal ? 4 : 0, more: sj.q >= goal * 2 ? 2 : 0, acc: 0, chest: ch.ok || (r && r.chest) ? 2 : 0, sq: sj.q, goal: goal, ch: ch };
     var q = (r && +r.q || 0) + sj.q, c = (r && +r.ok || 0) + sj.c; p.q = q; p.pct = q ? Math.round(c / q * 100) : 0;
     if (q >= 20) p.acc = c / q >= 0.9 ? 2 : c / q >= 0.8 ? 1 : 0;
     p.t = p.en + p.sub + p.more + p.acc + p.chest; return p;
@@ -346,7 +347,7 @@
     var t = today(), r = D.vd[kid][t] || {}, ch = chestCheck(r, D.pl[kid], t), sj = D.sj[kid][t] || { q: 0 }, g = D.goal[kid];
     var sub = kid === 'anhphong' ? 'Toán / Tiếng Việt lớp 2' : 'Toán / Ngữ văn lớp 6', subApp = kid === 'anhphong' ? 'lop2' : 'lop6';
     return [
-      { ic: '📘', t: 'Học ' + NEWW + ' từ mới', n: Math.min(ch.nw, NEWW), of: NEWW, app: 'tuvung' },
+      { ic: '📘', t: 'Học ' + NEWW + ' từ mới', sub: ch.part ? 'Còn bước kiểm tra từ mới, làm nốt nhé!' : '', n: Math.min(ch.nw, NEWW), of: NEWW, app: 'tuvung' },
       { ic: '🔁', t: 'Ôn tập từ cũ', n: ch.rv ? 1 : 0, of: 1, app: 'tuvung' },
       { ic: '🎯', t: '2 bài luyện thêm', n: Math.min(ch.pr, 2), of: 2, app: 'tuvung' },
       { ic: '🗣️', t: '1 bài nghe & nói', n: Math.min(ch.ls, 1), of: 1, app: 'tuvung' },
@@ -363,7 +364,7 @@
       '<button class="ms-say" type="button" aria-label="Đọc to nhiệm vụ">🔊</button></div><div class="ms-list">' +
       L.map(function (x) {
         var ok = x.n >= x.of;
-        return '<button class="ms-it' + (ok ? ' ok' : '') + (x.bonus ? ' bonus' : '') + (x.lock ? ' lock' : '') + '" data-app="' + x.app + '"><span class="ms-ck">' + (ok ? '✓' : x.lock ? '🔒' : '') + '</span><span class="ms-ic">' + x.ic + '</span><span class="ms-t">' + x.t +
+        return '<button class="ms-it' + (ok ? ' ok' : '') + (x.bonus ? ' bonus' : '') + (x.lock ? ' lock' : '') + '" data-app="' + x.app + '"><span class="ms-ck">' + (ok ? '✓' : x.lock ? '🔒' : '') + '</span><span class="ms-ic">' + x.ic + '</span><span class="ms-t">' + x.t + (x.sub && !ok ? ' <small>' + x.sub + '</small>' : '') +
           (x.bonus ? ' <small>' + (ok ? 'đã mở' : x.lock ? 'làm xong 4 việc tiếng Anh để mở' : 'đã mở được rồi, vào lấy sao nào!') + '</small>' : '') + '</span><span class="ms-n">' + (x.of > 1 ? x.n + '/' + x.of : ok ? 'Xong' : '') + '</span></button>';
       }).join('') + '</div></div>';
   }

@@ -2132,13 +2132,14 @@ function canDecorate(kd){return canDecorate0(kd)}
 const CHEST_NEW=5,SHIELD_MAX=2;
 const PORTAL_PARENT=()=>!!(window.PORTAL&&PORTAL.parent);
 function chestState(kd,k){k=k||today();const r=logOf(kd).days[k]||{},pl=plogOf(kd).filter(e=>e&&e.t&&ymd(new Date(e.t))===k&&e.total>0&&e.done>=e.total);
-  const nw=(r.new||[]).length,rv=!!(r.reviewDone||r.done),pr=pl.filter(e=>e.type!=='ls').length,ls=pl.filter(e=>e.type==='ls').length;
-  return {nw,rv,pr,ls,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
+  const nd=!!(r.newDone||r.done),nw=nd?(r.new||[]).length:0,part=!nd&&!!(r.new&&r.new.length),rv=!!(r.reviewDone||r.done), // từ mới chỉ tính khi học xong cả bước kiểm tra
+    pr=pl.filter(e=>e.type!=='ls').length,ls=pl.filter(e=>e.type==='ls').length;
+  return {nw,part,rv,pr,ls,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
 function renderChest(kd){const box=$('chestCard');if(!box)return;if(PORTAL_PARENT()){box.classList.add('hide');return}box.classList.remove('hide');
   const st=chestState(kd),it=(ok,t)=>`<span class="${ok?'ok':''}">${ok?'✅':'⬜'} ${t}</span>`;
-  const items=[it(st.nw>=CHEST_NEW,`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
+  const items=[it(st.nw>=CHEST_NEW,st.part?`${CHEST_NEW} từ mới (còn bước kiểm tra)`:`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
   const left=[st.nw>=CHEST_NEW,st.rv,st.pr>=2,st.ls>=1].filter(x=>!x).length;
-  [[st.nw>=CHEST_NEW,`${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW} từ`],[st.rv,''],[st.pr>=2,`${Math.min(st.pr,2)}/2 bài`],[st.ls>=1,`${Math.min(st.ls,1)}/1 bài`]].forEach(([ok,t],i)=>{
+  [[st.nw>=CHEST_NEW,st.part?'Còn bước kiểm tra':`${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW} từ`],[st.rv,''],[st.pr>=2,`${Math.min(st.pr,2)}/2 bài`],[st.ls>=1,`${Math.min(st.ls,1)}/1 bài`]].forEach(([ok,t],i)=>{
     const a=$('st'+(i+1)),b=$('ss'+(i+1));if(!a)return;a.classList.toggle('ok',!!ok);a.textContent=ok?'✓':String(i+1);b.textContent=ok?'Xong':t;b.classList.toggle('ok',!!ok)});
   box.className='card chestcard '+(st.opened?'open':st.ok?'ready':'');
   box.innerHTML=`<div class="chIc">${st.opened?'🪙':'🎁'}</div><div class="chB"><b>Rương báu hôm nay</b> <span class="sub">· làm xong 4 bước để mở, được 5–10 ⭐</span><div class="chL">${items.join('')}</div>
