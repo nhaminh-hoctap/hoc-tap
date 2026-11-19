@@ -1,0 +1,99 @@
+diff --git a/docs/KIEN-TRUC.md b/docs/KIEN-TRUC.md
+index f268e20..1049147 100644
+--- a/docs/KIEN-TRUC.md
++++ b/docs/KIEN-TRUC.md
+@@ -23,5 +23,5 @@ Tài liệu cho người sửa mã (thường là Claude). Cập nhật lần cu
+ | `lop2.html` | "Vở Vui Lớp 2": Toán 2 và Tiếng Việt 2 (SGK Kết nối tri thức), bài giảng, luyện tập, kiểm tra, cộng trừ nhanh, bảng cửu chương. |
+ | `lop6.html` | "Vở ôn luyện lớp 6": Toán 6 và Ngữ văn 6 (SGK Kết nối tri thức), bài giảng, Hỏi thầy, luyện tập, sổ lỗi sai, ôn đến hạn, luyện viết, kiểm tra. |
+-| `nuoithu.html` | "Nuôi thú" (app `thu`): chọn loại trứng, cho ăn, vuốt ve, 2 trò chơi nhỏ, trang trí chỗ ở. Dùng `THIDUA.pet` để biết thú lớn tới đâu (lớn nhờ năng lượng ⚡ từ việc học); không cộng sao hay điểm. Mua thức ăn = `BANK.add` dòng sao âm (`k: petfood`). |
++| `nuoithu.html` | "Nuôi thú" (app `thu`): chọn loại trứng, cho ăn, vuốt ve, 2 trò chơi nhỏ, đổi phông nền chỗ ở (mũ, đồ chơi đã bỏ). Dùng `THIDUA.pet` để biết thú lớn tới đâu (lớn nhờ năng lượng ⚡ từ việc học); không cộng sao hay điểm. Mua thức ăn = `BANK.add` dòng sao âm (`k: petfood`). |
+ | `sw.js` | Service worker: chạy như ứng dụng trên iPad, mở được khi mạng yếu. |
+ | `manifest.json`, `icon.png` | Thông tin "Thêm vào màn hình chính". |
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index cc814d4..78ade87 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 20/11 | 0034 | Nuôi thú: bỏ phần trang trí **mũ** và **đồ chơi** (bố mẹ thấy chưa đẹp), chỉ giữ đổi **phông nền** chỗ ở. |
+ | 19/11 | 0033 | Thêm **🐾 Nuôi thú** (`nuoithu.html`): mỗi bé chọn 1 loại trứng (khủng long, rồng, phượng hoàng, kỳ lân; giữ năng lượng); cho ăn, vuốt ve, 2 trò chơi (Hứng sao, Thú trốn ở đâu), trang trí chỗ ở theo cấp. Thức ăn: xong Nhiệm vụ hôm nay +3, huy hiệu +1 món đặc biệt, lên cấp danh hiệu +3, mua 1 ⭐/5 ⭐ (tối đa 3 lần/ngày). Thanh Nghị đổi từ tên lửa sang trứng. Không cộng sao/điểm. |
+ | 19/11 | 0032 | Mở Học / Sao thưởng / Huy hiệu / Cài đặt (Từ vựng) không còn chớp qua trang có đủ 4 thẻ: trang chính che nội dung, hiện "Đang mở…" đến khi Từ vựng chọn xong đúng màn (`PORTAL.mounted`, tối đa 5 giây). |
+diff --git a/docs/SUA-NOI-DUNG.md b/docs/SUA-NOI-DUNG.md
+index 5a45b30..f16c272 100644
+--- a/docs/SUA-NOI-DUNG.md
++++ b/docs/SUA-NOI-DUNG.md
+@@ -113,3 +113,3 @@ Danh hiệu và khung tên (7 cấp, khung `f1`→`f7`) do Từ vựng tính t
+ - **Con số** (`CFG` đầu khối script, bố mẹ chốt 19/11/2026): xong đủ Nhiệm vụ hôm nay +3 phần ăn (nhận 1 lần/ngày) · mỗi huy hiệu +1 món đặc biệt · mỗi lần lên cấp danh hiệu +3 món đặc biệt · mua bằng sao 1 ⭐/phần ăn, 5 ⭐/món đặc biệt, tối đa 3 lần mua/ngày · no bụng +25 / +50, vui vẻ +5 / +20 khi ăn · vuốt ve +5 vui vẻ (tính 10 lần/ngày) · mỗi ngày no bụng giảm 20, vui vẻ giảm 15 · mỗi trò chơi 3 lượt/ngày.
+ - **Không cộng sao hay điểm đấu trường.** Thú lớn chỉ nhờ năng lượng từ việc học; thức ăn chỉ làm thú no, vui.
+-- **Đồ trang trí**: `DECO` (phông nền, mũ, đồ chơi), mỗi món có `lv` = cấp linh vật cần để mở khóa.
++- **Phông nền**: `DECO.bg`, mỗi phông có `lv` = cấp linh vật cần để mở khóa. Mũ và đồ chơi đã bỏ (bố mẹ thấy không đẹp); danh sách `hat`/`toy` còn trong mã nhưng không hiện.
+diff --git a/index.html b/index.html
+index 2293f86..1a84842 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=33"></script>
+-<script src="bank.js?v=33"></script>
+-<script src="thidua.js?v=33"></script>
++<script src="claude-shim.js?v=34"></script>
++<script src="bank.js?v=34"></script>
++<script src="thidua.js?v=34"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/nuoithu.html b/nuoithu.html
+index 2f10197..5e48fdc 100644
+--- a/nuoithu.html
++++ b/nuoithu.html
+@@ -101,5 +101,5 @@
+           <button class="sp" id="ntEatS">🍰 Món đặc biệt <small id="ntCntS"></small></button>
+           <button class="play" id="ntPlay">🎮 Chơi cùng thú</button>
+-          <button class="deco" id="ntDecoBtn">🎨 Trang trí</button>
++          <button class="deco" id="ntDecoBtn">🖼️ Đổi phông nền</button>
+         </div>
+         <div class="nt-grow" id="ntGrow"></div>
+@@ -127,6 +127,6 @@
+   <!-- trang trí -->
+   <section id="ntDeco" class="hide">
+-    <div class="nt-ghead"><span>🎨 Trang trí chỗ ở</span><button class="nt-btn" data-back>⬅ Về chuồng</button></div>
+-    <div class="card" style="margin-top:0"><p class="mu" style="margin:0 0 8px">Thú lớn lên cấp mới thì mở khóa thêm đồ trang trí.</p><div id="ntDecoList"></div></div>
++    <div class="nt-ghead"><span>🖼️ Phông nền chỗ ở</span><button class="nt-btn" data-back>⬅ Về chuồng</button></div>
++    <div class="card" style="margin-top:0"><p class="mu" style="margin:0 0 8px">Thú lớn lên cấp mới thì mở khóa thêm phông nền mới.</p><div id="ntDecoList"></div></div>
+   </section>
+ </div>
+@@ -152,5 +152,5 @@ var CFG={missionFood:3,       // xong đủ Nhiệm vụ hôm nay: 3 phần ăn
+   fullDrop:20,hapDrop:15,       // mỗi ngày no bụng giảm 20, vui vẻ giảm 15
+   playPerDay:3};                // mỗi trò chơi 3 lượt/ngày
+-/* đồ trang trí: mở khóa theo cấp linh vật (1–9) */
++/* phông nền: mở khóa theo cấp linh vật (1–9); mũ và đồ chơi đã bỏ theo ý bố mẹ (20/11/2026) */
+ var DECO={
+   bg:[{id:'',n:'Mặc định',e:'🏡',lv:1},{id:'co',n:'Đồng cỏ',e:'🌼',lv:1,c:'#DCFCE7,#86EFAC'},{id:'bien',n:'Bãi biển',e:'🏖️',lv:2,c:'#E0F2FE,#FDE68A'},{id:'rung',n:'Khu rừng',e:'🌲',lv:3,c:'#BBF7D0,#166534'},
+@@ -197,5 +197,5 @@ function bgOf(){var b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];va
+   if(b&&b.c)return 'linear-gradient(160deg,'+b.c+')';
+   var sp=T&&T.SPECIES&&T.SPECIES[T.spOf(KID)];return sp?'linear-gradient(160deg,'+sp.S[p?p.i:0]+')':'#FEF3C7'}
+-function sceneHtml(size){var p=pet()||{e:'🥚',i:0,acc:''},f=fullNow(),hat=S.deco.hat,toy=S.deco.toy,b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];
++function sceneHtml(size){var p=pet()||{e:'🥚',i:0,acc:''},f=fullNow(),hat='',toy='',b=DECO.bg.filter(function(x){return x.id===S.deco.bg})[0];
+   return '<div class="nt-bub" id="ntBub"></div>'+(b&&b.id?'<span class="bgi">'+b.e+'</span>':'')+(p.acc?'<span class="acc">'+p.acc+'</span>':'')+
+     '<span class="pe bob'+(f<30?' sad':'')+'" id="ntPet" style="font-size:'+(size+p.i*6)+'px">'+p.e+(hat&&p.i>=2?'<span class="hat">'+hat+'</span>':'')+'</span>'+(toy?'<span class="toy">'+toy+'</span>':'')}
+@@ -257,5 +257,5 @@ function celebrate(em,t){dlg('<div class="big">'+em+'</div>'+t,[['Tuyệt!',null
+ 
+ /* ---------- trang trí ---------- */
+-function renderDeco(){var L=lvl(),G=[['bg','🖼️ Phông nền'],['hat','🎩 Mũ (khi thú đã nở)'],['toy','🧸 Đồ chơi']];
++function renderDeco(){var L=lvl(),G=[['bg','🖼️ Phông nền']];
+   $('ntDecoList').innerHTML=G.map(function(g){return '<b>'+g[1]+'</b><div class="nt-row">'+DECO[g[0]].map(function(x){var lock=x.lv>L,on=(S.deco[g[0]]||'')===x.id;
+     return '<button data-g="'+g[0]+'" data-id="'+x.id+'" class="'+(on?'on':'')+(lock?' lock':'')+'"'+(lock?' data-lv="'+x.lv+'"':'')+'>'+(lock?'🔒':x.e)+'<small>'+(lock?'Cấp '+x.lv:esc(x.n))+'</small></button>'}).join('')+'</div>'}).join('');
+diff --git a/sw.js b/sw.js
+index f202f8d..d15c22f 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v33';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=33', 'bank.js?v=33', 'thidua.js?v=33', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v34';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=34', 'bank.js?v=34', 'thidua.js?v=34', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
