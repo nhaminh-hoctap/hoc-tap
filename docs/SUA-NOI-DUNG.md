@@ -103,6 +103,6 @@ Hằng số ở đầu tệp:
 | `GOOD`, `GOOD_MIN` | 15, 60 | Bé không vô địch nhưng đạt từ 60 điểm được +15 sao |
 | `SHIELD_MIN`, `SHIELD_MAX` | 75, 2 | Tuần đạt từ 75 điểm được 1 khiên (nhận thứ Hai tuần sau, giữ tối đa 2); khiên giữ chuỗi khi lỡ một ngày |
 | `NEWW` | 5 | Rương báu: học 5 từ mới + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn → ngẫu nhiên 5–10 sao |
-| `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20 |
+| `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20. Bố mẹ bù ngày đạt mục tiêu môn lớp (khi dữ liệu bị thiếu) bằng cách thêm ngày vào `SUB_BU` |
 
 Danh hiệu và khung tên (7 cấp, khung `f1`→`f7`) do Từ vựng tính từ điểm huy hiệu và lưu ở `vocab_title_v1`; `bank.js` chỉ vẽ (`BANK.nameplate`).

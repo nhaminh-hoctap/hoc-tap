@@ -2204,10 +2204,6 @@ function perParentTable(){const cell=(s,i)=>{const a=perStats(s,i),pct=a.max?Mat
 /* --- trang chủ --- */
 function renderHome(){
   const ls=allToanLessons(),ws=allWeeks();const ts=ls.reduce((a,l)=>a+stat(l.id).best,0),vs=ws.reduce((a,w)=>a+stat(w.id).best,0);
-  const wk=schoolWeek();let wkCard='';
-  if(wk){const w=ws.find(x=>x.tuan===wk);const rv=UNITS.find(u=>u.review&&u.tuan===wk);
-    if(w)wkCard=`<section class="week-card"><div class="ic">${icon('abc')}</div><div class="wtxt"><h2>Tiếng Việt · Tuần ${wk} (theo lịch 35 tuần)</h2><p>Bài ${w.b.join(' – ')}: ${esc(w.titles.join(' · '))} · Chữ hoa ${esc(w.hoa)}</p></div><button class="btn go" data-act="learn" data-t="${w.id}">Học tuần này</button></section>`;
-    else if(rv)wkCard=`<section class="week-card"><div class="ic">${icon('star')}</div><div class="wtxt"><h2>Tiếng Việt · Tuần ${wk}</h2><p>${esc(rv.title)}</p></div><button class="btn go" data-act="start" data-t="${rv.id}">Ôn tập ngay</button></section>`;}
   $app.className='app';
   const inBar=!!document.getElementById('pbar');
   $app.innerHTML=(inBar?`<header class="top top-lite"><div class="brand"><div style="width:72px;height:72px;flex:none">${mascot('happy')}</div><div class="bubble">Chào ${P.name?esc(P.name):window.PORTAL&&PORTAL.kid==='anhphong'?'Anh Phong':'bạn nhỏ'}! Hôm nay mình học gì nào?</div></div><button class="icon-btn" data-act="parent" aria-label="Góc phụ huynh">${icon('gear')}</button></header>`:`<header class="top"><div class="brand">${window.PORTAL&&PORTAL.homeBtnHtml?PORTAL.homeBtnHtml('width:58px;height:58px;font-size:26px;border:3px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink)'):''}<div style="width:96px;height:96px">${mascot('happy')}</div><div><h1>Vở Vui Lớp 2</h1><div class="bubble">Chào ${P.name?esc(P.name):window.PORTAL&&PORTAL.kid==='anhphong'?'Anh Phong':'bạn nhỏ'}! Hôm nay mình học gì nào?</div></div></div>
@@ -2216,7 +2212,6 @@ function renderHome(){
     <button class="subj" style="background:#D0EBFF" data-act="toan"><span class="subj-name">Toán 2</span><span class="subj-meta">14 chủ đề · 75 bài theo SGK Kết nối tri thức</span><span class="subj-meta">${ts}/${ls.length*3} sao</span><span class="bar"><i style="width:${Math.round(ts/(ls.length*3)*100)}%"></i></span><span class="art">${icon('plus')}</span></button>
     <button class="subj" style="background:#FFDEEB" data-act="tv"><span class="subj-name">Tiếng Việt 2</span><span class="subj-meta">35 tuần · 9 chủ điểm theo SGK Kết nối tri thức</span><span class="subj-meta">${vs}/${ws.length*3} sao</span><span class="bar"><i style="width:${Math.round(vs/(ws.length*3)*100)}%"></i></span><span class="art">${icon('abc')}</span></button>
   </section>
-  ${wkCard}
   ${toolCards()}
   <h2 class="sec-h">Tiến độ theo giai đoạn</h2>
   ${perCards()}
