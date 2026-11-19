@@ -28,3 +28,4 @@ index 860fafe..9879d2c 100644
 -  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true }) : esc(nameOf(kid)); }
 +  /* bảng đấu trường chỉ cần tên + danh hiệu, không kèm huy hiệu để khỏi tràn cột */
 +  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true, noBadges: true }) : esc(nameOf(kid)); }
+ 
