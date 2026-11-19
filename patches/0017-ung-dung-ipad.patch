@@ -1,0 +1,40 @@
+diff --git a/index.html b/index.html
+index 6c1e651..0e74c42 100644
+--- a/index.html
++++ b/index.html
+@@ -117,7 +117,10 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=16"></script>
+-<script src="bank.js?v=16"></script>
+-<script src="thidua.js?v=16"></script>
++<script src="claude-shim.js?v=17"></script>
++<script src="bank.js?v=17"></script>
++<script src="thidua.js?v=17"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
++<meta name="mobile-web-app-capable" content="yes">
++<meta name="apple-mobile-web-app-status-bar-style" content="default">
++<meta name="theme-color" content="#FFF7ED">
+ <meta name="apple-mobile-web-app-title" content="Học tập">
+@@ -133,3 +136,3 @@ h2{font-size:19px;margin:24px 2px 10px}
+   <section id="pFam" class="hide"><div class="pinBox" style="max-width:420px"><div style="font-size:46px">🔑</div><h2 style="margin:6px 0">Nhập mã gia đình</h2>
+-    <div style="color:var(--ink2);font-size:15px">Chỉ cần nhập một lần trên mỗi máy. Mã giúp các máy trong nhà dùng chung dữ liệu học.</div>
++    <div style="color:var(--ink2);font-size:15px">Chỉ cần nhập một lần trên mỗi máy. Có thể dán cả <b>đường link riêng</b> của gia đình (có đoạn <b>#ma=</b>) hoặc chỉ dán mã. Mã giúp các máy trong nhà dùng chung dữ liệu học.</div>
+     <input id="pFamIn" autocomplete="off" autocapitalize="off" spellcheck="false" style="letter-spacing:.05em;width:100%;font-size:20px"><div class="err" id="pFamErr"></div>
+@@ -462,2 +465,4 @@ BANK.onChange(function(){if(P.app){renderBar();return}renderSync();if(PARENT)ren
+ 
++/* ---------- Chạy như ứng dụng trên iPad (lưu sẵn để mở nhanh, học được khi mạng yếu) ---------- */
++if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+ /* ---------- Khởi động ---------- */
+@@ -465,3 +470,3 @@ if(!(window.WEB_FAMILY&&WEB_FAMILY.get())){
+   ['pWho','pKid','pPin','pPar'].forEach(function(x){$(x).classList.add('hide')});$('pFam').classList.remove('hide');
+-  $('pFamOk').onclick=function(){var v=$('pFamIn').value.trim().toLowerCase();if(!/^[a-z0-9]{16,64}$/.test(v)){$('pFamErr').textContent='Mã chưa đúng (ít nhất 16 chữ hoặc số)';return}WEB_FAMILY.set(v);location.reload()};
++  $('pFamOk').onclick=function(){var v=$('pFamIn').value.trim(),mm=/ma=([a-z0-9]{16,64})/i.exec(v);v=(mm?mm[1]:v).toLowerCase();if(!/^[a-z0-9]{16,64}$/.test(v)){$('pFamErr').textContent='Mã chưa đúng (ít nhất 16 chữ hoặc số)';return}WEB_FAMILY.set(v);location.reload()};
+   return;}
+diff --git a/manifest.json b/manifest.json
+index 78cd9ac..3e616ba 100644
+--- a/manifest.json
++++ b/manifest.json
+@@ -1 +1 @@
+-{"name":"Góc học tập","short_name":"Học tập","start_url":"./","display":"standalone","background_color":"#FFF7ED","theme_color":"#EA580C","icons":[{"src":"icon.png","sizes":"180x180","type":"image/png"}]}
++{"name": "Góc học tập", "short_name": "Học tập", "start_url": "./", "display": "standalone", "background_color": "#FFF7ED", "theme_color": "#FFF7ED", "icons": [{"src": "icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any"}], "id": "./", "scope": "./", "orientation": "any", "description": "Góc học tập của Anh Phong và Thanh Nghị: Từ vựng tiếng Anh, Toán, Tiếng Việt, Ngữ văn", "lang": "vi"}
