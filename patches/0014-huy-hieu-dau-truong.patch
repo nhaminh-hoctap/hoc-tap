@@ -1,0 +1,25 @@
+diff --git a/thidua.js b/thidua.js
+index 9879d2c..fae7f6c 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -151,3 +151,3 @@
+     '.td-card h3{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.td-card h3 small{font-weight:600;color:#64748B;font-size:13px}' +
+-    '.lg-row{display:grid;grid-template-columns:minmax(0,200px) 1fr auto;gap:12px;align-items:center;margin:8px 0}.lg-row>div:first-child{min-width:0;max-width:260px}.lg-row .np{max-width:100%;overflow:hidden}' +
++    '.lg-rows{display:grid;grid-template-columns:max-content minmax(90px,1fr) auto;gap:10px 14px;align-items:center;margin:8px 0}.lg-row{display:contents}.lg-row .np{max-width:none}.lg-row .np .npB{display:inline}' +
+     '.lg-bar{height:16px;border-radius:99px;background:#F1F5F9;overflow:hidden;position:relative}.lg-bar i{display:block;height:100%;border-radius:99px;transition:width .6s}' +
+@@ -174,3 +174,3 @@
+     '.td-cf{position:fixed;top:-30px;z-index:100000;pointer-events:none;animation:tdFall linear forwards}@keyframes tdFall{to{transform:translateY(110vh) rotate(540deg)}}' +
+-    '@media (max-width:520px){.lg-row{grid-template-columns:1fr auto}.lg-row .lg-bar{grid-column:1/-1;grid-row:2}.pet-scene{width:96px;height:96px}}' +
++    '@media (max-width:520px){.lg-rows{display:block}.lg-row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;margin:10px 0}.lg-row .lg-bar{grid-column:1/-1;grid-row:2}.pet-scene{width:96px;height:96px}}' +
+     '.lg-c>summary{list-style:none;cursor:pointer}.lg-c>summary::-webkit-details-marker{display:none}.lg-sum{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px;color:#334155;margin-top:4px}' +
+@@ -187,4 +187,3 @@
+   function nameOf(kid) { var k = BANK.kid(kid); return k ? k.name : kid; }
+-  /* bảng đấu trường chỉ cần tên + danh hiệu, không kèm huy hiệu để khỏi tràn cột */
+-  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true, noBadges: true }) : esc(nameOf(kid)); }
++  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true }) : esc(nameOf(kid)); }
+ 
+@@ -228,3 +227,3 @@
+     }).join('');
+-    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3>' + rows;
++    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3><div class="lg-rows">' + rows + '</div>';
+     var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️ khiên</b></div>';
