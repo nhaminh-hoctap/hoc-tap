@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0031 | Trang Huy hiệu của bé: bỏ hai thẻ chuyển Anh Phong / Thanh Nghị (giống trang Sao thưởng), chỉ còn Bộ sưu tập · Trang trí tên. |
 | 19/11 | 0030 | "Học 5 từ mới" (Nhiệm vụ hôm nay, rương báu) chỉ tính xong khi bé làm hết cả bước kiểm tra từ mới; mở từ ra học chưa xong thì hiện "Còn bước kiểm tra từ mới, làm nốt nhé!". Bảng 3 ngày qua của bố mẹ ghi "chưa xong bước kiểm tra". Rương đã mở trước đây vẫn giữ điểm. |
 | 19/11 | 0029 | Bỏ điều kiện "khối 100 từ đã thưởng theo quy tắc cũ thì không thưởng lại": sao bố mẹ thưởng trước đây (theo số từ đã học) không ảnh hưởng, mọi khối 50 từ được thưởng theo thuộc chắc thật. |
 | 19/11 | 0028 | Bố mẹ chốt lại sao Từ vựng: bỏ "Học thêm từ mới" (mỗi ngày học đúng 5 từ, nút đổi thành "Đủ từ mới hôm nay"); bỏ "Kiểm tra từ cũ"; thuộc chắc từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao, sau đó mỗi 50 từ = 150 sao; khối 100 từ đã thưởng trước đây không thưởng lại; khối đã đủ từ trước được thưởng nốt ở lần thuộc chắc kế tiếp. Các quy tắc khác giữ nguyên. |
