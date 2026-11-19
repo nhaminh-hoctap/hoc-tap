@@ -1,0 +1,108 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index e8a0d32..5003801 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 19/11 | 0023 | Từ vựng không còn mất sao / tiến độ khi iPad mất mạng hoặc tắt ứng dụng trước khi kịp gửi: máy nhớ dấu bản đã đồng bộ (`vocab_sync_lh`), bản trên máy có thay đổi chưa gửi thì giữ lại và gửi lên thay vì bị kho đè. Số lượt nhận sao luyện thêm tính theo cả sổ sao. Lịch sử luyện ghi thêm điểm tính sao và số sao. (Bài 48/50 của Anh Phong tối 19/11 bị mất do lỗi cũ trước bản 0021.) |
+ | 19/11 | 0022 | Nhiệm vụ hôm nay, điểm tuần (đua cúp) và linh vật (nở trứng) tính ngay cả phần bé vừa làm trên máy, kể cả khi chưa kịp gửi lên kho; Lớp 2, Lớp 6 gửi xong bài mới về trang chính. Luyện thêm ghi rõ "hôm nay đã làm N bài · còn X/4 lượt nhận sao (cần đúng từ 45/50)" và báo khi bài chưa đủ 45 câu đúng. Áp dụng cho cả hai bé. |
+ | 19/11 | 0021 | Sửa lỗi mất sao Từ vựng: bé học xong rồi bấm về trang chính ngay thì sao (và tiến độ) chưa kịp gửi lên kho, lần mở sau bị dữ liệu cũ đè mất. Nay gửi tất cả cùng lúc, chờ gửi xong mới về trang chính, và không để dữ liệu cũ đè phần chưa gửi. |
+diff --git a/index.html b/index.html
+index 7621217..07881a1 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=22"></script>
+-<script src="bank.js?v=22"></script>
+-<script src="thidua.js?v=22"></script>
++<script src="claude-shim.js?v=23"></script>
++<script src="bank.js?v=23"></script>
++<script src="thidua.js?v=23"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/sw.js b/sw.js
+index 3a95920..6234ba5 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v22';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=22', 'bank.js?v=22', 'thidua.js?v=22', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v23';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=23', 'bank.js?v=23', 'thidua.js?v=23', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/tuvung.html b/tuvung.html
+index 2e09411..77cead2 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -1123,6 +1123,6 @@ function finishSession(){
+      if(v){ if(S.items.length<PRACTICE_N)S.starNote='Chưa đủ 50 câu nên chưa tính sao.';
+        else if(distinct<STAR.pracMinWords)S.starNote=`Bài có dưới ${STAR.pracMinWords} từ khác nhau (từ bị lặp nhiều) nên chưa tính sao — chọn khoảng rộng hơn nhé.`;
+-       else if(starFlag(kd,'prac')>=STAR.pracPerDay)S.starNote=`Hôm nay đã nhận sao cho ${STAR.pracPerDay} bài luyện thêm.`;
+-       else addStars(kd,v,`🎯 Luyện thêm ${clean}/50 câu đúng`)}
++       else if(((g,f)=>Math.max(g,f))(pracStarGot(kd),starFlag(kd,'prac'))>=STAR.pracPerDay)S.starNote=`Hôm nay đã nhận sao cho ${STAR.pracPerDay} bài luyện thêm.`;
++       else S.pracStar=addStars(kd,v,`🎯 Luyện thêm ${clean}/50 câu đúng`)}
+      else if(S.items.length>=PRACTICE_N)S.starNote=`Bài này đúng ${clean}/50 câu`+(S.hintOk?` (không tính ${S.hintOk} câu có gợi ý)`:'')+' — cần đúng từ 45 câu mới có sao.'}
+     savePracticeLog(false);
+@@ -1164,5 +1164,6 @@ function finishSession(){
+ const STAR={block:50,blockStars:150,bigStars:300,newDone:2,extra:1,revDone:1,revAcc:1,streak7:10,streak30:50,lsGood:3,lsPerfect:5,pracMinWords:20,pracPerDay:4,lsPerDay:2};
+ const pracDoneToday=kd=>plogOf(kd).filter(e=>e.type!=='ls'&&e.total>0&&e.done>=e.total&&ymd(new Date(e.t))===today()).length; // số bài luyện thêm làm trọn vẹn hôm nay
+-const pracStarLeft=kd=>Math.max(0,STAR.pracPerDay-(((recToday(kd).st)||{}).prac||0));
++const pracStarGot=kd=>{const d=today();return Math.max((((recToday(kd).st)||{}).prac||0),ownStars(kd).led.filter(e=>e.v>0&&String(e.r).startsWith('🎯 Luyện thêm')&&ymd(new Date(e.t))===d).length)};
++const pracStarLeft=kd=>Math.max(0,STAR.pracPerDay-pracStarGot(kd));
+ const pracStars=c=>c>=49?5:c>=47?3:c>=45?1:0;   // luyện thêm 50 câu: 45–46 → 1, 47–48 → 3, 49–50 → 5
+ function ownStars(kd){const a=store.get('vocab_stars_v1',{});return a[kd.id]||{bal:0,led:[]}}
+@@ -1419,4 +1420,5 @@ function savePracticeLog(partial){
+   const e={t:S.meta.start,dur:Math.round((Date.now()-S.meta.start)/1000),type:S.meta.type,src:S.meta.src,from:S.meta.from,to:S.meta.to,
+     words:S.meta.words,level:S.meta.level,total:S.items.length,done:partial?done:S.items.length,score:S.score,wrong:wc};
++  if(!partial&&S.kind==='practice'){e.clean=S.score-(S.hintOk||0);e.star=S.pracStar||0;S.pracStar=0}
+   const a=store.get('vocab_practice_log_v1',{});const l=a[kd.id]||[];l.unshift(e);a[kd.id]=l.slice(0,300);store.set('vocab_practice_log_v1',a);
+   S.meta=null;
+@@ -1501,4 +1503,11 @@ const SYNC_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_prac
+   'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_cfg_20261119','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1','vocab_adj_tn240','vocab_enrich_v1'];
+ const KID_IDS=['anhphong','thanhnghi'];
++// Dấu của bản đã đồng bộ gần nhất cho từng tài liệu: bản trên máy khác dấu này = có thay đổi chưa kịp gửi
++// (tắt ứng dụng, mất mạng…) -> giữ bản trên máy và gửi lên, không để bản cũ trên kho đè mất sao / tiến độ.
++const LH_KEY='vocab_sync_lh';
++const strHash=t=>{let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(36)+':'+t.length};
++const LH=(()=>{try{const o=JSON.parse(localStorage.getItem(LH_KEY)||'null');return o&&typeof o==='object'?o:null}catch(e){return null}})();
++const LH_ON=!!LH;const lh=LH||{};let lhT=0;
++function setLH(id,str){lh[id]=strHash(str);clearTimeout(lhT);lhT=setTimeout(()=>{try{localStorage.setItem(LH_KEY,JSON.stringify(lh))}catch(e){}},300)}
+ const SYNC={parts:{},db:null,dev:Math.random().toString(36).slice(2,10),dirty:new Set(),timer:null,busy:false,last:{},known:new Set(),state:'local'};
+ function isKidKeyed(v){return v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length>0&&Object.keys(v).every(k=>KID_IDS.includes(k))}
+@@ -1546,7 +1555,7 @@ async function syncFlush(){
+         setSyncBadge('saving');
+         jobs.push((async()=>{
+-        try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id)}
++        try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);setLH(id,str)}
+         catch(e){err=e;if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*800));
+-          try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);err=null}catch(e2){err=e2;SYNC.dirty.add(k)}}else SYNC.dirty.add(k)}
++          try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);setLH(id,str);err=null}catch(e2){err=e2;SYNC.dirty.add(k)}}else SYNC.dirty.add(k)}
+         })());
+       }
+@@ -1563,9 +1572,11 @@ async function syncFlush(){
+ }
+ function applyCloudDocs(docs){ // docs: [{id, v}]
+-  const byKey={};
++  const byKey={},localDocs={};let keptLocal=false;
+   docs.forEach(({id,v})=>{const dot=id.indexOf('.');const k=dot>0&&KID_IDS.includes(id.slice(dot+1))?id.slice(0,dot):id;const kid=k===id?null:id.slice(dot+1);
+     let val;try{val=JSON.parse(v)}catch(e){return}
+-    if(SYNC.dirty.has(k)&&!(id in SYNC.last&&SYNC.last[id]===(docsFor(k)[id]||null)))return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
+-    SYNC.last[id]=v;SYNC.known.add(id);
++    const loc=(localDocs[k]=localDocs[k]||docsFor(k))[id];
++    if(SYNC.dirty.has(k)&&!(id in SYNC.last&&SYNC.last[id]===(loc||null)))return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
++    if(LH_ON&&loc&&loc!==v&&lh[id]&&strHash(loc)!==lh[id]){SYNC.dirty.add(k);keptLocal=true;return} // thay đổi từ lần trước chưa gửi được
++    SYNC.last[id]=v;SYNC.known.add(id);setLH(id,v);
+     if(kid){(byKey[k]=byKey[k]&&typeof byKey[k]==='object'?byKey[k]:{})[kid]=val}else byKey[k]=val});
+   Object.entries(byKey).forEach(([k,val])=>{
+@@ -1576,4 +1587,5 @@ function applyCloudDocs(docs){ // docs: [{id, v}]
+     try{LS.setItem(k,JSON.stringify(val))}catch(e){}
+   });
++  if(keptLocal&&SYNC.db&&!SYNC.hold){clearTimeout(SYNC.timer);SYNC.timer=setTimeout(syncFlush,800)}
+ }
+ function withTimeout(p,ms){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej({code:'timeout'}),ms))])}
