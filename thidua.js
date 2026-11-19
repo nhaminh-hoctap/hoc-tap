@@ -403,7 +403,9 @@
   }
   function alertsHtml() {
     if (!D) return ''; css(); var A = alerts();
-    return '<div class="td-card al"><h3>🔔 Cần bố mẹ để ý</h3>' + (A.length ? A.map(function (a) { return '<div class="al-it ' + a[0] + '">' + (a[0] === 'warn' ? '⚠️' : a[0] === 'good' ? '✅' : 'ℹ️') + ' <span>' + a[1] + '</span></div>'; }).join('') : '<div class="al-it good">✅ <span>Mọi thứ đều ổn, hai con đang học đều.</span></div>') + '</div>';
+    var nW = A.filter(function (a) { return a[0] === 'warn'; }).length;
+    var sm = nW ? '<b class="pc-w">⚠️ ' + nW + ' việc cần chú ý</b>' : A.length ? A.length + ' ghi chú' : '✅ Mọi thứ đều ổn';
+    return '<details class="td-card al pcol" data-k="al"' + (OPEN.al ? ' open' : '') + '><summary><h3>🔔 Cần bố mẹ để ý</h3><span class="pc-s">' + sm + '<span class="pc-m"></span></span></summary>' + (A.length ? A.map(function (a) { return '<div class="al-it ' + a[0] + '">' + (a[0] === 'warn' ? '⚠️' : a[0] === 'good' ? '✅' : 'ℹ️') + ' <span>' + a[1] + '</span></div>'; }).join('') : '<div class="al-it good">✅ <span>Mọi thứ đều ổn, hai con đang học đều.</span></div>') + '</details>';
   }
 
   /* ---------- chúc mừng ---------- */
@@ -564,10 +566,17 @@
         '<div class="wr-nx">' + (good.length ? '<div class="g">👍 ' + good.join('; ') + '.</div>' : '') + (need.length ? '<div class="n">👉 Cần cố gắng: ' + need.join('; ') + '.</div>' : '') + (!good.length && !need.length ? '<div class="mu">Chưa đủ dữ liệu để nhận xét.</div>' : '') + '</div></div>';
     }).join('');
     var canPrev = addD(wk, -7) >= addD(cur, -56), canNext = !isCur;
-    return '<div class="td-card wr"><div class="wr-top"><h3>📅 Báo cáo tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + (isCur ? ' · tuần này, tính đến hôm nay' : '') + '</small></h3>' +
+    var sm = KIDS.map(function (k) { return '<span class="pc-k">' + esc(nameOf(k)) + ' <b>' + weekPts(k, wk) + '</b> điểm</span>'; }).join('');
+    return '<details class="td-card wr pcol" data-k="wr"' + (OPEN.wr ? ' open' : '') + '><summary><h3>📅 Báo cáo tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + (isCur ? ' · tuần này, tính đến hôm nay' : '') + '</small></h3><span class="pc-s">' + sm + '<span class="pc-m"></span></span></summary><div class="wr-top">' +
       '<span class="wr-nav"><button type="button" data-wk="' + addD(wk, -7) + '"' + (canPrev ? '' : ' disabled') + '>◀ Tuần trước</button><button type="button" data-wk="' + addD(wk, 7) + '"' + (canNext ? '' : ' disabled') + '>Tuần sau ▶</button></span></div>' +
-      '<div class="wr-grid">' + cards + '</div></div>';
+      '<div class="wr-grid">' + cards + '</div></details>';
   }
+  /* Góc bố mẹ: các thẻ rút gọn, bấm vào mới mở; nhớ thẻ đang mở khi vẽ lại */
+  var OPEN = { al: false, wr: false };
+  document.addEventListener('toggle', function (e) { var t = e.target; if (t && t.classList && t.classList.contains('pcol')) OPEN[t.dataset.k] = t.open; }, true);
+  CSS += '.pcol>summary{list-style:none;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;min-height:44px;touch-action:manipulation}.pcol>summary::-webkit-details-marker{display:none}' +
+    '.pcol>summary h3{margin:0;flex:1 1 220px}.pc-s{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;font-size:15px;color:#334155}.pc-k{white-space:nowrap}.pc-m,.pc-w{white-space:nowrap}.pc-w{color:#B45309}' +
+    '.pc-m::after{content:"Xem chi tiết ▾";font-weight:700;color:#2563EB;font-size:14px;white-space:nowrap}.pcol[open] .pc-m::after{content:"Thu gọn ▴"}.pcol[open]>summary{margin-bottom:8px}.wr .wr-top{justify-content:flex-end}';
   CSS += '.wr-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.wr-top h3{flex:1 1 240px;margin:0}.wr-nav{display:flex;gap:8px}.wr-nav button{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid #E2E8F0;background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:#1E293B;touch-action:manipulation}.wr-nav button:disabled{opacity:.4}' +
     '.wr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}.wr-k{border:2px solid #E2E8F0;border-radius:18px;padding:12px 14px;font-size:15px;line-height:1.5}.wr-k.anhphong{border-color:#FDBA74}.wr-k.thanhnghi{border-color:#86EFAC}' +
     '.wr-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}.wr-pt{font-weight:800;font-size:18px;white-space:nowrap}.wr-pt small{font-size:12px;color:#64748B;font-weight:600}.wr-res{margin-top:6px;font-weight:700;color:#B45309}' +

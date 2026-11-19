@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0024 | Góc bố mẹ: "Các con đã học gì 3 ngày qua" đưa lên đầu (ngay dưới ô sao hai con); "Cần bố mẹ để ý" và "Báo cáo tuần" rút gọn thành một dòng tóm tắt (số việc cần chú ý; điểm tuần hai con), bấm vào mới mở chi tiết, chuyển tuần vẫn giữ trạng thái mở. |
 | 19/11 | 0023 | Từ vựng không còn mất sao / tiến độ khi iPad mất mạng hoặc tắt ứng dụng trước khi kịp gửi: máy nhớ dấu bản đã đồng bộ (`vocab_sync_lh`), bản trên máy có thay đổi chưa gửi thì giữ lại và gửi lên thay vì bị kho đè. Số lượt nhận sao luyện thêm tính theo cả sổ sao. Lịch sử luyện ghi thêm điểm tính sao và số sao. (Bài 48/50 của Anh Phong tối 19/11 bị mất do lỗi cũ trước bản 0021.) |
 | 19/11 | 0022 | Nhiệm vụ hôm nay, điểm tuần (đua cúp) và linh vật (nở trứng) tính ngay cả phần bé vừa làm trên máy, kể cả khi chưa kịp gửi lên kho; Lớp 2, Lớp 6 gửi xong bài mới về trang chính. Luyện thêm ghi rõ "hôm nay đã làm N bài · còn X/4 lượt nhận sao (cần đúng từ 45/50)" và báo khi bài chưa đủ 45 câu đúng. Áp dụng cho cả hai bé. |
 | 19/11 | 0021 | Sửa lỗi mất sao Từ vựng: bé học xong rồi bấm về trang chính ngay thì sao (và tiến độ) chưa kịp gửi lên kho, lần mở sau bị dữ liệu cũ đè mất. Nay gửi tất cả cùng lúc, chờ gửi xong mới về trang chính, và không để dữ liệu cũ đè phần chưa gửi. |
