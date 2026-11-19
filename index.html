@@ -263,7 +263,11 @@ var BAR_CSS='#pbar{position:sticky;top:0;z-index:900;display:flex;align-items:ce
   'html.pbar #syncBadge.ok,html.pbar #syncBadge.saving,html.pbar #syncBadge.loading{display:none!important}'+
   'html.pbar .top .pill,html.pbar .top .sc-on,html.pbar .top .sc-wait{display:none!important}'+
   'html.pbar .topbar .brand,html.pbar .topbar .starpill,html.pbar .topbar .syncpill.ok,html.pbar .topbar .syncpill.saving,html.pbar .topbar .syncpill.connecting{display:none!important}'+
-  'html.pbar .topbar{padding-top:8px;padding-bottom:0;min-height:0}';
+  'html.pbar .topbar{padding-top:8px;padding-bottom:0;min-height:0}'+
+  /* chạm trên iPad: bỏ trễ chạm đúp, nút nhỏ được nới tối thiểu 44px */
+  'html.pbar button,html.pbar summary,html.pbar a{touch-action:manipulation}'+
+  'html.pbar .pc button{height:46px;min-width:52px}html.pbar .seg button{min-height:44px;padding:8px 16px}html.pbar .ghostw{min-height:44px}'+
+  'html.pbar .btn.small{min-height:44px}html.pbar .icon-btn{min-width:48px;min-height:48px}';
 function barTitle(){var m=P.mode,a=P.app;
   if(m==='parent-sao')return['⭐','Thưởng · Phạt · Tiêu sao'];if(m==='parent-report')return['📊','Báo cáo học từ vựng'];if(m==='parent-set')return['📘','Cài đặt Học từ vựng'];
   if(m==='parent')return a==='lop2'?['🧮','Cài đặt Lớp 2']:['📐','Cài đặt Lớp 6'];var A=APPS[a]||{ic:'',t:''};return[A.ic,A.t]}
