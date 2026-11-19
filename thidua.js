@@ -183,14 +183,19 @@
   /* Bố mẹ bù năng lượng linh vật: những ngày này tính như đã đạt mục tiêu Toán/TV (+5 ⚡), không cộng trùng nếu dữ liệu sau đó về đủ.
      19/11/2026: bù cho Anh Phong vì bài Toán/TV hôm đó chưa gửi được lên kho (lỗi đã sửa ở bản 0025). */
   var SUB_BU = { anhphong: ['2026-11-19'], thanhnghi: [] };
+  /* Bù tương tự cho phần tiếng Anh (+10 ⚡): ngày này tính như đã học đủ bài tiếng Anh, không cộng trùng.
+     19/11/2026: Anh Phong đã học 5 từ mới, ôn tập, mở rương báu nhưng phần năng lượng tiếng Anh chưa được ghi nhận; bố mẹ bù +10. */
+  var EN_BU = { anhphong: ['2026-11-19'], thanhnghi: [] };
+  function enOk(kid, k) { return dayDone(D.vd[kid][k]) || (EN_BU[kid] || []).indexOf(k) >= 0; }
   function subOk(kid, k) { var s = D.sj[kid][k]; return (s && s.q >= D.goal[kid]) || (SUB_BU[kid] || []).indexOf(k) >= 0; }
   function xpParts(kid) {
     var o = { en: 0, sub: 0, chest: 0, cup: 0 }, vd = D.vd[kid], sj = D.sj[kid], g = D.goal[kid];
-    Object.keys(vd).forEach(function (k) { if (dayDone(vd[k])) o.en++; if (vd[k] && vd[k].chest) o.chest++; });
+    Object.keys(vd).forEach(function (k) { if (vd[k] && vd[k].chest) o.chest++; });
+    var ed = {}; Object.keys(vd).concat(EN_BU[kid] || []).forEach(function (k) { if (!ed[k] && enOk(kid, k)) { ed[k] = 1; o.en++; } });
     var sd = {}; Object.keys(sj).concat(SUB_BU[kid] || []).forEach(function (k) { if (!sd[k] && subOk(kid, k)) { sd[k] = 1; o.sub++; } });
     o.cup = cupsOf(kid); o.xp = o.en * 10 + o.sub * 5 + o.chest * 3 + o.cup * 20; return o;
   }
-  function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (dayDone(r) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
+  function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (enOk(kid, t) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
   function pet(kid) {
     if (!D) return null; var xp = xpParts(kid).xp, L = PETS[kid], i = 0;
     for (var j = 0; j < L.length; j++) if (xp >= L[j][0]) i = j;

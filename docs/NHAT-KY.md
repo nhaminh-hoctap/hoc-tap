@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0027 | Bù thêm +10 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đã học đủ bài tiếng Anh hôm đó, không cộng trùng; danh sách `EN_BU` trong `thidua.js`). |
 | 19/11 | 0026 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: bỏ các thẻ Báo cáo, Cài đặt phía trên, chỉ còn phần sao. Vở Vui Lớp 2: bỏ ô "Tiếng Việt · Tuần … (theo lịch 35 tuần)" ở trang chính (đã có Toán 2, Tiếng Việt 2). Bù +5 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đạt mục tiêu Toán/TV hôm đó, không cộng trùng; danh sách ngày bù `SUB_BU` trong `thidua.js`). |
 | 19/11 | 0025 | Sửa lỗi Vở Vui Lớp 2 không gửi được tiến độ lên kho (kho không nhận dạng lưu cũ) nên bảng "3 ngày qua", điểm tuần, báo cáo của Anh Phong thiếu Toán / Tiếng Việt. Nay gói tiến độ thành một chuỗi khi gửi; các lượt đã làm còn trên iPad của bé sẽ tự gửi bù khi bé mở lại Lớp 2. |
 | 19/11 | 0024 | Góc bố mẹ: "Các con đã học gì 3 ngày qua" đưa lên đầu (ngay dưới ô sao hai con); "Cần bố mẹ để ý" và "Báo cáo tuần" rút gọn thành một dòng tóm tắt (số việc cần chú ý; điểm tuần hai con), bấm vào mới mở chi tiết, chuyển tuần vẫn giữ trạng thái mở. |
