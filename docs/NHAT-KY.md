@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0029 | Bỏ điều kiện "khối 100 từ đã thưởng theo quy tắc cũ thì không thưởng lại": sao bố mẹ thưởng trước đây (theo số từ đã học) không ảnh hưởng, mọi khối 50 từ được thưởng theo thuộc chắc thật. |
 | 19/11 | 0028 | Bố mẹ chốt lại sao Từ vựng: bỏ "Học thêm từ mới" (mỗi ngày học đúng 5 từ, nút đổi thành "Đủ từ mới hôm nay"); bỏ "Kiểm tra từ cũ"; thuộc chắc từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao, sau đó mỗi 50 từ = 150 sao; khối 100 từ đã thưởng trước đây không thưởng lại; khối đã đủ từ trước được thưởng nốt ở lần thuộc chắc kế tiếp. Các quy tắc khác giữ nguyên. |
 | 19/11 | 0027 | Bù thêm +10 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đã học đủ bài tiếng Anh hôm đó, không cộng trùng; danh sách `EN_BU` trong `thidua.js`). |
 | 19/11 | 0026 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: bỏ các thẻ Báo cáo, Cài đặt phía trên, chỉ còn phần sao. Vở Vui Lớp 2: bỏ ô "Tiếng Việt · Tuần … (theo lịch 35 tuần)" ở trang chính (đã có Toán 2, Tiếng Việt 2). Bù +5 ⚡ ấp trứng cho Anh Phong ngày 19/11 (tính như đạt mục tiêu Toán/TV hôm đó, không cộng trùng; danh sách ngày bù `SUB_BU` trong `thidua.js`). |
