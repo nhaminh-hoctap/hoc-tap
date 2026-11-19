@@ -1,0 +1,113 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 32133d7..313b2c1 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 19/11 | 0030 | "Học 5 từ mới" (Nhiệm vụ hôm nay, rương báu) chỉ tính xong khi bé làm hết cả bước kiểm tra từ mới; mở từ ra học chưa xong thì hiện "Còn bước kiểm tra từ mới, làm nốt nhé!". Bảng 3 ngày qua của bố mẹ ghi "chưa xong bước kiểm tra". Rương đã mở trước đây vẫn giữ điểm. |
+ | 19/11 | 0029 | Bỏ điều kiện "khối 100 từ đã thưởng theo quy tắc cũ thì không thưởng lại": sao bố mẹ thưởng trước đây (theo số từ đã học) không ảnh hưởng, mọi khối 50 từ được thưởng theo thuộc chắc thật. |
+ | 19/11 | 0028 | Bố mẹ chốt lại sao Từ vựng: bỏ "Học thêm từ mới" (mỗi ngày học đúng 5 từ, nút đổi thành "Đủ từ mới hôm nay"); bỏ "Kiểm tra từ cũ"; thuộc chắc từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao, sau đó mỗi 50 từ = 150 sao; khối 100 từ đã thưởng trước đây không thưởng lại; khối đã đủ từ trước được thưởng nốt ở lần thuộc chắc kế tiếp. Các quy tắc khác giữ nguyên. |
+diff --git a/docs/SUA-NOI-DUNG.md b/docs/SUA-NOI-DUNG.md
+index fa3fff4..e1b5ada 100644
+--- a/docs/SUA-NOI-DUNG.md
++++ b/docs/SUA-NOI-DUNG.md
+@@ -103,5 +103,5 @@ Hằng số ở đầu tệp:
+ | `GOOD`, `GOOD_MIN` | 15, 60 | Bé không vô địch nhưng đạt từ 60 điểm được +15 sao |
+ | `SHIELD_MIN`, `SHIELD_MAX` | 75, 2 | Tuần đạt từ 75 điểm được 1 khiên (nhận thứ Hai tuần sau, giữ tối đa 2); khiên giữ chuỗi khi lỡ một ngày |
+-| `NEWW` | 5 | Rương báu: học 5 từ mới + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn → ngẫu nhiên 5–10 sao |
++| `NEWW` | 5 | Rương báu: học xong 5 từ mới (cả bước kiểm tra từ mới) + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn → ngẫu nhiên 5–10 sao |
+ | `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20. Bố mẹ bù ngày đạt mục tiêu môn lớp (khi dữ liệu bị thiếu) bằng cách thêm ngày vào `SUB_BU` (+5) hoặc `EN_BU` (ngày học đủ tiếng Anh, +10) |
+ 
+diff --git a/index.html b/index.html
+index fbaf9b6..f77439d 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=29"></script>
+-<script src="bank.js?v=29"></script>
+-<script src="thidua.js?v=29"></script>
++<script src="claude-shim.js?v=30"></script>
++<script src="bank.js?v=30"></script>
++<script src="thidua.js?v=30"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+@@ -431,5 +431,5 @@ async function renderRecent(){var box=$('pRecent');if(!box)return;
+     var pr=lg.filter(function(e){return e.type!=='ls'}),ls=lg.filter(function(e){return e.type==='ls'});
+     if(!r&&!lg.length)return out;var parts=[];
+-    if(r&&r.new&&r.new.length)parts.push(r.new.length+' từ mới ('+rangeTxt(r.new)+')');
++    if(r&&r.new&&r.new.length)parts.push(r.new.length+' từ mới ('+rangeTxt(r.new)+')'+(r.newDone||r.done?'':' <span class="dở" title="Chưa làm bước kiểm tra từ mới">chưa xong bước kiểm tra</span>'));
+     if(r&&r.reviewDone)parts.push('ôn tập ✓');
+     var part=function(e){return e.total>0&&e.done<e.total};
+diff --git a/sw.js b/sw.js
+index 67168cc..d0899ca 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v29';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=29', 'bank.js?v=29', 'thidua.js?v=29', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v30';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=30', 'bank.js?v=30', 'thidua.js?v=30', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/thidua.js b/thidua.js
+index 5fb5ab8..bf63bbb 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -28,7 +28,8 @@
+   function chestCheck(r, plog, k) {
+     var lg = (plog || []).filter(function (e) { return e && e.t && dayOf(e.t) === k && e.total > 0 && e.done >= e.total; });
+-    var nw = (r && r.new || []).length, rv = !!(r && (r.reviewDone || r.done));
++    /* từ mới chỉ tính khi bé học xong cả bước kiểm tra từ mới (có dấu newDone), mở ra học chưa tính */
++    var nd = !!(r && (r.newDone || r.done)), nw = nd ? (r.new || []).length : 0, part = !nd && !!(r && r.new && r.new.length), rv = !!(r && (r.reviewDone || r.done));
+     var pr = lg.filter(function (e) { return e.type !== 'ls'; }).length, ls = lg.filter(function (e) { return e.type === 'ls'; }).length;
+-    return { nw: nw, rv: rv, pr: pr, ls: ls, ok: nw >= NEWW && rv && pr >= 2 && ls >= 1 };
++    return { nw: nw, part: part, rv: rv, pr: pr, ls: ls, ok: nw >= NEWW && rv && pr >= 2 && ls >= 1 };
+   }
+ 
+@@ -129,5 +130,5 @@
+   function dayPts(kid, k) {
+     var r = D.vd[kid][k], sj = D.sj[kid][k] || { q: 0, c: 0 }, goal = D.goal[kid], ch = chestCheck(r, D.pl[kid], k);
+-    var p = { en: dayDone(r) ? 5 : 0, sub: sj.q >= goal ? 4 : 0, more: sj.q >= goal * 2 ? 2 : 0, acc: 0, chest: ch.ok ? 2 : 0, sq: sj.q, goal: goal, ch: ch };
++    var p = { en: dayDone(r) ? 5 : 0, sub: sj.q >= goal ? 4 : 0, more: sj.q >= goal * 2 ? 2 : 0, acc: 0, chest: ch.ok || (r && r.chest) ? 2 : 0, sq: sj.q, goal: goal, ch: ch };
+     var q = (r && +r.q || 0) + sj.q, c = (r && +r.ok || 0) + sj.c; p.q = q; p.pct = q ? Math.round(c / q * 100) : 0;
+     if (q >= 20) p.acc = c / q >= 0.9 ? 2 : c / q >= 0.8 ? 1 : 0;
+@@ -347,5 +348,5 @@
+     var sub = kid === 'anhphong' ? 'Toán / Tiếng Việt lớp 2' : 'Toán / Ngữ văn lớp 6', subApp = kid === 'anhphong' ? 'lop2' : 'lop6';
+     return [
+-      { ic: '📘', t: 'Học ' + NEWW + ' từ mới', n: Math.min(ch.nw, NEWW), of: NEWW, app: 'tuvung' },
++      { ic: '📘', t: 'Học ' + NEWW + ' từ mới', sub: ch.part ? 'Còn bước kiểm tra từ mới, làm nốt nhé!' : '', n: Math.min(ch.nw, NEWW), of: NEWW, app: 'tuvung' },
+       { ic: '🔁', t: 'Ôn tập từ cũ', n: ch.rv ? 1 : 0, of: 1, app: 'tuvung' },
+       { ic: '🎯', t: '2 bài luyện thêm', n: Math.min(ch.pr, 2), of: 2, app: 'tuvung' },
+@@ -364,5 +365,5 @@
+       L.map(function (x) {
+         var ok = x.n >= x.of;
+-        return '<button class="ms-it' + (ok ? ' ok' : '') + (x.bonus ? ' bonus' : '') + (x.lock ? ' lock' : '') + '" data-app="' + x.app + '"><span class="ms-ck">' + (ok ? '✓' : x.lock ? '🔒' : '') + '</span><span class="ms-ic">' + x.ic + '</span><span class="ms-t">' + x.t +
++        return '<button class="ms-it' + (ok ? ' ok' : '') + (x.bonus ? ' bonus' : '') + (x.lock ? ' lock' : '') + '" data-app="' + x.app + '"><span class="ms-ck">' + (ok ? '✓' : x.lock ? '🔒' : '') + '</span><span class="ms-ic">' + x.ic + '</span><span class="ms-t">' + x.t + (x.sub && !ok ? ' <small>' + x.sub + '</small>' : '') +
+           (x.bonus ? ' <small>' + (ok ? 'đã mở' : x.lock ? 'làm xong 4 việc tiếng Anh để mở' : 'đã mở được rồi, vào lấy sao nào!') + '</small>' : '') + '</span><span class="ms-n">' + (x.of > 1 ? x.n + '/' + x.of : ok ? 'Xong' : '') + '</span></button>';
+       }).join('') + '</div></div>';
+diff --git a/tuvung.html b/tuvung.html
+index 4573774..e0f8d1b 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -2133,11 +2133,12 @@ const CHEST_NEW=5,SHIELD_MAX=2;
+ const PORTAL_PARENT=()=>!!(window.PORTAL&&PORTAL.parent);
+ function chestState(kd,k){k=k||today();const r=logOf(kd).days[k]||{},pl=plogOf(kd).filter(e=>e&&e.t&&ymd(new Date(e.t))===k&&e.total>0&&e.done>=e.total);
+-  const nw=(r.new||[]).length,rv=!!(r.reviewDone||r.done),pr=pl.filter(e=>e.type!=='ls').length,ls=pl.filter(e=>e.type==='ls').length;
+-  return {nw,rv,pr,ls,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
++  const nd=!!(r.newDone||r.done),nw=nd?(r.new||[]).length:0,part=!nd&&!!(r.new&&r.new.length),rv=!!(r.reviewDone||r.done), // từ mới chỉ tính khi học xong cả bước kiểm tra
++    pr=pl.filter(e=>e.type!=='ls').length,ls=pl.filter(e=>e.type==='ls').length;
++  return {nw,part,rv,pr,ls,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
+ function renderChest(kd){const box=$('chestCard');if(!box)return;if(PORTAL_PARENT()){box.classList.add('hide');return}box.classList.remove('hide');
+   const st=chestState(kd),it=(ok,t)=>`<span class="${ok?'ok':''}">${ok?'✅':'⬜'} ${t}</span>`;
+-  const items=[it(st.nw>=CHEST_NEW,`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
++  const items=[it(st.nw>=CHEST_NEW,st.part?`${CHEST_NEW} từ mới (còn bước kiểm tra)`:`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
+   const left=[st.nw>=CHEST_NEW,st.rv,st.pr>=2,st.ls>=1].filter(x=>!x).length;
+-  [[st.nw>=CHEST_NEW,`${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW} từ`],[st.rv,''],[st.pr>=2,`${Math.min(st.pr,2)}/2 bài`],[st.ls>=1,`${Math.min(st.ls,1)}/1 bài`]].forEach(([ok,t],i)=>{
++  [[st.nw>=CHEST_NEW,st.part?'Còn bước kiểm tra':`${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW} từ`],[st.rv,''],[st.pr>=2,`${Math.min(st.pr,2)}/2 bài`],[st.ls>=1,`${Math.min(st.ls,1)}/1 bài`]].forEach(([ok,t],i)=>{
+     const a=$('st'+(i+1)),b=$('ss'+(i+1));if(!a)return;a.classList.toggle('ok',!!ok);a.textContent=ok?'✓':String(i+1);b.textContent=ok?'Xong':t;b.classList.toggle('ok',!!ok)});
+   box.className='card chestcard '+(st.opened?'open':st.ok?'ready':'');
