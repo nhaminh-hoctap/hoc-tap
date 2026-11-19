@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0033 | Thêm **🐾 Nuôi thú** (`nuoithu.html`): mỗi bé chọn 1 loại trứng (khủng long, rồng, phượng hoàng, kỳ lân; giữ năng lượng); cho ăn, vuốt ve, 2 trò chơi (Hứng sao, Thú trốn ở đâu), trang trí chỗ ở theo cấp. Thức ăn: xong Nhiệm vụ hôm nay +3, huy hiệu +1 món đặc biệt, lên cấp danh hiệu +3, mua 1 ⭐/5 ⭐ (tối đa 3 lần/ngày). Thanh Nghị đổi từ tên lửa sang trứng. Không cộng sao/điểm. |
 | 19/11 | 0032 | Mở Học / Sao thưởng / Huy hiệu / Cài đặt (Từ vựng) không còn chớp qua trang có đủ 4 thẻ: trang chính che nội dung, hiện "Đang mở…" đến khi Từ vựng chọn xong đúng màn (`PORTAL.mounted`, tối đa 5 giây). |
 | 19/11 | 0031 | Trang Huy hiệu của bé: bỏ hai thẻ chuyển Anh Phong / Thanh Nghị (giống trang Sao thưởng), chỉ còn Bộ sưu tập · Trang trí tên. |
 | 19/11 | 0030 | "Học 5 từ mới" (Nhiệm vụ hôm nay, rương báu) chỉ tính xong khi bé làm hết cả bước kiểm tra từ mới; mở từ ra học chưa xong thì hiện "Còn bước kiểm tra từ mới, làm nốt nhé!". Bảng 3 ngày qua của bố mẹ ghi "chưa xong bước kiểm tra". Rương đã mở trước đây vẫn giữ điểm. |
@@ -46,6 +47,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 - Từ vựng (chốt 19/11): mỗi ngày học đúng 5 từ, không có "Học thêm"; bỏ "Kiểm tra từ cũ" và Phonics.
 - Thi đua: danh hiệu / khung tên theo huy hiệu; đấu trường tuần (cúp +30 sao); rương báu mỗi ngày khi học đủ tiếng Anh (5 từ mới, ôn, 2 lần luyện thêm, 1 lần nghe nói → 5–10 sao); linh vật lớn lên; khiên giữ chuỗi chỉ thưởng khi bé hoàn thành tốt cả tuần; bé thua nhưng làm tốt cũng được +15 sao.
 - Lớp 6: bỏ gia sư AI; bài giảng chi tiết nhưng dễ hiểu. Lớp 2: tiến độ theo Giữa kì 1, Học kì 1, Giữa kì 2, Học kì 2; có luyện cộng trừ nhanh và bảng cửu chương.
+- Nuôi thú (chốt 19/11): cả hai bé tự chọn loại trứng; thú lớn nhờ học; thức ăn từ nhiệm vụ, huy hiệu, danh hiệu và mua bằng sao (1 ⭐ phần ăn, 5 ⭐ món đặc biệt, tối đa 3 lần/ngày); chơi để thư giãn, không cộng sao hay điểm.
 - Thiết kế ưu tiên iPad (cả dọc và ngang), dùng được trên iPhone; tiến độ đồng bộ giữa các máy.
 
 ## Việc có thể làm tiếp

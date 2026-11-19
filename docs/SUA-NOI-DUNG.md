@@ -106,3 +106,10 @@ Hằng số ở đầu tệp:
 | `PETS` | 9 nấc | Linh vật lớn lên theo năng lượng ⚡: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20. Bố mẹ bù ngày đạt mục tiêu môn lớp (khi dữ liệu bị thiếu) bằng cách thêm ngày vào `SUB_BU` (+5) hoặc `EN_BU` (ngày học đủ tiếng Anh, +10) |
 
 Danh hiệu và khung tên (7 cấp, khung `f1`→`f7`) do Từ vựng tính từ điểm huy hiệu và lưu ở `vocab_title_v1`; `bank.js` chỉ vẽ (`BANK.nameplate`).
+
+## 6. Nuôi thú (`nuoithu.html`, loài linh vật trong `thidua.js`)
+
+- **Loài**: `SPECIES` trong `thidua.js` (khủng long, rồng, phượng hoàng, kỳ lân; `egg` = chưa chọn). Mọi loài dùng chung mốc năng lượng `STEPS` (0, 40, 100, 200, 350, 550, 800, 1100, 1500 ⚡). Thêm loài: thêm vào `SPECIES` và `SPN`, `SPD` trong `nuoithu.html`. Mỗi bé chọn một lần; Anh Phong chưa chọn thì vẫn là khủng long, Thanh Nghị chưa chọn là quả trứng bí ẩn. Muốn cho bé chọn lại: xoá trường `sp` trong `thu-cung/<bé>`.
+- **Con số** (`CFG` đầu khối script, bố mẹ chốt 19/11/2026): xong đủ Nhiệm vụ hôm nay +3 phần ăn (nhận 1 lần/ngày) · mỗi huy hiệu +1 món đặc biệt · mỗi lần lên cấp danh hiệu +3 món đặc biệt · mua bằng sao 1 ⭐/phần ăn, 5 ⭐/món đặc biệt, tối đa 3 lần mua/ngày · no bụng +25 / +50, vui vẻ +5 / +20 khi ăn · vuốt ve +5 vui vẻ (tính 10 lần/ngày) · mỗi ngày no bụng giảm 20, vui vẻ giảm 15 · mỗi trò chơi 3 lượt/ngày.
+- **Không cộng sao hay điểm đấu trường.** Thú lớn chỉ nhờ năng lượng từ việc học; thức ăn chỉ làm thú no, vui.
+- **Đồ trang trí**: `DECO` (phông nền, mũ, đồ chơi), mỗi món có `lv` = cấp linh vật cần để mở khóa.
