@@ -401,10 +401,147 @@
     popMany(items);
   }
 
+  /* ---------- chuỗi ngày học (tính cả ngày đã dùng khiên) ---------- */
+  function streak(kid) {
+    if (!D) return 0; var vd = D.vd[kid] || {}, u = (D.sh[kid] && D.sh[kid].used) || {};
+    var ok = function (d) { return dayDone(vd[d]) || !!u[d]; }, d = today(), n = 0;
+    if (!ok(d)) d = addD(d, -1);
+    while (ok(d) && n < 3650) { n++; d = addD(d, -1); }
+    return n;
+  }
+
+  function leadTxt(kid) {
+    if (!D) return ''; var wk = monday(today()), me = weekPts(kid, wk), o = KIDS.filter(function (k) { return k !== kid; })[0], ot = weekPts(o, wk);
+    if (!me && !ot) return ''; if (me > ot) return '👑 đang dẫn'; if (me === ot) return 'đang ngang điểm'; return 'kém ' + (ot - me) + ' điểm';
+  }
+
+  /* ---------- Cách chơi ---------- */
+  var HOW_CSS = '.hw{max-width:980px;margin:0 auto}.hw-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 6px}.hw-h h1{margin:0;font-size:28px;flex:1}' +
+    '.hw-lead{font-size:18px;color:#334155;margin:0 0 14px;line-height:1.5}' +
+    '.hw-main{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.hw-c{background:#fff;border:2px solid #E2E8F0;border-radius:22px;padding:16px 18px;box-shadow:0 4px 0 #E2E8F0}' +
+    '.hw-c .ic{font-size:48px;line-height:1}.hw-c h3{margin:8px 0 6px;font-size:21px}.hw-c p{margin:4px 0;font-size:16.5px;line-height:1.5;color:#1E293B}' +
+    '.hw-c ul{margin:6px 0 0;padding-left:20px;font-size:16px;line-height:1.6;color:#1E293B}.hw-c li b{color:#B45309}' +
+    '.hw-c.s1{background:#FFFBEB;border-color:#FCD34D;box-shadow:0 4px 0 #FCD34D}.hw-c.s2{background:#FFF1F2;border-color:#FDA4AF;box-shadow:0 4px 0 #FDA4AF}.hw-c.s3{background:#EFF6FF;border-color:#93C5FD;box-shadow:0 4px 0 #93C5FD}' +
+    '.hw-sub{font-size:20px;margin:22px 2px 10px}.hw-ex{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hw-x{display:flex;gap:12px;align-items:flex-start;background:#fff;border:2px solid #E2E8F0;border-radius:18px;padding:12px 14px}' +
+    '.hw-x .ic{font-size:36px;line-height:1;flex:none}.hw-x b{display:block;font-size:17.5px;margin-bottom:2px}.hw-x span{font-size:15.5px;line-height:1.5;color:#334155}' +
+    '.hw-day{margin-top:16px;background:#ECFDF5;border:2px solid #86EFAC;border-radius:18px;padding:12px 16px;font-size:17px;line-height:1.5;color:#14532D}' +
+    '.hw details{margin-top:14px;background:#fff;border:2px solid #E2E8F0;border-radius:18px;padding:10px 16px;font-size:15.5px}.hw summary{cursor:pointer;font-weight:800;font-size:16.5px}' +
+    '@media (max-width:860px){.hw-main{grid-template-columns:1fr}.hw-ex{grid-template-columns:1fr}}';
+  function howHtml(kid) {
+    css(); if (!document.getElementById('hwCss')) { var st = document.createElement('style'); st.id = 'hwCss'; st.textContent = HOW_CSS; document.head.appendChild(st); }
+    var sub = kid === 'anhphong' ? 'Toán và Tiếng Việt lớp 2' : 'Toán và Ngữ văn lớp 6', g = D ? D.goal[kid] : 20;
+    var mas = kid === 'anhphong' ? '🦖' : '🚀', mn = kid === 'anhphong' ? 'Khủng long' : 'Tên lửa';
+    return '<div class="hw"><p class="hw-lead">Con chỉ cần nhớ <b>3 điều chính</b> dưới đây. Mỗi ngày làm hết <b>🎯 Nhiệm vụ hôm nay</b> là con có đủ cả ba!</p>' +
+      '<div class="hw-main">' +
+      '<div class="hw-c s1"><div class="ic">⭐</div><h3>1. Sao thưởng</h3><p>Sao dùng để <b>đổi quà</b> với bố mẹ. Con nhận sao khi:</p><ul>' +
+        '<li>Học từ vựng tiếng Anh, làm đúng nhiều</li><li>Làm bài ' + sub + ' đúng từ 90%</li><li>Mở 🎁 rương báu: <b>5–10 sao</b></li>' +
+        '<li>Thắng đấu trường tuần: <b>+' + CUP + ' sao</b></li><li>Làm việc tốt ở nhà: bố mẹ thưởng</li></ul><p style="font-size:15px;color:#64748B">Chưa ngoan thì bố mẹ có thể trừ sao.</p></div>' +
+      '<div class="hw-c s2"><div class="ic">🔥</div><h3>2. Chuỗi ngày học</h3><p>Mỗi ngày con học <b>đủ bài tiếng Anh</b> (' + NEWW + ' từ mới và ôn tập), chuỗi tăng thêm 1 ngày.</p>' +
+        '<p>Nghỉ một ngày thì chuỗi về 0, <b>trừ khi con có khiên 🛡️</b>.</p><p>Chuỗi càng dài, con càng giỏi!</p></div>' +
+      '<div class="hw-c s3"><div class="ic">🏆</div><h3>3. Đấu trường tuần</h3><p>Mỗi ngày con được tối đa <b>15 điểm</b>:</p><ul>' +
+        '<li>📘 Học đủ bài tiếng Anh: <b>5</b></li><li>' + (kid === 'anhphong' ? '🧮' : '📐') + ' Làm ' + g + ' câu ' + (kid === 'anhphong' ? 'Toán/TV' : 'Toán/Văn') + ': <b>4</b> (gấp đôi: thêm <b>2</b>)</li>' +
+        '<li>🎯 Làm đúng nhiều: <b>1–2</b></li><li>🎁 Đủ việc mở rương: <b>2</b></li></ul>' +
+        '<p>Hết Chủ nhật, ai nhiều điểm hơn (từ ' + WIN_MIN + ' điểm) được <b>cúp +' + CUP + ' sao</b>. Không thắng nhưng đạt từ ' + GOOD_MIN + ' điểm vẫn được <b>+' + GOOD + ' sao</b>.</p></div>' +
+      '</div>' +
+      '<h2 class="hw-sub">🎈 Quà thêm cho con chăm chỉ</h2><div class="hw-ex">' +
+      '<div class="hw-x"><span class="ic">🎁</span><div><b>Rương báu mỗi ngày</b><span>Làm xong 4 việc tiếng Anh (' + NEWW + ' từ mới, ôn tập, 2 bài luyện thêm, 1 bài nghe và nói) thì mở được rương, nhận ngẫu nhiên 5 đến 10 sao.</span></div></div>' +
+      '<div class="hw-x"><span class="ic">🛡️</span><div><b>Khiên giữ chuỗi</b><span>Tuần nào đạt từ ' + SHIELD_MIN + ' điểm, con được 1 khiên (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học cho con.</span></div></div>' +
+      '<div class="hw-x"><span class="ic">' + mas + '</span><div><b>Linh vật lớn lên</b><span>' + mn + ' của con lớn nhờ năng lượng ⚡: học đủ tiếng Anh +10, đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/TV' : 'Toán/Văn') + ' +5, mở rương +3, cúp tuần +20. Có 9 cấp để lớn.</span></div></div>' +
+      '<div class="hw-x"><span class="ic">🏅</span><div><b>Huy hiệu và danh hiệu</b><span>Học từ vựng chăm sẽ mở khóa huy hiệu. Đủ điểm huy hiệu thì con lên cấp danh hiệu (7 cấp) và được trang trí khung tên.</span></div></div>' +
+      '</div>' +
+      '<div class="hw-day">💡 <b>Mẹo:</b> mỗi ngày mở trang của con, xem <b>🎯 Nhiệm vụ hôm nay</b> và bấm vào từng việc để làm. Xong hết là con có sao, chuỗi ngày và điểm thi đua!</div>' +
+      (window.BANK && BANK.rulesHtml ? '<details><summary>⭐ Bảng sao chi tiết của môn ' + sub + '</summary><div style="margin-top:8px">' + BANK.rulesHtml(kid) + '</div></details>' : '') +
+      '</div>';
+  }
+  function howSpeech(kid) {
+    return 'Cách chơi. Con chỉ cần nhớ 3 điều. Một: sao thưởng, dùng để đổi quà với bố mẹ. Con nhận sao khi học bài, làm đúng, mở rương báu và thắng đấu trường. ' +
+      'Hai: chuỗi ngày học. Mỗi ngày học đủ bài tiếng Anh thì chuỗi tăng thêm một ngày. ' +
+      'Ba: đấu trường tuần. Mỗi ngày được tối đa 15 điểm. Hết Chủ nhật, ai nhiều điểm hơn được cúp và 30 sao. ' +
+      'Mỗi ngày con chỉ cần làm hết nhiệm vụ hôm nay là có đủ cả ba.';
+  }
+
+  /* ---------- Báo cáo tuần cho bố mẹ ---------- */
+  function weekRange(wk) { var t = today(), out = []; for (var i = 0; i < 7; i++) { var k = addD(wk, i); if (k > t) break; out.push(k); } return out; }
+  function kidWeek(kid, wk) {
+    var days = weekRange(wk), vd = D.vd[kid], sj = D.sj[kid], g = D.goal[kid], inW = function (t) { return t && days.indexOf(dayOf(t)) >= 0; };
+    var o = { days: days.length, act: 0, en: 0, newW: [], vq: 0, vc: 0, sec: 0, pr: 0, ls: 0, part: 0, sq: 0, sc: 0, goalDays: 0, wrong: {}, lessons: {}, tests: [], pts: weekPts(kid, wk) };
+    var pl = (D.pl[kid] || []).filter(function (e) { return e && inW(e.t); });
+    days.forEach(function (k) {
+      var r = vd[k], s = sj[k], any = false;
+      if (r) { if (dayDone(r)) o.en++; (r.new || []).forEach(function (n) { if (o.newW.indexOf(n) < 0) o.newW.push(n); }); o.vq += +r.q || 0; o.vc += +r.ok || 0; o.sec += +r.sec || 0; if ((r.new || []).length || r.q || r.reviewDone) any = true; }
+      if (s && s.q) { o.sq += s.q; o.sc += s.c; any = true; if (s.q >= g) o.goalDays++; }
+      if (pl.some(function (e) { return dayOf(e.t) === k; })) any = true;
+      if (any) o.act++;
+    });
+    pl.forEach(function (e) {
+      var full = e.total > 0 && e.done >= e.total;
+      if (!full && e.total > 0) o.part++; else if (e.type === 'ls') o.ls++; else o.pr++;
+      if (e.wrong) Object.keys(e.wrong).forEach(function (n) { o.wrong[n] = (o.wrong[n] || 0) + e.wrong[n]; });
+    });
+    if (kid === 'anhphong' && D.l2) {
+      (D.l2.rounds || []).forEach(function (r) { if (!Array.isArray(r) || !inW(r[0])) return; var x = o.lessons[r[2]] || (o.lessons[r[2]] = { c: 0, n: 0, x: 0 }); x.c += +r[3] || 0; x.n += +r[4] || 0; x.x++; });
+      (D.l2.tests || []).forEach(function (r) { if (Array.isArray(r) && inW(r[0])) o.tests.push({ s: r[2] === 'toan' ? 'Toán' : 'Tiếng Việt', c: +r[4] || 0, n: +r[3] || 0, d: dayOf(r[0]) }); });
+    }
+    if (kid === 'thanhnghi' && D.l6) {
+      Object.keys(D.l6.items || {}).forEach(function (sid) { var it = D.l6.items[sid]; if (!it || !inW(it.u)) return; var lid = sid.split(':')[0], x = o.lessons[lid] || (o.lessons[lid] = { c: 0, n: 0, x: 0 }); x.n++; });
+      (D.l6.tests || []).forEach(function (t) { if (t && inW(t.at)) o.tests.push({ s: t.subj === 'toan' ? 'Toán' : 'Ngữ văn', c: +t.c || 0, n: +t.n || 0, d: dayOf(t.at) }); });
+    }
+    // sao trong tuần
+    var a = parse(wk).getTime(), b = parse(addD(wk, 7)).getTime(), plus = 0, minus = 0;
+    function addS(e) { if (!e || !(e.t >= a && e.t < b) || /^📌/.test(String(e.r))) return; if (e.v > 0) plus += e.v; else if (e.v < 0) minus += e.v; }
+    try { BANK.vocabLed(kid).forEach(addS); BANK.extList(kid).forEach(addS); } catch (e) { }
+    o.plus = plus; o.minus = minus;
+    return o;
+  }
+  function pctTxt(c, n) { return n ? Math.round(c / n * 100) + '%' : '–'; }
+  function weekReportHtml(wk, nameFns) {
+    if (!D) return ''; css(); nameFns = nameFns || {};
+    var cur = monday(today()); wk = wk || cur;
+    var isCur = wk === cur, L = D.lg[wk];
+    var cards = KIDS.map(function (k) {
+      var o = kidWeek(k, wk), wl = WORDS && (WORDS.filter(function (x) { return x.id === k; })[0] || {}).words, sub = k === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn';
+      var words = o.newW.slice().sort(function (x, y) { return x - y; }).map(function (n) { var w = wl && wl[n - 1]; return w ? esc(w[0]) : '#' + n; });
+      var wr = Object.keys(o.wrong).sort(function (x, y) { return o.wrong[y] - o.wrong[x]; }).slice(0, 6).map(function (n) { var w = wl && wl[n - 1]; return w ? '<b>' + esc(w[0]) + '</b> (' + esc(w[1]) + ') ×' + o.wrong[n] : ''; }).filter(Boolean);
+      var nm = k === 'anhphong' ? nameFns.l2 : nameFns.l6;
+      var les = Object.keys(o.lessons).map(function (id) { var x = o.lessons[id]; return '<li>' + (nm ? nm(id) : esc(id)) + ' <span class="wr-mu">(' + (k === 'anhphong' ? (x.x > 1 ? x.x + ' lượt, ' : '') + x.c + '/' + x.n : x.n + ' câu') + ')</span></li>'; });
+      var res = L ? ((L.win || []).indexOf(k) >= 0 ? '🏆 Vô địch (+' + CUP + ' ⭐)' : (L.good || []).indexOf(k) >= 0 ? '💪 Làm tốt (+' + GOOD + ' ⭐)' : '') + ((L.sh || []).indexOf(k) >= 0 ? ' · 🛡️ +1 khiên' : '') : '';
+      // nhận xét tự động
+      var vp = o.vq ? o.vc / o.vq : null, spp = o.sq ? o.sc / o.sq : null, good = [], need = [];
+      if (o.en >= Math.max(1, o.days - 1)) good.push('học tiếng Anh đều (' + o.en + '/' + o.days + ' ngày)'); else if (o.days >= 3 && o.en <= o.days / 2) need.push('học tiếng Anh chưa đều (' + o.en + '/' + o.days + ' ngày đủ bài)');
+      if (o.goalDays >= Math.max(1, o.days - 1)) good.push('đạt mục tiêu ' + sub + ' ' + o.goalDays + ' ngày'); else if (o.days >= 3 && o.goalDays <= o.days / 2) need.push('làm ' + sub + ' còn ít (' + o.goalDays + '/' + o.days + ' ngày đạt mục tiêu)');
+      if (vp != null && o.vq >= 20) { if (vp >= 0.9) good.push('tiếng Anh đúng ' + pctTxt(o.vc, o.vq)); else if (vp < 0.8) need.push('tiếng Anh mới đúng ' + pctTxt(o.vc, o.vq) + ', nên ôn lại các từ hay sai'); }
+      if (spp != null && o.sq >= 20) { if (spp >= 0.9) good.push(sub + ' đúng ' + pctTxt(o.sc, o.sq)); else if (spp < 0.8) need.push(sub + ' mới đúng ' + pctTxt(o.sc, o.sq) + ', nên cùng con xem lại câu sai'); }
+      if (o.part >= 2) need.push('bỏ dở ' + o.part + ' bài luyện');
+      return '<div class="wr-k ' + k + '"><div class="wr-hd">' + plate(k) + '<span class="wr-pt">🏆 ' + o.pts + '<small>/105 điểm</small></span></div>' +
+        (res ? '<div class="wr-res">' + res + '</div>' : '') +
+        '<div class="wr-stats"><div><b>' + o.act + '/' + o.days + '</b><small>ngày có học</small></div><div><b>' + o.en + '</b><small>ngày đủ tiếng Anh</small></div><div><b>' + o.newW.length + '</b><small>từ mới</small></div>' +
+        '<div><b>' + (o.plus ? '+' + o.plus : 0) + (o.minus ? ' / ' + o.minus : '') + '</b><small>sao trong tuần</small></div></div>' +
+        '<h4>📘 Tiếng Anh</h4><ul><li>' + (o.vq ? o.vq + ' câu, đúng <b>' + pctTxt(o.vc, o.vq) + '</b>' + (o.sec ? ', khoảng ' + Math.round(o.sec / 60) + ' phút' : '') : 'Chưa làm câu nào') + '</li>' +
+        '<li>Luyện thêm <b>' + o.pr + '</b> bài · Nghe và nói <b>' + o.ls + '</b> bài' + (o.part ? ' · <span class="wr-warn">làm dở ' + o.part + ' bài</span>' : '') + '</li>' +
+        (words.length ? '<li>Từ mới: ' + words.join(', ') + '</li>' : '') + (wr.length ? '<li>Hay sai: ' + wr.join(', ') + '</li>' : '') + '</ul>' +
+        '<h4>' + (k === 'anhphong' ? '🧮' : '📐') + ' ' + sub + '</h4><ul><li>' + (o.sq ? o.sq + ' câu, đúng <b>' + pctTxt(o.sc, o.sq) + '</b> · đạt mục tiêu ' + D.goal[k] + ' câu: <b>' + o.goalDays + '/' + o.days + '</b> ngày' : 'Chưa làm bài') + '</li>' +
+        (o.tests.length ? '<li>Kiểm tra: ' + o.tests.map(function (t) { return t.s + ' ' + t.c + '/' + t.n + ' (' + dm(t.d) + ')'; }).join(' · ') + '</li>' : '') + '</ul>' +
+        (les.length ? '<details><summary>Các bài đã học (' + les.length + ')</summary><ul>' + les.join('') + '</ul></details>' : '') +
+        '<div class="wr-nx">' + (good.length ? '<div class="g">👍 ' + good.join('; ') + '.</div>' : '') + (need.length ? '<div class="n">👉 Cần cố gắng: ' + need.join('; ') + '.</div>' : '') + (!good.length && !need.length ? '<div class="mu">Chưa đủ dữ liệu để nhận xét.</div>' : '') + '</div></div>';
+    }).join('');
+    var canPrev = addD(wk, -7) >= addD(cur, -56), canNext = !isCur;
+    return '<div class="td-card wr"><div class="wr-top"><h3>📅 Báo cáo tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + (isCur ? ' · tuần này, tính đến hôm nay' : '') + '</small></h3>' +
+      '<span class="wr-nav"><button type="button" data-wk="' + addD(wk, -7) + '"' + (canPrev ? '' : ' disabled') + '>◀ Tuần trước</button><button type="button" data-wk="' + addD(wk, 7) + '"' + (canNext ? '' : ' disabled') + '>Tuần sau ▶</button></span></div>' +
+      '<div class="wr-grid">' + cards + '</div></div>';
+  }
+  CSS += '.wr-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.wr-top h3{flex:1;margin:0}.wr-nav{display:flex;gap:8px}.wr-nav button{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid #E2E8F0;background:#fff;font-weight:700;font-size:15px;font-family:inherit;color:#1E293B;touch-action:manipulation}.wr-nav button:disabled{opacity:.4}' +
+    '.wr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}.wr-k{border:2px solid #E2E8F0;border-radius:18px;padding:12px 14px;font-size:15px;line-height:1.5}.wr-k.anhphong{border-color:#FDBA74}.wr-k.thanhnghi{border-color:#86EFAC}' +
+    '.wr-hd{display:flex;align-items:center;justify-content:space-between;gap:8px}.wr-pt{font-weight:800;font-size:18px;white-space:nowrap}.wr-pt small{font-size:12px;color:#64748B;font-weight:600}.wr-res{margin-top:6px;font-weight:700;color:#B45309}' +
+    '.wr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 4px}.wr-stats div{background:#F8FAFC;border-radius:12px;padding:6px;text-align:center}.wr-stats b{display:block;font-size:19px}.wr-stats small{display:block;font-size:12px;color:#64748B;line-height:1.25}' +
+    '.wr-k h4{margin:10px 0 2px;font-size:16px}.wr-k ul{margin:2px 0;padding-left:20px}.wr-mu{color:#64748B}.wr-warn{color:#B45309;font-weight:700}.wr-k details{margin-top:6px}' +
+    '.wr-nx{margin-top:10px}.wr-nx div{border-radius:12px;padding:6px 10px;margin-top:6px}.wr-nx .g{background:#ECFDF5;color:#14532D}.wr-nx .n{background:#FFF7ED;color:#7C2D12}.wr-nx .mu{color:#64748B}' +
+    '@media (max-width:760px){.wr-grid{grid-template-columns:1fr}}';
+
   window.THIDUA = {
     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
     pet: pet, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
+    streak: streak, leadTxt: leadTxt, howHtml: howHtml, howSpeech: howSpeech, weekReportHtml: weekReportHtml, monday: function () { return monday(today()); },
     RULE: { START: START, CUP: CUP, WIN_MIN: WIN_MIN, SHIELD_MIN: SHIELD_MIN, SHIELD_MAX: SHIELD_MAX, NEWW: NEWW }
   };
 })();
