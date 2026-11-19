@@ -1,0 +1,80 @@
+diff --git a/docs/KIEN-TRUC.md b/docs/KIEN-TRUC.md
+index abded02..071cc82 100644
+--- a/docs/KIEN-TRUC.md
++++ b/docs/KIEN-TRUC.md
+@@ -75,5 +75,5 @@ Ba tệp `claude-shim.js`, `bank.js`, `thidua.js` được nạp kèm `?v=N`; `s
+ | `bankx/<bé>/e/<id>` | `bank.js` | Mỗi lần nhận sao Toán / Tiếng Việt / Ngữ văn / cúp tuần là **một tài liệu riêng** `{id, t, v, r, src, k, key, day, void?}` để nhiều máy ghi cùng lúc không đè nhau. Huỷ một dòng = đặt `void: true`. |
+ | `league/<thứ Hai yyyy-mm-dd>` | `thidua.js` | Kết quả tuần `{wk, s:{bé: điểm}, win, good, sh, at}`; tự chốt khi mở trang vào tuần sau. |
+-| `data/users/gia-dinh/sync` | Lớp 2 | Tiến độ Lớp 2 (các lượt luyện, bài kiểm tra, luyện nhanh, cài đặt). `…/progress` là bản cũ. |
++| `data/users/gia-dinh/sync` | Lớp 2 | Tiến độ Lớp 2 (các lượt luyện, bài kiểm tra, luyện nhanh, cài đặt), lưu dạng `{json: "<chuỗi JSON>", t}` vì Firestore không nhận mảng lồng mảng. `…/progress` là bản cũ. |
+ | `tien-do/hoc-sinh` | Lớp 6 | Tiến độ Lớp 6. `data/users/gia-dinh/tien-do` là vị trí cũ, chỉ đọc. |
+ 
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 4ef9789..bd6f267 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 19/11 | 0025 | Sửa lỗi Vở Vui Lớp 2 không gửi được tiến độ lên kho (kho không nhận dạng lưu cũ) nên bảng "3 ngày qua", điểm tuần, báo cáo của Anh Phong thiếu Toán / Tiếng Việt. Nay gói tiến độ thành một chuỗi khi gửi; các lượt đã làm còn trên iPad của bé sẽ tự gửi bù khi bé mở lại Lớp 2. |
+ | 19/11 | 0024 | Góc bố mẹ: "Các con đã học gì 3 ngày qua" đưa lên đầu (ngay dưới ô sao hai con); "Cần bố mẹ để ý" và "Báo cáo tuần" rút gọn thành một dòng tóm tắt (số việc cần chú ý; điểm tuần hai con), bấm vào mới mở chi tiết, chuyển tuần vẫn giữ trạng thái mở. |
+ | 19/11 | 0023 | Từ vựng không còn mất sao / tiến độ khi iPad mất mạng hoặc tắt ứng dụng trước khi kịp gửi: máy nhớ dấu bản đã đồng bộ (`vocab_sync_lh`), bản trên máy có thay đổi chưa gửi thì giữ lại và gửi lên thay vì bị kho đè. Số lượt nhận sao luyện thêm tính theo cả sổ sao. Lịch sử luyện ghi thêm điểm tính sao và số sao. (Bài 48/50 của Anh Phong tối 19/11 bị mất do lỗi cũ trước bản 0021.) |
+diff --git a/index.html b/index.html
+index c138eb5..42c1998 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=24"></script>
+-<script src="bank.js?v=24"></script>
+-<script src="thidua.js?v=24"></script>
++<script src="claude-shim.js?v=25"></script>
++<script src="bank.js?v=25"></script>
++<script src="thidua.js?v=25"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/lop2.html b/lop2.html
+index 88d8b24..d40f710 100644
+--- a/lop2.html
++++ b/lop2.html
+@@ -2026,5 +2026,8 @@ const hasPending=()=>S.L.rounds.length>0||S.L.tests.length>0||S.L.drills.length>
+ function setSync(st){sync.state=st;renderSyncChip();}
+ function scheduleFlush(ms){if(!sync.ref)return;clearTimeout(sync.timer);sync.timer=setTimeout(flush,ms);}
+-async function migrateBase(){const cand=[];try{const s=await sync.legacyRef.get();if(s.exists)cand.push(normalize(clone(s.data())));}catch(e){}
++/* Kho Firebase không nhận mảng lồng mảng (các lượt luyện lưu dạng [giờ, máy, bài, đúng, tổng, sao]) → gói cả tài liệu thành một chuỗi JSON khi gửi, mở ra khi đọc */
++const decDoc=d=>{if(d&&typeof d.json==='string'){try{return JSON.parse(d.json);}catch(e){return null;}}return d;};
++const encDoc=N=>({json:JSON.stringify(N),t:Date.now()});
++async function migrateBase(){const cand=[];try{const s=await sync.legacyRef.get();if(s.exists)cand.push(normalize(clone(decDoc(s.data()))));}catch(e){}
+   if(S.legacy)cand.push(S.legacy);const p=cand.filter(x=>x.rounds>0||x.name).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))[0];
+   if(!p)return null;return {v:4,base:p.rounds>0?{...legacyBase(p),at:+p.updatedAt||1}:null,rounds:[],foldedUpTo:0,pref:{name:p.name||'',nameAt:1,settings:normSettings(p.settings),setAt:1},resetAt:0,devs:{}};}
+@@ -2035,7 +2038,7 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
+     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
+     if(!retry){
+-      const snap=await sync.ref.get();let R=snap.exists?clone(snap.data()):null;if(!R||R.v!==4)R=await migrateBase();
++      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
+       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
+-      await sync.ref.set(N);
++      await sync.ref.set(encDoc(N));
+       if(leased)sync.ref.acquire({holder:S.dev,ttlMs:1000}).catch(()=>{});
+       const ids=new Set(sent.rounds.map(r=>r[0]+'|'+r[1]));S.L.rounds=S.L.rounds.filter(r=>!ids.has(r[0]+'|'+r[1]));
+@@ -2056,5 +2059,5 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
+ function applySnap(snap,live){const cached=!!(snap.metadata&&snap.metadata.fromCache);
+   if(!cached)clearTimeout(sync.loadTimer);
+-  if(snap.exists){const d=snap.data();if(d&&d.v===4){S.D=clone(d);S.legacy=null;}}else if(cached)return;
++  if(snap.exists){const d=decDoc(snap.data());if(d&&d.v===4){S.D=clone(d);S.legacy=null;}}else if(cached)return;
+   const first=!sync.got&&!cached;if(first){sync.got=true;sync.last=Date.now();const me=S.D&&S.D.devs&&S.D.devs[S.dev];
+     if(LS_OK&&(!me||me.label!==devLabel()||Date.now()-(me.seen||0)>12*3600e3))sync.needReg=true;
+diff --git a/sw.js b/sw.js
+index 135c5d7..82e2750 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v24';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=24', 'bank.js?v=24', 'thidua.js?v=24', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v25';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=25', 'bank.js?v=25', 'thidua.js?v=25', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
