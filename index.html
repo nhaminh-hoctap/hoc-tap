@@ -89,6 +89,7 @@ h2{font-size:19px;margin:24px 2px 10px}
 .recent .ln{margin:2px 0;line-height:1.4}.recent .mu{color:var(--ink2)}.recent .no{color:#94A3B8;font-style:italic}
 @media (max-width:520px){.recent table{font-size:13px}.recent th:first-child,.recent td:first-child{width:56px}}
 .hide{display:none!important}
+.recent .dở{color:#B45309;font-weight:700}
 .backrow{margin:0 0 12px}.backBtn{display:inline-flex;align-items:center;gap:6px;min-height:50px;padding:0 18px;border-radius:15px;border:2px solid var(--line);background:#fff;font-size:17px;font-weight:800;color:var(--ink);box-shadow:0 3px 0 var(--line);touch-action:manipulation}
 .backBtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 /* ===== Bố cục mới, tối ưu cho iPad ===== */
@@ -389,8 +390,9 @@ async function renderRecent(){var box=$('pRecent');if(!box)return;
     if(!r&&!lg.length)return out;var parts=[];
     if(r&&r.new&&r.new.length)parts.push(r.new.length+' từ mới ('+rangeTxt(r.new)+')');
     if(r&&r.reviewDone)parts.push('ôn tập ✓');
-    if(pr.length)parts.push('luyện thêm '+pr.length+' bài ('+pr.map(function(e){return e.score+'/'+e.total}).join(', ')+')');
-    if(ls.length)parts.push('nghe & nói '+ls.length+' bài');
+    var part=function(e){return e.total>0&&e.done<e.total};
+    if(pr.length)parts.push('luyện thêm '+pr.length+' bài ('+pr.map(function(e){return part(e)?'<span class="dở" title="Làm dở, chưa tính">dở '+e.done+'/'+e.total+' câu</span>':e.score+'/'+e.total}).join(', ')+')');
+    if(ls.length){var lf=ls.filter(function(e){return !part(e)}).length,lp=ls.length-lf;parts.push('nghe & nói '+(lf?lf+' bài':'')+(lp?(lf?' + ':'')+'<span class="dở" title="Làm dở, chưa tính">'+lp+' bài làm dở</span>':''))}
     var tail=r&&r.q?' · '+r.q+' câu, đúng '+pct(r.ok,r.q)+(r.sec?', '+Math.round(r.sec/60)+' phút':''):'';
     out.push('<div class="ln">📘 <b>Từ vựng:</b> '+(parts.join(' · ')||'có học')+'<span class="mu">'+tail+'</span></div>');return out}
   function l2Lines(doc,k){var out=[];if(!doc)return out;var by={};

@@ -149,7 +149,7 @@
   /* ---------- giao diện ---------- */
   var CSS = '.td-card{background:#fff;border:2px solid #E2E8F0;border-radius:22px;padding:14px 16px;margin-top:16px}' +
     '.td-card h3{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.td-card h3 small{font-weight:600;color:#64748B;font-size:13px}' +
-    '.lg-row{display:grid;grid-template-columns:minmax(0,170px) 1fr auto;gap:10px;align-items:center;margin:8px 0}' +
+    '.lg-row{display:grid;grid-template-columns:minmax(0,200px) 1fr auto;gap:12px;align-items:center;margin:8px 0}.lg-row>div:first-child{min-width:0;max-width:260px}.lg-row .np{max-width:100%;overflow:hidden}' +
     '.lg-bar{height:16px;border-radius:99px;background:#F1F5F9;overflow:hidden;position:relative}.lg-bar i{display:block;height:100%;border-radius:99px;transition:width .6s}' +
     '.lg-bar i.anhphong{background:linear-gradient(90deg,#FDBA74,#EA580C)}.lg-bar i.thanhnghi{background:linear-gradient(90deg,#86EFAC,#15803D)}' +
     '.lg-pt{font-weight:800;font-size:18px;min-width:64px;text-align:right}.lg-pt small{font-size:12px;color:#64748B;font-weight:600}' +
@@ -185,7 +185,8 @@
     thanhnghi: ['#E0F2FE,#BAE6FD', '#E2E8F0,#94A3B8', '#BAE6FD,#38BDF8', '#E0F2FE,#7DD3FC', '#1E3A8A,#0F172A', '#334155,#0F172A', '#4C1D95,#1E1B4B', '#581C87,#0B1026', '#7C3AED,#020617']
   };
   function nameOf(kid) { var k = BANK.kid(kid); return k ? k.name : kid; }
-  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true }) : esc(nameOf(kid)); }
+  /* bảng đấu trường chỉ cần tên + danh hiệu, không kèm huy hiệu để khỏi tràn cột */
+  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true, noBadges: true }) : esc(nameOf(kid)); }
 
   function petHtml(kid) {
     var p = pet(kid); if (!p) return ''; css();
