@@ -1,0 +1,90 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 592a5e6..827cad2 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 19/11 | 0021 | Sửa lỗi mất sao Từ vựng: bé học xong rồi bấm về trang chính ngay thì sao (và tiến độ) chưa kịp gửi lên kho, lần mở sau bị dữ liệu cũ đè mất. Nay gửi tất cả cùng lúc, chờ gửi xong mới về trang chính, và không để dữ liệu cũ đè phần chưa gửi. |
+ | 19/11 | 0020 | Âm thanh trên iPad/iPhone vẫn phát khi máy để chế độ im lặng (trước chỉ nghe được khi cắm tai nghe): khối "ÂM THANH TRÊN iPAD, iPHONE" đầu 4 trang. |
+ | 19/11 | — | Thêm tài liệu `docs/` và công cụ `tools/hoctap.py` (kiểm tra, nâng phiên bản, tạo bản sửa, thử trên trình duyệt). Không đổi ứng dụng. |
+diff --git a/index.html b/index.html
+index 5604055..81dab29 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=20"></script>
+-<script src="bank.js?v=20"></script>
+-<script src="thidua.js?v=20"></script>
++<script src="claude-shim.js?v=21"></script>
++<script src="bank.js?v=21"></script>
++<script src="thidua.js?v=21"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+@@ -232,6 +232,8 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
+     lsSet(NAV_KEY,{app:'',kid:P.parent?null:P.kid,parent:!!P.parent,t:Date.now()});
+     try{history.replaceState(P.parent?{p:'par'}:{p:'kid',kid:P.kid},'',location.pathname+location.search)}catch(e){}
+-    showLoading();location.reload();
+-    setTimeout(restorePortal,2500); // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
++    showLoading();
++    // gửi nốt dữ liệu học vừa làm (sao, tiến độ) lên kho rồi mới tải lại trang
++    var go=function(){if(go.d)return;go.d=1;location.reload();setTimeout(restorePortal,2500)};
++    try{var f=window.__beforeHome&&window.__beforeHome();if(f&&f.then){f.then(go,go);setTimeout(go,3000)}else go()}catch(e){go()} // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
+   },
+   homeBtnHtml:function(style){if(document.getElementById('pbar'))return ''; // đã có thanh trên cùng chung
+diff --git a/sw.js b/sw.js
+index a71cc7f..44e4849 100644
+--- a/sw.js
++++ b/sw.js
+@@ -3,6 +3,6 @@
+    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v20';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=20', 'bank.js?v=20', 'thidua.js?v=20', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v21';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=21', 'bank.js?v=21', 'thidua.js?v=21', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/tuvung.html b/tuvung.html
+index 551a47e..173abd1 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -1535,4 +1535,7 @@ async function syncFlush(){
+   SYNC.busy=true;const keys=[...SYNC.dirty];SYNC.dirty.clear();let err=null;
+   try{
++    // Gửi mọi tài liệu cùng lúc (trước đây gửi lần lượt, chờ từng cái): bé bấm Quay lại ngay sau khi học
++    // thì các phần chưa kịp gửi (thường là sổ sao) bị mất, lần mở sau dữ liệu cũ trên kho đè mất sao.
++    const jobs=[];
+     for(const k of keys){
+       const docs=docsFor(k);
+@@ -1540,8 +1543,14 @@ async function syncFlush(){
+         if(SYNC.last[id]===str)continue;
+         setSyncBadge('saving');
++        jobs.push((async()=>{
+         try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id)}
+         catch(e){err=e;if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*800));
+           try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);err=null}catch(e2){err=e2;SYNC.dirty.add(k)}}else SYNC.dirty.add(k)}
++        })());
+       }
++    }
++    await Promise.all(jobs);
++    for(const k of keys){
++      const docs=docsFor(k);
+       // khóa đã bị xóa trên máy (vd. xóa dữ liệu học) -> xóa tài liệu tương ứng trên kho
+       for(const id of [...SYNC.known]){if((id===k||id.startsWith(k+'.'))&&!(id in docs)){try{await SYNC.db.doc('sync/'+id).delete();for(let i=0;i<(SYNC.parts[id]||0);i++)await SYNC.db.doc('sync/'+id+'~'+i).delete();delete SYNC.parts[id];SYNC.known.delete(id);delete SYNC.last[id]}catch(e){err=e}}}
+@@ -1555,4 +1564,5 @@ function applyCloudDocs(docs){ // docs: [{id, v}]
+   docs.forEach(({id,v})=>{const dot=id.indexOf('.');const k=dot>0&&KID_IDS.includes(id.slice(dot+1))?id.slice(0,dot):id;const kid=k===id?null:id.slice(dot+1);
+     let val;try{val=JSON.parse(v)}catch(e){return}
++    if(SYNC.dirty.has(k)&&!(id in SYNC.last&&SYNC.last[id]===(docsFor(k)[id]||null)))return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
+     SYNC.last[id]=v;SYNC.known.add(id);
+     if(kid){(byKey[k]=byKey[k]&&typeof byKey[k]==='object'?byKey[k]:{})[kid]=val}else byKey[k]=val});
+@@ -1635,4 +1645,7 @@ function onLiveSnap(snap){
+ }
+ window.addEventListener('online',()=>{if(SYNC.db&&SYNC.dirty.size)syncFlush()});
++window.addEventListener('pagehide',()=>{if(SYNC.db&&SYNC.dirty.size){clearTimeout(SYNC.timer);syncFlush()}});
++window.__beforeHome=()=>{if(!SYNC.db||SYNC.hold||(!SYNC.dirty.size&&!SYNC.busy))return Promise.resolve();clearTimeout(SYNC.timer);
++  return new Promise(r=>{const t0=Date.now();(function w(){if(!SYNC.busy&&SYNC.dirty.size)syncFlush();if((!SYNC.dirty.size&&!SYNC.busy)||Date.now()-t0>2500)r();else setTimeout(w,120)})()})};
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SYNC.db&&SYNC.dirty.size){clearTimeout(SYNC.timer);syncFlush()}});
+ 
