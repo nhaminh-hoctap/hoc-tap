@@ -149,7 +149,7 @@
   /* ---------- giao diện ---------- */
   var CSS = '.td-card{background:#fff;border:2px solid #E2E8F0;border-radius:22px;padding:14px 16px;margin-top:16px}' +
     '.td-card h3{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.td-card h3 small{font-weight:600;color:#64748B;font-size:13px}' +
-    '.lg-row{display:grid;grid-template-columns:minmax(0,200px) 1fr auto;gap:12px;align-items:center;margin:8px 0}.lg-row>div:first-child{min-width:0;max-width:260px}.lg-row .np{max-width:100%;overflow:hidden}' +
+    '.lg-rows{display:grid;grid-template-columns:max-content minmax(90px,1fr) auto;gap:10px 14px;align-items:center;margin:8px 0}.lg-row{display:contents}.lg-row .np{max-width:none}.lg-row .np .npB{display:inline}' +
     '.lg-bar{height:16px;border-radius:99px;background:#F1F5F9;overflow:hidden;position:relative}.lg-bar i{display:block;height:100%;border-radius:99px;transition:width .6s}' +
     '.lg-bar i.anhphong{background:linear-gradient(90deg,#FDBA74,#EA580C)}.lg-bar i.thanhnghi{background:linear-gradient(90deg,#86EFAC,#15803D)}' +
     '.lg-pt{font-weight:800;font-size:18px;min-width:64px;text-align:right}.lg-pt small{font-size:12px;color:#64748B;font-weight:600}' +
@@ -172,7 +172,7 @@
     '.td-box .big{font-size:84px;line-height:1.1;animation:petBob 1.6s ease-in-out infinite}.td-box b.t{display:block;font-size:24px;color:#B45309;margin:8px 0 4px}.td-box p{color:#334155;font-size:16px;margin:6px 0}' +
     '.td-box button{margin-top:14px;font-size:18px;font-weight:700;padding:12px 30px;border-radius:14px;border:0;background:#F59E0B;color:#fff;cursor:pointer}' +
     '.td-cf{position:fixed;top:-30px;z-index:100000;pointer-events:none;animation:tdFall linear forwards}@keyframes tdFall{to{transform:translateY(110vh) rotate(540deg)}}' +
-    '@media (max-width:520px){.lg-row{grid-template-columns:1fr auto}.lg-row .lg-bar{grid-column:1/-1;grid-row:2}.pet-scene{width:96px;height:96px}}' +
+    '@media (max-width:520px){.lg-rows{display:block}.lg-row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;margin:10px 0}.lg-row .lg-bar{grid-column:1/-1;grid-row:2}.pet-scene{width:96px;height:96px}}' +
     '.lg-c>summary{list-style:none;cursor:pointer}.lg-c>summary::-webkit-details-marker{display:none}.lg-sum{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px;color:#334155;margin-top:4px}' +
     '.lg-more{font-weight:700;color:#2563EB;font-size:14px;margin-left:auto}.lg-c[open] .lg-more{display:none}.lg-mini h3{margin-bottom:2px}' +
     '.pet-line{margin-top:8px}.pet-line>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}.pet-line>summary::-webkit-details-marker{display:none}' +
@@ -185,8 +185,7 @@
     thanhnghi: ['#E0F2FE,#BAE6FD', '#E2E8F0,#94A3B8', '#BAE6FD,#38BDF8', '#E0F2FE,#7DD3FC', '#1E3A8A,#0F172A', '#334155,#0F172A', '#4C1D95,#1E1B4B', '#581C87,#0B1026', '#7C3AED,#020617']
   };
   function nameOf(kid) { var k = BANK.kid(kid); return k ? k.name : kid; }
-  /* bảng đấu trường chỉ cần tên + danh hiệu, không kèm huy hiệu để khỏi tràn cột */
-  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true, noBadges: true }) : esc(nameOf(kid)); }
+  function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true }) : esc(nameOf(kid)); }
 
   function petHtml(kid) {
     var p = pet(kid); if (!p) return ''; css();
@@ -226,7 +225,7 @@
       return '<div class="lg-row"><div style="min-width:0">' + plate(k) + '</div>' +
         '<div class="lg-bar"><i class="' + k + '" style="width:' + Math.min(100, s[k] / 105 * 100) + '%"></i></div><div class="lg-pt">' + (lead ? '<span title="' + (s.anhphong === s.thanhnghi ? 'Ngang điểm' : 'Đang dẫn') + '">👑</span> ' : '') + s[k] + ' <small>/105</small></div></div>';
     }).join('');
-    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3>' + rows;
+    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3><div class="lg-rows">' + rows + '</div>';
     var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️ khiên</b></div>';
     if (mode === 'mini') return '<div class="td-card lg-mini">' + head + meta + '</div>';
     var h;
