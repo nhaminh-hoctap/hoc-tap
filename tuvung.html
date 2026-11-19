@@ -1534,15 +1534,24 @@ async function syncFlush(){
   if(!SYNC.db||SYNC.hold)return; if(SYNC.busy){clearTimeout(SYNC.timer);SYNC.timer=setTimeout(syncFlush,800);return}
   SYNC.busy=true;const keys=[...SYNC.dirty];SYNC.dirty.clear();let err=null;
   try{
+    // Gửi mọi tài liệu cùng lúc (trước đây gửi lần lượt, chờ từng cái): bé bấm Quay lại ngay sau khi học
+    // thì các phần chưa kịp gửi (thường là sổ sao) bị mất, lần mở sau dữ liệu cũ trên kho đè mất sao.
+    const jobs=[];
     for(const k of keys){
       const docs=docsFor(k);
       for(const [id,str] of Object.entries(docs)){
         if(SYNC.last[id]===str)continue;
         setSyncBadge('saving');
+        jobs.push((async()=>{
         try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id)}
         catch(e){err=e;if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*800));
           try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);err=null}catch(e2){err=e2;SYNC.dirty.add(k)}}else SYNC.dirty.add(k)}
+        })());
       }
+    }
+    await Promise.all(jobs);
+    for(const k of keys){
+      const docs=docsFor(k);
       // khóa đã bị xóa trên máy (vd. xóa dữ liệu học) -> xóa tài liệu tương ứng trên kho
       for(const id of [...SYNC.known]){if((id===k||id.startsWith(k+'.'))&&!(id in docs)){try{await SYNC.db.doc('sync/'+id).delete();for(let i=0;i<(SYNC.parts[id]||0);i++)await SYNC.db.doc('sync/'+id+'~'+i).delete();delete SYNC.parts[id];SYNC.known.delete(id);delete SYNC.last[id]}catch(e){err=e}}}
     }
@@ -1554,6 +1563,7 @@ function applyCloudDocs(docs){ // docs: [{id, v}]
   const byKey={};
   docs.forEach(({id,v})=>{const dot=id.indexOf('.');const k=dot>0&&KID_IDS.includes(id.slice(dot+1))?id.slice(0,dot):id;const kid=k===id?null:id.slice(dot+1);
     let val;try{val=JSON.parse(v)}catch(e){return}
+    if(SYNC.dirty.has(k)&&!(id in SYNC.last&&SYNC.last[id]===(docsFor(k)[id]||null)))return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
     SYNC.last[id]=v;SYNC.known.add(id);
     if(kid){(byKey[k]=byKey[k]&&typeof byKey[k]==='object'?byKey[k]:{})[kid]=val}else byKey[k]=val});
   Object.entries(byKey).forEach(([k,val])=>{
@@ -1634,6 +1644,9 @@ function onLiveSnap(snap){
     if(!snap.metadata.fromCache&&!SYNC.dirty.size&&!SYNC.busy)setSyncBadge('ok');
 }
 window.addEventListener('online',()=>{if(SYNC.db&&SYNC.dirty.size)syncFlush()});
+window.addEventListener('pagehide',()=>{if(SYNC.db&&SYNC.dirty.size){clearTimeout(SYNC.timer);syncFlush()}});
+window.__beforeHome=()=>{if(!SYNC.db||SYNC.hold||(!SYNC.dirty.size&&!SYNC.busy))return Promise.resolve();clearTimeout(SYNC.timer);
+  return new Promise(r=>{const t0=Date.now();(function w(){if(!SYNC.busy&&SYNC.dirty.size)syncFlush();if((!SYNC.dirty.size&&!SYNC.busy)||Date.now()-t0>2500)r();else setTimeout(w,120)})()})};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&SYNC.db&&SYNC.dirty.size){clearTimeout(SYNC.timer);syncFlush()}});
 
 

@@ -131,9 +131,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=20"></script>
-<script src="bank.js?v=20"></script>
-<script src="thidua.js?v=20"></script>
+<script src="claude-shim.js?v=21"></script>
+<script src="bank.js?v=21"></script>
+<script src="thidua.js?v=21"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -231,8 +231,10 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
   home:function(){ // về trang chính (giữ bé đang chọn)
     lsSet(NAV_KEY,{app:'',kid:P.parent?null:P.kid,parent:!!P.parent,t:Date.now()});
     try{history.replaceState(P.parent?{p:'par'}:{p:'kid',kid:P.kid},'',location.pathname+location.search)}catch(e){}
-    showLoading();location.reload();
-    setTimeout(restorePortal,2500); // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
+    showLoading();
+    // gửi nốt dữ liệu học vừa làm (sao, tiến độ) lên kho rồi mới tải lại trang
+    var go=function(){if(go.d)return;go.d=1;location.reload();setTimeout(restorePortal,2500)};
+    try{var f=window.__beforeHome&&window.__beforeHome();if(f&&f.then){f.then(go,go);setTimeout(go,3000)}else go()}catch(e){go()} // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
   },
   homeBtnHtml:function(style){if(document.getElementById('pbar'))return ''; // đã có thanh trên cùng chung
     var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';

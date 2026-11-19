@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 19/11 | 0021 | Sửa lỗi mất sao Từ vựng: bé học xong rồi bấm về trang chính ngay thì sao (và tiến độ) chưa kịp gửi lên kho, lần mở sau bị dữ liệu cũ đè mất. Nay gửi tất cả cùng lúc, chờ gửi xong mới về trang chính, và không để dữ liệu cũ đè phần chưa gửi. |
 | 19/11 | 0020 | Âm thanh trên iPad/iPhone vẫn phát khi máy để chế độ im lặng (trước chỉ nghe được khi cắm tai nghe): khối "ÂM THANH TRÊN iPAD, iPHONE" đầu 4 trang. |
 | 19/11 | — | Thêm tài liệu `docs/` và công cụ `tools/hoctap.py` (kiểm tra, nâng phiên bản, tạo bản sửa, thử trên trình duyệt). Không đổi ứng dụng. |
 | 19/11 | 0019 | Giao diện tự đổi cho iPhone: màn chọn bé, khung tên, báo cáo tuần, Cách chơi. (Lần đầu lỗi khoảng trắng, đẩy lại tệp đúng.) |
