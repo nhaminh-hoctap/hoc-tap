@@ -28,7 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 KIDS = ('anhphong', 'thanhnghi')
 VERSIONED = ('claude-shim.js', 'bank.js', 'thidua.js')
-HTML_APPS = ('index.html', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html')
+HTML_APPS = ('index.html', 'tuvung.html', 'lop2.html', 'lop6.html')
 
 OK, WARN, ERR = '✅', '⚠️ ', '❌'
 problems = []
@@ -261,7 +261,7 @@ def cmd_taopatch(a):
 
 # ------------------------------------------------------------------ thử trên trình duyệt
 FLOWS = [('anhphong', 'tuvung'), ('anhphong', 'lop2'), ('anhphong', 'sao'), ('anhphong', 'huyhieu'),
-         ('thanhnghi', 'tuvung'), ('thanhnghi', 'lop6'), ('anhphong', 'thu'), ('thanhnghi', 'thu')]
+         ('thanhnghi', 'tuvung'), ('thanhnghi', 'lop6')]
 PARENT = ['p-sao', 'p-report', 'p-tuvung', 'p-lop2', 'p-lop6']
 VIEWS = {'ipad-ngang': (1180, 820), 'ipad-doc': (820, 1180), 'iphone': (390, 844)}
 IGNORE = ('gstatic', 'firebase', 'net::ERR', 'Failed to load resource', 'ERR_', 'favicon')

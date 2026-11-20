@@ -49,20 +49,19 @@
     if (LOADING) return LOADING;
     LOADING = (async function () {
       await BANK.ready; var db = BANK.db;
-      var R = !db ? [null, null, null, null, null, null, null, null, null, null, null, WORDS] : await Promise.all([
+      var R = !db ? [null, null, null, null, null, null, null, null, null, WORDS] : await Promise.all([
         readDoc(db, 'sync/vocab_daily_v1.anhphong'), readDoc(db, 'sync/vocab_practice_log_v1.anhphong'),
         readDoc(db, 'sync/vocab_daily_v1.thanhnghi'), readDoc(db, 'sync/vocab_practice_log_v1.thanhnghi'),
         readDoc(db, 'data/users/gia-dinh/sync'), readDoc(db, 'tien-do/hoc-sinh'),
         readDoc(db, 'sync/vocab_shield_v1.anhphong'), readDoc(db, 'sync/vocab_shield_v1.thanhnghi'),
-        readDoc(db, 'thu-cung/anhphong'), readDoc(db, 'thu-cung/thanhnghi'),
         db.collection('league').get().catch(function () { return null; }),
         WORDS || fetch('words.json').then(function (r) { return r.json(); }).catch(function () { return null; })]);
-      if (R[11]) WORDS = R[11];
-      var lg = {}; if (R[10]) R[10].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
+      if (R[9]) WORDS = R[9];
+      var lg = {}; if (R[8]) R[8].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
       var n = {
         vd: { anhphong: (R[0] && R[0].days) || {}, thanhnghi: (R[2] && R[2].days) || {} },
         pl: { anhphong: R[1] || [], thanhnghi: R[3] || [] }, l2: R[4], l6: R[5], lg: lg,
-        sh: { anhphong: R[6] || {}, thanhnghi: R[7] || {} }, tc: { anhphong: R[8] || null, thanhnghi: R[9] || null }
+        sh: { anhphong: R[6] || {}, thanhnghi: R[7] || {} }
       };
       try { mergeLocal(n); } catch (e) { console.error(e); }
       n.sj = { anhphong: subjDays('anhphong', n), thanhnghi: subjDays('thanhnghi', n) };
@@ -176,27 +175,12 @@
   }
 
   /* ---------- linh vật ---------- */
-  /* Các loài linh vật (bé chọn trong 🐾 Nuôi thú). Mốc năng lượng giống nhau cho mọi loài. */
-  var STEPS = [0, 40, 100, 200, 350, 550, 800, 1100, 1500];
-  function mk(L) { return L.map(function (x, i) { return [STEPS[i], x[0], x[1], x[2]]; }); }
-  var SPECIES = {
-    egg: { n: 'Quả trứng bí ẩn', e: '🥚', L: mk([['🥚', 'Quả trứng bí ẩn', ''], ['🥚', 'Trứng đang ấm lên', '✨'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫']]),
-      S: ['#FEF3C7,#FDE68A', '#FEF3C7,#FCD34D', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047'] },
-    dino: { n: 'Khủng long', e: '🦖', L: mk([['🥚', 'Quả trứng bí ẩn', ''], ['🥚', 'Trứng đang nứt', '💥'], ['🦎', 'Khủng long sơ sinh', '🌱'], ['🦖', 'Khủng long con', '🌿'], ['🦖', 'Khủng long nhanh nhẹn', '💨'], ['🦖', 'Khủng long chiến binh', '🛡️'], ['🦕', 'Khủng long khổng lồ', '🌴'], ['🐉', 'Rồng khủng long', '🔥'], ['🐲', 'Vua khủng long', '👑']]),
-      S: ['#FEF3C7,#FDE68A', '#FEF3C7,#FCD34D', '#DCFCE7,#86EFAC', '#D9F99D,#65A30D', '#BEF264,#4D7C0F', '#A7F3D0,#047857', '#6EE7B7,#065F46', '#FDBA74,#9A3412', '#FDE047,#B45309'] },
-    dragon: { n: 'Rồng', e: '🐉', L: mk([['🥚', 'Trứng rồng', ''], ['🥚', 'Trứng rồng đang nứt', '💥'], ['🦎', 'Rồng sơ sinh', '💧'], ['🐉', 'Rồng con', '💨'], ['🐉', 'Rồng lửa nhỏ', '🔥'], ['🐉', 'Rồng chiến binh', '🛡️'], ['🐲', 'Rồng mây', '☁️'], ['🐲', 'Rồng thần', '⚡'], ['🐲', 'Long vương', '👑']]),
-      S: ['#E0F2FE,#BAE6FD', '#E0F2FE,#7DD3FC', '#CFFAFE,#22D3EE', '#BAE6FD,#0284C7', '#FECACA,#DC2626', '#C7D2FE,#4338CA', '#E0E7FF,#6366F1', '#4C1D95,#1E1B4B', '#7C3AED,#020617'] },
-    phoenix: { n: 'Phượng hoàng', e: '🦅', L: mk([['🥚', 'Trứng lửa', ''], ['🥚', 'Trứng lửa đang nứt', '🔥'], ['🐣', 'Chim lửa non', '🔥'], ['🐥', 'Chim lửa con', '🔥'], ['🐦', 'Chim lửa nhanh nhẹn', '💨'], ['🦅', 'Chim lửa dũng mãnh', '🔥'], ['🦚', 'Chim lửa rực rỡ', '✨'], ['🦅', 'Phượng hoàng', '☀️'], ['🦚', 'Phượng hoàng lửa', '👑']]),
-      S: ['#FFEDD5,#FDBA74', '#FFEDD5,#FB923C', '#FEF3C7,#F59E0B', '#FED7AA,#EA580C', '#FECACA,#EF4444', '#FDBA74,#C2410C', '#FDE68A,#DC2626', '#F97316,#7C2D12', '#FDE047,#B91C1C'] },
-    unicorn: { n: 'Kỳ lân', e: '🦄', L: mk([['🥚', 'Trứng cầu vồng', ''], ['🥚', 'Trứng cầu vồng đang nứt', '🌈'], ['🐴', 'Ngựa thần sơ sinh', '🌸'], ['🦄', 'Kỳ lân con', '🌈'], ['🦄', 'Kỳ lân nhanh nhẹn', '💨'], ['🦄', 'Kỳ lân ánh sao', '⭐'], ['🦄', 'Kỳ lân cầu vồng', '🌈'], ['🦄', 'Kỳ lân thần', '✨'], ['🦄', 'Vua kỳ lân', '👑']]),
-      S: ['#FCE7F3,#F9A8D4', '#FCE7F3,#F472B6', '#FAE8FF,#E879F9', '#EDE9FE,#C084FC', '#FCE7F3,#EC4899', '#E0E7FF,#818CF8', '#FDF4FF,#D946EF', '#A78BFA,#6D28D9', '#F0ABFC,#7E22CE'] }
+  var PETS = {
+    anhphong: [[0, '🥚', 'Quả trứng bí ẩn', ''], [40, '🥚', 'Trứng đang nứt', '💥'], [100, '🦎', 'Khủng long sơ sinh', '🌱'], [200, '🦖', 'Khủng long con', '🌿'],
+      [350, '🦖', 'Khủng long nhanh nhẹn', '💨'], [550, '🦖', 'Khủng long chiến binh', '🛡️'], [800, '🦕', 'Khủng long khổng lồ', '🌴'], [1100, '🐉', 'Rồng khủng long', '🔥'], [1500, '🐲', 'Vua khủng long', '👑']],
+    thanhnghi: [[0, '📐', 'Bản thiết kế tên lửa', ''], [40, '🔧', 'Xưởng lắp ráp', '⚙️'], [100, '🚀', 'Tên lửa thử nghiệm', '💨'], [200, '🚀', 'Bay qua tầng mây', '☁️'],
+      [350, '🛰️', 'Vệ tinh quỹ đạo', '🌍'], [550, '🚀', 'Đáp xuống Mặt Trăng', '🌙'], [800, '🪐', 'Thám hiểm sao Thổ', '✨'], [1100, '🛸', 'Phi thuyền liên sao', '🌟'], [1500, '🛸', 'Chinh phục thiên hà', '👑']]
   };
-  /* loài bé đã chọn: kho (thu-cung/<bé>) hoặc bản trên máy; chưa chọn thì Anh Phong mặc định khủng long, Thanh Nghị là quả trứng bí ẩn */
-  function tcOf(kid) { var a = lsGet('thu_cung_v1', {})[kid] || null, b = D && D.tc && D.tc[kid] || null; return (a && b) ? ((+a.t || 0) >= (+b.t || 0) ? a : b) : (a || b || {}); }
-  function spOf(kid) { var s = tcOf(kid).sp; return SPECIES[s] ? s : (kid === 'anhphong' ? 'dino' : 'egg'); }
-  function petsOf(kid) { return SPECIES[spOf(kid)].L; }
-  function sceneOf(kid, i) { return SPECIES[spOf(kid)].S[i]; }
-
   /* Bố mẹ bù năng lượng linh vật: những ngày này tính như đã đạt mục tiêu Toán/TV (+5 ⚡), không cộng trùng nếu dữ liệu sau đó về đủ.
      19/11/2026: bù cho Anh Phong vì bài Toán/TV hôm đó chưa gửi được lên kho (lỗi đã sửa ở bản 0025). */
   var SUB_BU = { anhphong: ['2026-11-19'], thanhnghi: [] };
@@ -214,7 +198,7 @@
   }
   function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (enOk(kid, t) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
   function pet(kid) {
-    if (!D) return null; var xp = xpParts(kid).xp, L = petsOf(kid), i = 0;
+    if (!D) return null; var xp = xpParts(kid).xp, L = PETS[kid], i = 0;
     for (var j = 0; j < L.length; j++) if (xp >= L[j][0]) i = j;
     return { i: i, n: L.length, e: L[i][1], name: L[i][2], acc: L[i][3], xp: xp, from: L[i][0], next: L[i + 1] || null };
   }
@@ -267,26 +251,29 @@
     '@media (max-width:640px){.ms-list{grid-template-columns:1fr}}' +
     '@media (prefers-reduced-motion:reduce){.pet-e,.pet-a,.td-box .big{animation:none}}';
   function css() { if (document.getElementById('tdCss')) return; var st = document.createElement('style'); st.id = 'tdCss'; st.textContent = CSS; document.head.appendChild(st); }
-
+  var SCENE = {
+    anhphong: ['#FEF3C7,#FDE68A', '#FEF3C7,#FCD34D', '#DCFCE7,#86EFAC', '#D9F99D,#65A30D', '#BEF264,#4D7C0F', '#A7F3D0,#047857', '#6EE7B7,#065F46', '#FDBA74,#9A3412', '#FDE047,#B45309'],
+    thanhnghi: ['#E0F2FE,#BAE6FD', '#E2E8F0,#94A3B8', '#BAE6FD,#38BDF8', '#E0F2FE,#7DD3FC', '#1E3A8A,#0F172A', '#334155,#0F172A', '#4C1D95,#1E1B4B', '#581C87,#0B1026', '#7C3AED,#020617']
+  };
   function nameOf(kid) { var k = BANK.kid(kid); return k ? k.name : kid; }
   function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true }) : esc(nameOf(kid)); }
 
   function petHtml(kid) {
     var p = pet(kid); if (!p) return ''; css();
     var pct = p.next ? Math.round((p.xp - p.from) / (p.next[0] - p.from) * 100) : 100, td = xpToday(kid);
-    return '<div class="td-card"><div class="pet"><div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="background:linear-gradient(160deg,' + sceneOf(kid, p.i) + ')">' +
+    return '<div class="td-card"><div class="pet"><div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="background:linear-gradient(160deg,' + SCENE[kid][p.i] + ')">' +
       '<span class="pet-e" style="font-size:' + (46 + p.i * 4) + 'px">' + p.e + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span><span class="pet-a a2">' + (p.i >= 6 ? '✨' : '') + '</span>' : '') + '</div>' +
       '<div class="pet-info"><div class="pet-lv">Linh vật · Cấp ' + (p.i + 1) + '/' + p.n + ' · ⚡ ' + p.xp + ' năng lượng</div><div class="pet-nm">' + esc(p.name) + '</div>' +
       '<div class="pet-bar"><i style="width:' + Math.max(3, pct) + '%"></i></div>' +
       '<div class="pet-nx">' + (p.next ? 'Còn <b>' + (p.next[0] - p.xp) + ' ⚡</b> nữa để thành <b>' + p.next[1] + ' ' + esc(p.next[2]) + '</b>' : 'Linh vật đã lớn hết cỡ. Con thật tuyệt vời! 👑') + '</div>' +
       '<span class="pet-td">' + (td ? 'Hôm nay +' + td + ' ⚡' : 'Học hôm nay để linh vật lớn thêm nhé!') + '</span></div></div>' +
       '<details><summary>⚡ Linh vật lớn lên thế nào?</summary><ul><li>Mỗi ngày học đủ bài tiếng Anh: <b>+10 ⚡</b></li><li>Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' trong ngày (' + D.goal[kid] + ' câu): <b>+5 ⚡</b></li><li>Mở rương báu: <b>+3 ⚡</b></li><li>Mỗi cúp vô địch tuần: <b>+20 ⚡</b></li></ul>' +
-      '<div>' + petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
+      '<div>' + PETS[kid].map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
   }
 
   function petScene(kid, px) {
     var p = pet(kid); if (!p) return ''; css(); px = px || 140;
-    return '<div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="width:' + px + 'px;height:' + px + 'px;background:linear-gradient(160deg,' + sceneOf(kid, p.i) + ')">' +
+    return '<div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="width:' + px + 'px;height:' + px + 'px;background:linear-gradient(160deg,' + SCENE[kid][p.i] + ')">' +
       '<span class="pet-e" style="font-size:' + Math.round(px * (0.42 + p.i * 0.03)) + 'px">' + p.e + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span>' + (p.i >= 6 ? '<span class="pet-a a2">✨</span>' : '') : '') + '</div>';
   }
   function petLine(kid) {
@@ -295,7 +282,7 @@
     return '<details class="pet-line"><summary><span class="pl-n">' + p.e + ' ' + esc(p.name) + ' <small>· cấp ' + (p.i + 1) + '/' + p.n + '</small></span>' +
       '<span class="pl-bar"><i style="width:' + Math.max(3, pct) + '%"></i></span><span class="pl-x">' + (p.next ? 'còn ' + (p.next[0] - p.xp) + ' ⚡ nữa để lớn' : 'đã lớn hết cỡ 👑') + (td ? ' · hôm nay +' + td + ' ⚡' : '') + ' ⓘ</span></summary>' +
       '<div class="pl-how"><b>Linh vật lớn lên nhờ năng lượng ⚡</b><br>Học đủ bài tiếng Anh +10 · Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' +5 · Mở rương báu +3 · Cúp tuần +20<br>' +
-      petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details>';
+      PETS[kid].map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details>';
   }
 
   var TODAY_LBL = { en: ['📘', 'Học đủ bài tiếng Anh', 5], sub: ['🧮', 'Đạt mục tiêu môn chính', 4], acc: ['🎯', 'Chính xác từ 90%', 2], chest: ['🎁', 'Đủ điều kiện rương báu', 2], more: ['💪', 'Học vượt gấp đôi mục tiêu', 2] };
@@ -494,7 +481,7 @@
   function howHtml(kid) {
     css(); if (!document.getElementById('hwCss')) { var st = document.createElement('style'); st.id = 'hwCss'; st.textContent = HOW_CSS; document.head.appendChild(st); }
     var sub = kid === 'anhphong' ? 'Toán và Tiếng Việt lớp 2' : 'Toán và Ngữ văn lớp 6', g = D ? D.goal[kid] : 20;
-    var SP = SPECIES[spOf(kid)], mas = SP.e, mn = spOf(kid) === 'egg' ? 'Quả trứng' : SP.n;
+    var mas = kid === 'anhphong' ? '🦖' : '🚀', mn = kid === 'anhphong' ? 'Khủng long' : 'Tên lửa';
     return '<div class="hw"><p class="hw-lead">Con chỉ cần nhớ <b>3 điều chính</b> dưới đây. Mỗi ngày làm hết <b>🎯 Nhiệm vụ hôm nay</b> là con có đủ cả ba!</p>' +
       '<div class="hw-main">' +
       '<div class="hw-c s1"><div class="ic">⭐</div><h3>1. Sao thưởng</h3><p>Sao dùng để <b>đổi quà</b> với bố mẹ. Con nhận sao khi:</p><ul>' +
@@ -610,7 +597,7 @@
 
   window.THIDUA = {
     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
-    pet: pet, SPECIES: SPECIES, spOf: spOf, tcOf: tcOf, tasks: function (k) { return D ? tasks(k) : []; }, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
+    pet: pet, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
     streak: streak, leadTxt: leadTxt, howHtml: howHtml, howSpeech: howSpeech, weekReportHtml: weekReportHtml, monday: function () { return monday(today()); },
     RULE: { START: START, CUP: CUP, WIN_MIN: WIN_MIN, SHIELD_MIN: SHIELD_MIN, SHIELD_MAX: SHIELD_MAX, NEWW: NEWW }
