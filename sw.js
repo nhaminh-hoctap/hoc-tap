@@ -3,9 +3,9 @@
    - Thư viện Firebase: dùng bản đã lưu, cập nhật ngầm
    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
-const V = 'hoc-tap-v36';
+const V = 'hoc-tap-v37';
 const IMG = 'hoc-tap-hinh-v1';
-const CORE = ['./', 'index.html', 'claude-shim.js?v=36', 'bank.js?v=36', 'thidua.js?v=36', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+const CORE = ['./', 'index.html', 'claude-shim.js?v=37', 'bank.js?v=37', 'thidua.js?v=37', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V)

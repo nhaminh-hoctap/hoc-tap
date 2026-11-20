@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 20/11 | 0037 | Rà soát sau Nuôi thú bản mới: rời Nuôi thú giữa ván (bấm 🏠) thì trò Hứng sao, Bắn bóng dừng hẳn (trước đó Bắn bóng vẫn chạy ngầm, tốn pin iPad; Hứng sao báo lỗi đến hết giờ). |
 | 20/11 | 0036 | **🐾 Nuôi thú bản mới** lên trang thật: học được 🪙 xu (năng lượng các con đã có chuyển hết thành xu, thú lớn lại từ trứng), xu hoặc sao mua thức ăn, cho ăn thì thú lớn; hình thú, phông nền vẽ bằng Gemini (`img/thu`); đặt tên thú, lễ nở trứng / lên cấp, thú đi lại liên tục, âm thanh; 4 trò chơi (thêm Bắn bóng màu, Lật hình ghép đôi), học xong Nhiệm vụ hôm nay mới chơi, 5 lượt/ngày; phông nền mở bằng huy hiệu + danh hiệu; thăm thú của anh/em. Linh vật trên trang của bé dùng hình mới. |
 | 20/11 | 0035 | **Hoàn tác Nuôi thú** theo ý bố mẹ: trang quay về như sau bản 0032 (bỏ `nuoithu.html`, ô 🐾 Nuôi thú; Thanh Nghị lại là tên lửa 🚀). Bản 0033, 0034 coi như bỏ. Dữ liệu `thu-cung/<bé>` trên kho vẫn còn, không dùng nữa. |
 | 20/11 | 0034 | Nuôi thú: bỏ phần trang trí **mũ** và **đồ chơi** (bố mẹ thấy chưa đẹp), chỉ giữ đổi **phông nền** chỗ ở. |
