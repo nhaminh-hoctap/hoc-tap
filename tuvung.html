@@ -400,6 +400,7 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <div class="row" id="pRange"><span class="sub">Từ số</span><input type="number" id="pFrom" min="1"> <span class="sub">đến</span><input type="number" id="pTo" min="1"></div>
     <div class="sub hide" id="pWeakNote">Lấy các từ bé hay sai trong phần Ôn tập.</div>
     <input type="hidden" id="pType" value="mix">
+    <button class="go hide" id="pResume" style="margin-bottom:8px;background:#FEF3C7"></button>
     <button class="go" id="pGo">▶ Bắt đầu 50 câu</button>
   </div>
 
@@ -785,6 +786,8 @@ function renderHome(){
   {const pl=plogOf(kd).filter(e=>e.type!=='ls');$('pLast').textContent='Nghe → nghĩa · Nghĩa → từ'+(pl.length?` · lần trước ${pl[0].score}/${pl[0].done}`:'')+` · hôm nay đã làm ${pracDoneToday(kd)} bài · `+(pracStarLeft(kd)?`còn ${pracStarLeft(kd)}/${STAR.pracPerDay} lượt nhận sao (cần đúng từ 45/50 câu)`:`đã nhận đủ sao ${STAR.pracPerDay} bài`);}
   // practice defaults
   syncPracticeRange(kd);
+  {const r=prOf(kd),b=$('pResume');b.classList.toggle('hide',!r);
+   if(r){b.innerHTML=`⏯ Làm tiếp bài đang dở · câu ${r.i+1}/${r.items.length} · đúng ${r.score}`;$('pGo').textContent=$('pGo').textContent.replace('▶ Bắt đầu','▶ Bắt đầu bài mới')}}
   applyKidTheme();
   ['nGo','rGo','pGo','lsGo'].forEach(id=>{const b=$(id);if(b&&!b.disabled&&!b.querySelector('.who'))b.insertAdjacentHTML('beforeend',`<span class="who">${kidAv(kd)} ${esc(kd.name)}</span>`)});
 }
@@ -982,6 +985,7 @@ async function startPractice(ws,type,meta){
     if(type==='cloze'){ws=ws.filter(w=>sentOf(w));if(!ws.length){toast('Chưa có câu ví dụ cho các từ này (cần cho phép Claude soạn câu)');return}}
   }
   const seq=build50(ws);
+  prSet(kd,null); // bắt đầu bài mới thì bỏ bài làm dở
   S.meta=Object.assign({type,start:Date.now(),words:new Set(seq.map(w=>w.n)).size},meta);
   const srsT=srsOf(kd);
   startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
@@ -1000,6 +1004,24 @@ $('pGo').onclick=async()=>{
 const _fNext=$('fNext').onclick;
 $('fNext').onclick=()=>{if($('flash').classList.contains('hide'))return;if(S.practiceFlash&&S.fi>=S.newWords.length-1){S.practiceFlash=false;toast('Hết thẻ rồi!');renderHome();show('home');return}_fNext()};
 
+// ----- Luyện thêm làm dở: lưu trên máy sau mỗi câu, thoát ra (hoặc tắt ứng dụng) vẫn làm tiếp được -----
+const PR_KEY='vocab_prac_resume_v1',PR_DAYS=3; // chỉ lưu trên máy này (không đồng bộ), giữ tối đa 3 ngày
+function prAll(){try{return JSON.parse(LS.getItem(PR_KEY)||'{}')||{}}catch(e){return {}}}
+function prOf(kd){const r=prAll()[kd.id];if(!r||!r.items||r.i>=r.items.length||r.i<1||(Date.parse(today())-Date.parse(r.day))/864e5>PR_DAYS)return null;return r}
+function prSet(kd,v){const a=prAll();if(v)a[kd.id]=v;else delete a[kd.id];LS.setItem(PR_KEY,JSON.stringify(a))}
+function prSave(i){if(S.kind!=='practice'||!S.meta||S.resumeOff)return;
+  prSet(kid(),{day:today(),i,score:S.score,hintOk:S.hintOk||0,credited:S.credited||0,newMast:S.newMast||0,wrong:S.wrong.map(w=>w.n),
+    items:S.items.map(x=>({n:x.w.n,t:x.t,ph:x.ph})),meta:S.meta})}
+function prResume(){const kd=kid(),r=prOf(kd);if(!r){renderHome();return}
+  const byN=new Map(kd.words.map(w=>[w.n,w]));const items=r.items.map(x=>({w:byN.get(x.n),t:x.t,ph:x.ph})).filter(x=>x.w);
+  if(items.length!==r.items.length){prSet(kd,null);toast('Không mở lại được bài cũ, con bắt đầu bài mới nhé');renderHome();return}
+  // bỏ dòng "làm dở" của bài này trong lịch sử (làm xong sẽ ghi lại cả bài)
+  {const a=store.get('vocab_practice_log_v1',{}),l=a[kd.id]||[];const l2=l.filter(e=>!(e.t===r.meta.start&&e.done<e.total));if(l2.length!==l.length){a[kd.id]=l2;store.set('vocab_practice_log_v1',a)}}
+  Object.assign(S,{kind:'practice',items,i:r.i,score:r.score,wrong:r.wrong.map(n=>byN.get(n)).filter(Boolean),seen:new Set(),hintOk:r.hintOk,credited:r.credited,newMast:r.newMast,t0:Date.now(),meta:r.meta,resumeOff:false});
+  ['pink','blue','purple'].forEach(c=>$('quizCard').classList.remove(c));$('quizCard').classList.add('teal');
+  show('quiz');renderQ();toast(`Làm tiếp từ câu ${r.i+1}/${items.length} 💪`)}
+$('pResume').onclick=prResume;
+
 // ================= QUESTION RENDER =================
 function distractors(w,k=3,noSameEmoji=false){
   const kd=kid(),lim=Math.max(learned(kd),w.n,12);let ws=kd.words.slice(0,lim); // ưu tiên đáp án nhiễu là từ bé đã học
@@ -1017,7 +1039,7 @@ function renderQ(){
   stopListening();clearTimeout(autoTimer);
   const it=S.items[S.i],w=it.w;if(it.t==='auto')it.t=reviewType(it.b||0,kid(),w);
   if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&!canSay()))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
-  const t=it.t;S.answered=false;S.sayTries=0;S.hinted=false;
+  const t=it.t;S.answered=false;S.sayTries=0;S.hinted=false;prSave(S.i);
   $('qBar').style.width=(S.i/S.items.length*100)+'%';$('qTag').textContent=`${S.i+1}/${S.items.length} · ⭐${S.score}`;
   $('fb').className='fb';
   if(LS_PROMPT[t]){renderLS(it);return}
@@ -1078,6 +1100,7 @@ function answer(ok,extra){
   $('fbText').innerHTML=(ok?`${pick(PRAISE)} <b>${esc(it.w.main)}</b>`:`😅 ${extra||''}`)+(_em?` <span class="emoS">${_em}</span>`:'');
   $('fb').className='fb '+(ok?'ok':'bad');
   setTimeout(()=>speak(it.w.main),200);
+  prSave(S.i+1); // câu đã trả lời được lưu, mở lại sẽ làm tiếp câu sau
   if(ok) autoTimer=setTimeout(next,1300); // đúng thì tự chuyển câu
 }
 function next(){clearTimeout(autoTimer);S.i++;if(S.i>=S.items.length)finishSession();else renderQ()}
@@ -1089,6 +1112,7 @@ document.querySelectorAll('[data-exit]').forEach(b=>b.onclick=()=>{if((S.kind===
 function finishSession(){
   stopListening();if(S.kind==='place'){statTime();finishPlacement();return}if(S.kind==='phon'){finishPhon();return}
   statTime();const kd=kid();
+  if(S.kind==='practice')prSet(kd,null); // làm xong cả bài: không còn bài dở
   const firstTry=S.items.filter(x=>x.ph!=='retry').length;
   const firstWrong=new Set(S.items.filter(x=>x.ph==='retry').map(x=>x.w.n)).size;
   const right=Math.max(0,firstTry-S.items.filter(x=>x.ph==='retry').length);

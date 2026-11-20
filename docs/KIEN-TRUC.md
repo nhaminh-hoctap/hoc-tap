@@ -22,7 +22,7 @@ Tài liệu cho người sửa mã (thường là Claude). Cập nhật lần cu
 | `words.json` | Danh sách 3.000 từ của mỗi bé, đúng thứ tự học. |
 | `lop2.html` | "Vở Vui Lớp 2": Toán 2 và Tiếng Việt 2 (SGK Kết nối tri thức), bài giảng, luyện tập, kiểm tra, cộng trừ nhanh, bảng cửu chương. |
 | `lop6.html` | "Vở ôn luyện lớp 6": Toán 6 và Ngữ văn 6 (SGK Kết nối tri thức), bài giảng, Hỏi thầy, luyện tập, sổ lỗi sai, ôn đến hạn, luyện viết, kiểm tra. |
-| `nuoithu.html` | "🐾 Nuôi thú" (app `thu`): chọn trứng, mua thức ăn bằng xu hoặc sao, cho ăn thì thú lớn, đặt tên, lễ nở trứng / lên cấp, 4 trò chơi (học xong Nhiệm vụ hôm nay mới chơi, 5 lượt/ngày), phông nền, thăm thú của anh/em, âm thanh. Không cộng sao hay điểm. Mua bằng sao = `BANK.add` dòng sao âm (`k: petfood`). |
+| `nuoithu.html` | "🐾 Nuôi thú" (app `thu`): chọn trứng, mua thức ăn bằng xu hoặc sao, cho ăn thì thú lớn, đặt tên, lễ nở trứng / lên cấp, 5 trò chơi (học xong Nhiệm vụ hôm nay mới chơi, 5 lượt/ngày, chỉ tính khi chơi hết ván), phông nền, thăm thú của anh/em, âm thanh. Không cộng sao hay điểm. Mua bằng sao = `BANK.add` dòng sao âm (`k: petfood`). |
 | `img/thu/`, `img/fe/` | Hình thú (4 loài × 9 cấp, `<loài><cấp>.webp`), phông nền (`bg_<mã>.webp`) do bố mẹ tạo bằng Gemini; biểu tượng Fluent Emoji 3D (Microsoft, giấy phép MIT). `sw.js` lưu riêng hình một lần (`hoc-tap-hinh-v1`): đổi hình thì đổi tên tệp. |
 | `sw.js` | Service worker: chạy như ứng dụng trên iPad, mở được khi mạng yếu. |
 | `manifest.json`, `icon.png` | Thông tin "Thêm vào màn hình chính". |
@@ -86,7 +86,7 @@ Các khóa Từ vựng quan trọng: `vocab_progress_v1` (đã học đến từ
 
 ## Dữ liệu trên từng máy (localStorage)
 
-`hoc_family_code` (mã gia đình) · `portal_nav_v1`, `portal_last_kid`, `portal_backup_at` · `bank_ext_cache_v1` (bản sao kho sao) · `title_show_v1` · `lesson_titles_v1` (tên bài để hiện báo cáo) · `vocab_*` (Từ vựng) · `vovui-lop2-sync-v4` (Lớp 2) · `vo-on-luyen-lop6-v1` (Lớp 6). `sessionStorage.portal_pin` nhớ mã bố mẹ trong phiên.
+`hoc_family_code` (mã gia đình) · `portal_nav_v1`, `portal_last_kid`, `portal_backup_at` · `bank_ext_cache_v1` (bản sao kho sao) · `title_show_v1` · `lesson_titles_v1` (tên bài để hiện báo cáo) · `vocab_*` (Từ vựng; riêng `vocab_prac_resume_v1` = bài Luyện thêm làm dở, chỉ trên máy đó, không đồng bộ) · `vovui-lop2-sync-v4` (Lớp 2) · `vo-on-luyen-lop6-v1` (Lớp 6). `sessionStorage.portal_pin` nhớ mã bố mẹ trong phiên.
 
 ## Sao lưu
 

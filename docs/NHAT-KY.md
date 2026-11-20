@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 20/11 | 0040 | Bắn bóng không còn bị phóng to, mất bóng trên iPhone (khung vẽ theo đúng cỡ màn hình). Thêm trò **⛏️ Đào vàng** trong Nuôi thú. Thoát giữa ván không mất lượt chơi (chỉ tính khi chơi hết ván). Từ vựng · Luyện thêm: thoát ra hoặc tắt ứng dụng giữa bài vẫn giữ tiến độ, có nút "⏯ Làm tiếp bài đang dở" (lưu trên máy đó, giữ 3 ngày; bắt đầu bài mới thì bỏ bài dở). |
 | 20/11 | 0039 | Mở trang không còn chớp hình khủng long 🦖 rồi mới đổi sang hình trứng: linh vật vẽ ngay từ thú đã lưu trên máy, không chờ tải dữ liệu học. |
 | 20/11 | 0038 | Biểu tượng nhỏ cạnh tên (bảng Đấu trường, thanh trên cùng, trang của bé) theo loài thú bé đã chọn trong Nuôi thú (🦖 🐉 🦅 🦄; chưa chọn: Anh Phong 🦖, Thanh Nghị 🥚) thay cho 🦖/🚀 cố định (`BANK.avOf`). |
 | 20/11 | 0037 | Rà soát sau Nuôi thú bản mới: rời Nuôi thú giữa ván (bấm 🏠) thì trò Hứng sao, Bắn bóng dừng hẳn (trước đó Bắn bóng vẫn chạy ngầm, tốn pin iPad; Hứng sao báo lỗi đến hết giờ). |
