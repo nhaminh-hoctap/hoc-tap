@@ -22,6 +22,8 @@ Tài liệu cho người sửa mã (thường là Claude). Cập nhật lần cu
 | `words.json` | Danh sách 3.000 từ của mỗi bé, đúng thứ tự học. |
 | `lop2.html` | "Vở Vui Lớp 2": Toán 2 và Tiếng Việt 2 (SGK Kết nối tri thức), bài giảng, luyện tập, kiểm tra, cộng trừ nhanh, bảng cửu chương. |
 | `lop6.html` | "Vở ôn luyện lớp 6": Toán 6 và Ngữ văn 6 (SGK Kết nối tri thức), bài giảng, Hỏi thầy, luyện tập, sổ lỗi sai, ôn đến hạn, luyện viết, kiểm tra. |
+| `nuoithu.html` | "🐾 Nuôi thú" (app `thu`): chọn trứng, mua thức ăn bằng xu hoặc sao, cho ăn thì thú lớn, đặt tên, lễ nở trứng / lên cấp, 4 trò chơi (học xong Nhiệm vụ hôm nay mới chơi, 5 lượt/ngày), phông nền, thăm thú của anh/em, âm thanh. Không cộng sao hay điểm. Mua bằng sao = `BANK.add` dòng sao âm (`k: petfood`). |
+| `img/thu/`, `img/fe/` | Hình thú (4 loài × 9 cấp, `<loài><cấp>.webp`), phông nền (`bg_<mã>.webp`) do bố mẹ tạo bằng Gemini; biểu tượng Fluent Emoji 3D (Microsoft, giấy phép MIT). `sw.js` lưu riêng hình một lần (`hoc-tap-hinh-v1`): đổi hình thì đổi tên tệp. |
 | `sw.js` | Service worker: chạy như ứng dụng trên iPad, mở được khi mạng yếu. |
 | `manifest.json`, `icon.png` | Thông tin "Thêm vào màn hình chính". |
 | `.github/workflows/apply-patches.yml` | Tự áp dụng bản sửa trong `patches/`, xoá tệp patch, commit và yêu cầu GitHub Pages cập nhật. |
@@ -76,6 +78,7 @@ Ba tệp `claude-shim.js`, `bank.js`, `thidua.js` được nạp kèm `?v=N`; `s
 | `league/<thứ Hai yyyy-mm-dd>` | `thidua.js` | Kết quả tuần `{wk, s:{bé: điểm}, win, good, sh, at}`; tự chốt khi mở trang vào tuần sau. |
 | `data/users/gia-dinh/sync` | Lớp 2 | Tiến độ Lớp 2 (các lượt luyện, bài kiểm tra, luyện nhanh, cài đặt), lưu dạng `{json: "<chuỗi JSON>", t}` vì Firestore không nhận mảng lồng mảng. `…/progress` là bản cũ. |
 | `tien-do/hoc-sinh` | Lớp 6 | Tiến độ Lớp 6. `data/users/gia-dinh/tien-do` là vị trí cũ, chỉ đọc. |
+| `thu-cung/<bé>` | `nuoithu.html` | Nuôi thú `{json: "<chuỗi>", t}`: loài `sp`, tên `name`, cấp đã xem `seen`, điểm lớn `base`+`grow`, xu đã tiêu `xuSpent` (mốc `xu0`), túi thức ăn `inv`, no bụng / vui vẻ, lượt mua bằng sao, lượt chơi, phông nền. `thidua.js` đọc để vẽ linh vật. |
 
 Các khóa Từ vựng quan trọng: `vocab_progress_v1` (đã học đến từ số mấy), `vocab_srs_v1` (lịch ôn, **khóa theo số thứ tự từ**), `vocab_daily_v1` (nhật ký từng ngày), `vocab_practice_log_v1` (các bài luyện thêm, nghe nói), `vocab_stars_v1` (sổ sao Từ vựng + sao bố mẹ chấm + `paidB` các khối đã thưởng), `vocab_badges_v1`, `vocab_title_v1` (danh hiệu, khung tên), `vocab_shield_v1` (khiên đã dùng), `vocab_pin` (mã bố mẹ).
 
