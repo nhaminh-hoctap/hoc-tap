@@ -170,12 +170,18 @@
     '@media (max-width:520px){.np.S .npB{display:none}.np.L{font-size:19px}}';
   function npCss() { if (document.getElementById('npCss')) return; var st = document.createElement('style'); st.id = 'npCss'; st.textContent = NP_CSS; document.head.appendChild(st); }
   /* size: 'L' (thẻ lớn: danh hiệu trên tên), 'M', 'S' (thanh tiêu đề) ; data: ghi đè dữ liệu (ứng dụng Từ vựng truyền thẳng) */
+  /* biểu tượng nhỏ cạnh tên: theo loài thú bé đã chọn trong 🐾 Nuôi thú (chưa có thì dùng biểu tượng mặc định) */
+  B.avOf = function (kid) {
+    var k = B.kid(kid), T = window.THIDUA;
+    try { if (T && T.SPECIES && T.spOf) { var sp = T.SPECIES[T.spOf(kid)]; if (sp && sp.e) return sp.e; } } catch (x) { }
+    return k ? k.av : '';
+  };
   B.nameplate = function (kid, size, data, opt) {
     npCss(); opt = opt || {};
     var k = B.kid(kid), name = k ? k.name : '', t = data || B.title(kid), sh = t && t.show || {};
     var f = +sh.f || 1, te = sh.e || '', tn = sh.n || '', bd = (sh.b || []).join('');
     function e(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-    return '<span class="np ' + (size || 'M') + ' f' + f + '"' + (tn ? ' title="' + e(tn) + '"' : '') + '>' + (te ? '<span class="npT">' + te + '</span>' : (opt.av && k ? '<span class="npT">' + k.av + '</span>' : '')) +
+    return '<span class="np ' + (size || 'M') + ' f' + f + '"' + (tn ? ' title="' + e(tn) + '"' : '') + '>' + (te ? '<span class="npT">' + te + '</span>' : (opt.av && k ? '<span class="npT">' + B.avOf(kid) + '</span>' : '')) +
       '<span class="npN">' + (tn && size !== 'S' ? '<small>' + e(tn) + '</small>' : '') + '<b>' + e(name) + '</b></span>' + (bd && !opt.noBadges ? '<span class="npB">' + bd + '</span>' : '') + '</span>';
   };
 

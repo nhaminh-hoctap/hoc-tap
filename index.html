@@ -131,9 +131,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=37"></script>
-<script src="bank.js?v=37"></script>
-<script src="thidua.js?v=37"></script>
+<script src="claude-shim.js?v=38"></script>
+<script src="bank.js?v=38"></script>
+<script src="thidua.js?v=38"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -354,7 +354,7 @@ function renderWho(){
   $('pParBtn').onclick=openPin;
   var T=window.THIDUA;if(T){if(T.data())$('pLeagueW').innerHTML=T.leagueHtml(null,false,'mini');T.load()}
 }
-function petE(k){var T=window.THIDUA,p=T&&T.pet(k.id);return p?(T.picOf?T.picOf(p.e,'1em'):p.e):k.av}
+function petE(k){var T=window.THIDUA,p=T&&T.pet(k.id);return p?(T.picOf?T.picOf(p.e,'1em'):p.e):BANK.avOf(k.id)}
 function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
   CUR=id;P.kid=id;var k=kidById(id);
   document.documentElement.style.setProperty('--kid',k.color);
@@ -365,7 +365,7 @@ function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
 }
 function renderKid(){
   if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR),T=window.THIDUA,has=T&&T.data();
-  $('pAv').innerHTML=has?T.petScene(CUR,150):'<span style="font-size:80px">'+k.av+'</span>';$('pAv').style.cursor='pointer';$('pAv').title='Vào chuồng nuôi thú';$('pAv').onclick=function(){go('thu')};
+  $('pAv').innerHTML=has?T.petScene(CUR,150):'<span style="font-size:80px">'+BANK.avOf(k.id)+'</span>';$('pAv').style.cursor='pointer';$('pAv').title='Vào chuồng nuôi thú';$('pAv').onclick=function(){go('thu')};
   $('pHi').innerHTML=BANK.nameplate(CUR,'L');$('pGr').textContent='· '+k.grade;
   $('pPetLine').innerHTML=has?T.petLine(CUR):'';
   var tdS=Object.keys(td).reduce(function(a,s){return a+(td[s]>0?td[s]:0)},0),stk=has?T.streak(CUR):null,shN=has?T.shieldHave(CUR):0,wp=has?T.weekPts(CUR):null;
