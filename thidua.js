@@ -224,7 +224,8 @@
   }
   function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (enOk(kid, t) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
   function pet(kid) {
-    if (!D) return null; var tc = tcOf(kid), xp = (+tc.base || 0) + (+tc.grow || 0), L = petsOf(kid), i = 0;  // thú lớn nhờ được cho ăn (🐾 Nuôi thú)
+    /* không chờ tải dữ liệu học: vẽ ngay thú đã lưu trên máy, khỏi chớp hình mặc định khi mở trang */
+    var tc = tcOf(kid), xp = (+tc.base || 0) + (+tc.grow || 0), L = petsOf(kid), i = 0;  // thú lớn nhờ được cho ăn (🐾 Nuôi thú)
     for (var j = 0; j < L.length; j++) if (xp >= L[j][0]) i = j;
     return { i: i, n: L.length, e: L[i][1], name: L[i][2], acc: L[i][3], xp: xp, from: L[i][0], next: L[i + 1] || null };
   }
@@ -282,7 +283,7 @@
   function plate(kid) { return BANK.nameplate ? BANK.nameplate(kid, 'S', null, { av: true }) : esc(nameOf(kid)); }
 
   function petHtml(kid) {
-    var p = pet(kid); if (!p) return ''; css();
+    var p = D && pet(kid); if (!p) return ''; css();
     var pct = p.next ? Math.round((p.xp - p.from) / (p.next[0] - p.from) * 100) : 100, td = xpToday(kid);
     return '<div class="td-card"><div class="pet"><div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="background:linear-gradient(160deg,' + sceneOf(kid, p.i) + ')">' +
       '<span class="pet-e" style="font-size:' + (46 + p.i * 4) + 'px">' + picOf(p.e, '1.6em') + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span><span class="pet-a a2">' + (p.i >= 6 ? '✨' : '') + '</span>' : '') + '</div>' +
@@ -300,7 +301,7 @@
       '<span class="pet-e" style="font-size:' + Math.round(px * (0.42 + p.i * 0.03)) + 'px">' + picOf(p.e, Math.round(px * 0.86) + 'px') + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span>' + (p.i >= 6 ? '<span class="pet-a a2">✨</span>' : '') : '') + '</div>';
   }
   function petLine(kid) {
-    var p = pet(kid); if (!p) return ''; css();
+    var p = D && pet(kid); if (!p) return ''; css();
     var pct = p.next ? Math.round((p.xp - p.from) / (p.next[0] - p.from) * 100) : 100, td = xpToday(kid);
     return '<details class="pet-line"><summary><span class="pl-n">' + picOf(p.e, '1.5em') + ' ' + esc(p.name) + ' <small>· cấp ' + (p.i + 1) + '/' + p.n + '</small></span>' +
       '<span class="pl-bar"><i style="width:' + Math.max(3, pct) + '%"></i></span><span class="pl-x">' + (p.next ? 'còn ' + (p.next[0] - p.xp) + ' điểm nữa để lớn' : 'đã lớn hết cỡ 👑') + (td ? ' · hôm nay +' + td + ' 🪙' : '') + ' ⓘ</span></summary>' +
