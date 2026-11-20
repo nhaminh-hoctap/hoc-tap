@@ -1,0 +1,195 @@
+diff --git a/docs/KIEN-TRUC.md b/docs/KIEN-TRUC.md
+index 1049147..071cc82 100644
+--- a/docs/KIEN-TRUC.md
++++ b/docs/KIEN-TRUC.md
+@@ -24,3 +24,2 @@ Tài liệu cho người sửa mã (thường là Claude). Cập nhật lần cu
+ | `lop6.html` | "Vở ôn luyện lớp 6": Toán 6 và Ngữ văn 6 (SGK Kết nối tri thức), bài giảng, Hỏi thầy, luyện tập, sổ lỗi sai, ôn đến hạn, luyện viết, kiểm tra. |
+-| `nuoithu.html` | "Nuôi thú" (app `thu`): chọn loại trứng, cho ăn, vuốt ve, 2 trò chơi nhỏ, đổi phông nền chỗ ở (mũ, đồ chơi đã bỏ). Dùng `THIDUA.pet` để biết thú lớn tới đâu (lớn nhờ năng lượng ⚡ từ việc học); không cộng sao hay điểm. Mua thức ăn = `BANK.add` dòng sao âm (`k: petfood`). |
+ | `sw.js` | Service worker: chạy như ứng dụng trên iPad, mở được khi mạng yếu. |
+@@ -79,3 +78,2 @@ Ba tệp `claude-shim.js`, `bank.js`, `thidua.js` được nạp kèm `?v=N`; `s
+ | `tien-do/hoc-sinh` | Lớp 6 | Tiến độ Lớp 6. `data/users/gia-dinh/tien-do` là vị trí cũ, chỉ đọc. |
+-| `thu-cung/<bé>` | `nuoithu.html` | Nuôi thú `{json: "<chuỗi>", t}`: loài đã chọn `sp`, no bụng / vui vẻ (giảm dần theo giờ), số món đã ăn, ngày đã nhận thức ăn nhiệm vụ, lượt mua, lượt chơi, đồ trang trí. `thidua.js` đọc `sp` để vẽ linh vật. |
+ 
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 78ade87..b665bfc 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -8,2 +8,3 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ |---|---|---|
++| 20/11 | 0035 | **Hoàn tác Nuôi thú** theo ý bố mẹ: trang quay về như sau bản 0032 (bỏ `nuoithu.html`, ô 🐾 Nuôi thú; Thanh Nghị lại là tên lửa 🚀). Bản 0033, 0034 coi như bỏ. Dữ liệu `thu-cung/<bé>` trên kho vẫn còn, không dùng nữa. |
+ | 20/11 | 0034 | Nuôi thú: bỏ phần trang trí **mũ** và **đồ chơi** (bố mẹ thấy chưa đẹp), chỉ giữ đổi **phông nền** chỗ ở. |
+diff --git a/docs/SUA-NOI-DUNG.md b/docs/SUA-NOI-DUNG.md
+index f16c272..e1b5ada 100644
+--- a/docs/SUA-NOI-DUNG.md
++++ b/docs/SUA-NOI-DUNG.md
+@@ -108,8 +108 @@ Hằng số ở đầu tệp:
+ Danh hiệu và khung tên (7 cấp, khung `f1`→`f7`) do Từ vựng tính từ điểm huy hiệu và lưu ở `vocab_title_v1`; `bank.js` chỉ vẽ (`BANK.nameplate`).
+-
+-## 6. Nuôi thú (`nuoithu.html`, loài linh vật trong `thidua.js`)
+-
+-- **Loài**: `SPECIES` trong `thidua.js` (khủng long, rồng, phượng hoàng, kỳ lân; `egg` = chưa chọn). Mọi loài dùng chung mốc năng lượng `STEPS` (0, 40, 100, 200, 350, 550, 800, 1100, 1500 ⚡). Thêm loài: thêm vào `SPECIES` và `SPN`, `SPD` trong `nuoithu.html`. Mỗi bé chọn một lần; Anh Phong chưa chọn thì vẫn là khủng long, Thanh Nghị chưa chọn là quả trứng bí ẩn. Muốn cho bé chọn lại: xoá trường `sp` trong `thu-cung/<bé>`.
+-- **Con số** (`CFG` đầu khối script, bố mẹ chốt 19/11/2026): xong đủ Nhiệm vụ hôm nay +3 phần ăn (nhận 1 lần/ngày) · mỗi huy hiệu +1 món đặc biệt · mỗi lần lên cấp danh hiệu +3 món đặc biệt · mua bằng sao 1 ⭐/phần ăn, 5 ⭐/món đặc biệt, tối đa 3 lần mua/ngày · no bụng +25 / +50, vui vẻ +5 / +20 khi ăn · vuốt ve +5 vui vẻ (tính 10 lần/ngày) · mỗi ngày no bụng giảm 20, vui vẻ giảm 15 · mỗi trò chơi 3 lượt/ngày.
+-- **Không cộng sao hay điểm đấu trường.** Thú lớn chỉ nhờ năng lượng từ việc học; thức ăn chỉ làm thú no, vui.
+-- **Phông nền**: `DECO.bg`, mỗi phông có `lv` = cấp linh vật cần để mở khóa. Mũ và đồ chơi đã bỏ (bố mẹ thấy không đẹp); danh sách `hat`/`toy` còn trong mã nhưng không hiện.
+diff --git a/index.html b/index.html
+index 1a84842..a2da9da 100644
+--- a/index.html
++++ b/index.html
+@@ -118,3 +118,3 @@ h2{font-size:19px;margin:24px 2px 10px}
+ .mini2 .mi{font-size:36px;line-height:1}.mini2 b{display:block;font-size:19px}.mini2 small{display:block;color:var(--ink2);font-size:14px;margin-top:2px}
+-.mini2 .star{background:#FFFBEB;border-color:#FCD34D;box-shadow:0 4px 0 #FCD34D}.mini2 .pet{background:#FDF2F8;border-color:#F9A8D4;box-shadow:0 4px 0 #F9A8D4}
++.mini2 .star{background:#FFFBEB;border-color:#FCD34D;box-shadow:0 4px 0 #FCD34D}
+ .setList{background:#fff;border:2px solid var(--line);border-radius:20px;overflow:hidden}
+@@ -133,5 +133,5 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=34"></script>
+-<script src="bank.js?v=34"></script>
+-<script src="thidua.js?v=34"></script>
++<script src="claude-shim.js?v=35"></script>
++<script src="bank.js?v=35"></script>
++<script src="thidua.js?v=35"></script>
+ <link rel="manifest" href="manifest.json">
+@@ -219,4 +219,3 @@ var APPS={
+   sao:{file:'tuvung.html',ic:'⭐',t:'Sao thưởng',s:'Xem sao của mọi môn, bố mẹ chấm sao, đổi quà'},
+-  huyhieu:{file:'tuvung.html',ic:'🏅',t:'Huy hiệu',s:'Bộ sưu tập huy hiệu học từ vựng'},
+-  thu:{file:'nuoithu.html',ic:'🐾',t:'Nuôi thú',s:'Cho thú ăn, vuốt ve, chơi cùng thú'}
++  huyhieu:{file:'tuvung.html',ic:'🏅',t:'Huy hiệu',s:'Bộ sưu tập huy hiệu học từ vựng'}
+ };
+@@ -337,3 +336,2 @@ function backTarget(){var a=APPS[P.app]||{},f=a.file;
+     var c=q1('.crumb a[href^="#"]');if(c&&c.getAttribute('href')!=='#'+h)return c;return function(){location.hash='#home'}}
+-  if(f==='nuoithu.html'){var nb=document.querySelector('#nt section:not(.hide) [data-back]');return nb||null}
+   return null}
+@@ -367,3 +365,3 @@ function renderKid(){
+   if(!CUR)return;var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR),T=window.THIDUA,has=T&&T.data();
+-  $('pAv').innerHTML=has?T.petScene(CUR,150):'<span style="font-size:80px">'+k.av+'</span>';$('pAv').style.cursor='pointer';$('pAv').title='Vào chuồng nuôi thú';$('pAv').onclick=function(){go('thu')};
++  $('pAv').innerHTML=has?T.petScene(CUR,150):'<span style="font-size:80px">'+k.av+'</span>';
+   $('pHi').innerHTML=BANK.nameplate(CUR,'L');$('pGr').textContent='· '+k.grade;
+@@ -377,6 +375,5 @@ function renderKid(){
+   var ti=BANK.title(CUR);
+-  $('pMini').className='mini2';
++  $('pMini').className='mini2 m3';
+   $('pMini').innerHTML='<button class="star" data-app="sao"><span class="mi">⭐</span><span><b>Sao thưởng</b><small>Xem sao, đổi quà</small></span></button>'+
+     '<button data-app="huyhieu"><span class="mi">🏅</span><span><b>Huy hiệu</b><small>'+(ti&&ti.rank?'Cấp '+ti.rank+'/7 · '+(ti.pts||0)+' điểm':'Bộ sưu tập, trang trí tên')+'</small></span></button>'+
+-    '<button class="pet" data-app="thu"><span class="mi">🐾</span><span><b>Nuôi thú</b><small>Cho thú ăn, chơi cùng thú</small></span></button>'+
+     '<button class="how" data-how="1"><span class="mi">❓</span><span><b>Cách chơi</b><small>Làm gì thì được gì?</small></span></button>';
+diff --git a/sw.js b/sw.js
+index d15c22f..9255fac 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,4 +4,4 @@
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v34';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=34', 'bank.js?v=34', 'thidua.js?v=34', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const V = 'hoc-tap-v35';
++const CORE = ['./', 'index.html', 'claude-shim.js?v=35', 'bank.js?v=35', 'thidua.js?v=35', 'tuvung.html', 'lop2.html', 'lop6.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+diff --git a/thidua.js b/thidua.js
+index 0a79157..bf63bbb 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -51,3 +51,3 @@
+       await BANK.ready; var db = BANK.db;
+-      var R = !db ? [null, null, null, null, null, null, null, null, null, null, null, WORDS] : await Promise.all([
++      var R = !db ? [null, null, null, null, null, null, null, null, null, WORDS] : await Promise.all([
+         readDoc(db, 'sync/vocab_daily_v1.anhphong'), readDoc(db, 'sync/vocab_practice_log_v1.anhphong'),
+@@ -56,7 +56,6 @@
+         readDoc(db, 'sync/vocab_shield_v1.anhphong'), readDoc(db, 'sync/vocab_shield_v1.thanhnghi'),
+-        readDoc(db, 'thu-cung/anhphong'), readDoc(db, 'thu-cung/thanhnghi'),
+         db.collection('league').get().catch(function () { return null; }),
+         WORDS || fetch('words.json').then(function (r) { return r.json(); }).catch(function () { return null; })]);
+-      if (R[11]) WORDS = R[11];
+-      var lg = {}; if (R[10]) R[10].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
++      if (R[9]) WORDS = R[9];
++      var lg = {}; if (R[8]) R[8].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
+       var n = {
+@@ -64,3 +63,3 @@
+         pl: { anhphong: R[1] || [], thanhnghi: R[3] || [] }, l2: R[4], l6: R[5], lg: lg,
+-        sh: { anhphong: R[6] || {}, thanhnghi: R[7] || {} }, tc: { anhphong: R[8] || null, thanhnghi: R[9] || null }
++        sh: { anhphong: R[6] || {}, thanhnghi: R[7] || {} }
+       };
+@@ -178,23 +177,8 @@
+   /* ---------- linh vật ---------- */
+-  /* Các loài linh vật (bé chọn trong 🐾 Nuôi thú). Mốc năng lượng giống nhau cho mọi loài. */
+-  var STEPS = [0, 40, 100, 200, 350, 550, 800, 1100, 1500];
+-  function mk(L) { return L.map(function (x, i) { return [STEPS[i], x[0], x[1], x[2]]; }); }
+-  var SPECIES = {
+-    egg: { n: 'Quả trứng bí ẩn', e: '🥚', L: mk([['🥚', 'Quả trứng bí ẩn', ''], ['🥚', 'Trứng đang ấm lên', '✨'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫']]),
+-      S: ['#FEF3C7,#FDE68A', '#FEF3C7,#FCD34D', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047', '#FEF9C3,#FDE047'] },
+-    dino: { n: 'Khủng long', e: '🦖', L: mk([['🥚', 'Quả trứng bí ẩn', ''], ['🥚', 'Trứng đang nứt', '💥'], ['🦎', 'Khủng long sơ sinh', '🌱'], ['🦖', 'Khủng long con', '🌿'], ['🦖', 'Khủng long nhanh nhẹn', '💨'], ['🦖', 'Khủng long chiến binh', '🛡️'], ['🦕', 'Khủng long khổng lồ', '🌴'], ['🐉', 'Rồng khủng long', '🔥'], ['🐲', 'Vua khủng long', '👑']]),
+-      S: ['#FEF3C7,#FDE68A', '#FEF3C7,#FCD34D', '#DCFCE7,#86EFAC', '#D9F99D,#65A30D', '#BEF264,#4D7C0F', '#A7F3D0,#047857', '#6EE7B7,#065F46', '#FDBA74,#9A3412', '#FDE047,#B45309'] },
+-    dragon: { n: 'Rồng', e: '🐉', L: mk([['🥚', 'Trứng rồng', ''], ['🥚', 'Trứng rồng đang nứt', '💥'], ['🦎', 'Rồng sơ sinh', '💧'], ['🐉', 'Rồng con', '💨'], ['🐉', 'Rồng lửa nhỏ', '🔥'], ['🐉', 'Rồng chiến binh', '🛡️'], ['🐲', 'Rồng mây', '☁️'], ['🐲', 'Rồng thần', '⚡'], ['🐲', 'Long vương', '👑']]),
+-      S: ['#E0F2FE,#BAE6FD', '#E0F2FE,#7DD3FC', '#CFFAFE,#22D3EE', '#BAE6FD,#0284C7', '#FECACA,#DC2626', '#C7D2FE,#4338CA', '#E0E7FF,#6366F1', '#4C1D95,#1E1B4B', '#7C3AED,#020617'] },
+-    phoenix: { n: 'Phượng hoàng', e: '🦅', L: mk([['🥚', 'Trứng lửa', ''], ['🥚', 'Trứng lửa đang nứt', '🔥'], ['🐣', 'Chim lửa non', '🔥'], ['🐥', 'Chim lửa con', '🔥'], ['🐦', 'Chim lửa nhanh nhẹn', '💨'], ['🦅', 'Chim lửa dũng mãnh', '🔥'], ['🦚', 'Chim lửa rực rỡ', '✨'], ['🦅', 'Phượng hoàng', '☀️'], ['🦚', 'Phượng hoàng lửa', '👑']]),
+-      S: ['#FFEDD5,#FDBA74', '#FFEDD5,#FB923C', '#FEF3C7,#F59E0B', '#FED7AA,#EA580C', '#FECACA,#EF4444', '#FDBA74,#C2410C', '#FDE68A,#DC2626', '#F97316,#7C2D12', '#FDE047,#B91C1C'] },
+-    unicorn: { n: 'Kỳ lân', e: '🦄', L: mk([['🥚', 'Trứng cầu vồng', ''], ['🥚', 'Trứng cầu vồng đang nứt', '🌈'], ['🐴', 'Ngựa thần sơ sinh', '🌸'], ['🦄', 'Kỳ lân con', '🌈'], ['🦄', 'Kỳ lân nhanh nhẹn', '💨'], ['🦄', 'Kỳ lân ánh sao', '⭐'], ['🦄', 'Kỳ lân cầu vồng', '🌈'], ['🦄', 'Kỳ lân thần', '✨'], ['🦄', 'Vua kỳ lân', '👑']]),
+-      S: ['#FCE7F3,#F9A8D4', '#FCE7F3,#F472B6', '#FAE8FF,#E879F9', '#EDE9FE,#C084FC', '#FCE7F3,#EC4899', '#E0E7FF,#818CF8', '#FDF4FF,#D946EF', '#A78BFA,#6D28D9', '#F0ABFC,#7E22CE'] }
++  var PETS = {
++    anhphong: [[0, '🥚', 'Quả trứng bí ẩn', ''], [40, '🥚', 'Trứng đang nứt', '💥'], [100, '🦎', 'Khủng long sơ sinh', '🌱'], [200, '🦖', 'Khủng long con', '🌿'],
++      [350, '🦖', 'Khủng long nhanh nhẹn', '💨'], [550, '🦖', 'Khủng long chiến binh', '🛡️'], [800, '🦕', 'Khủng long khổng lồ', '🌴'], [1100, '🐉', 'Rồng khủng long', '🔥'], [1500, '🐲', 'Vua khủng long', '👑']],
++    thanhnghi: [[0, '📐', 'Bản thiết kế tên lửa', ''], [40, '🔧', 'Xưởng lắp ráp', '⚙️'], [100, '🚀', 'Tên lửa thử nghiệm', '💨'], [200, '🚀', 'Bay qua tầng mây', '☁️'],
++      [350, '🛰️', 'Vệ tinh quỹ đạo', '🌍'], [550, '🚀', 'Đáp xuống Mặt Trăng', '🌙'], [800, '🪐', 'Thám hiểm sao Thổ', '✨'], [1100, '🛸', 'Phi thuyền liên sao', '🌟'], [1500, '🛸', 'Chinh phục thiên hà', '👑']]
+   };
+-  /* loài bé đã chọn: kho (thu-cung/<bé>) hoặc bản trên máy; chưa chọn thì Anh Phong mặc định khủng long, Thanh Nghị là quả trứng bí ẩn */
+-  function tcOf(kid) { var a = lsGet('thu_cung_v1', {})[kid] || null, b = D && D.tc && D.tc[kid] || null; return (a && b) ? ((+a.t || 0) >= (+b.t || 0) ? a : b) : (a || b || {}); }
+-  function spOf(kid) { var s = tcOf(kid).sp; return SPECIES[s] ? s : (kid === 'anhphong' ? 'dino' : 'egg'); }
+-  function petsOf(kid) { return SPECIES[spOf(kid)].L; }
+-  function sceneOf(kid, i) { return SPECIES[spOf(kid)].S[i]; }
+-
+   /* Bố mẹ bù năng lượng linh vật: những ngày này tính như đã đạt mục tiêu Toán/TV (+5 ⚡), không cộng trùng nếu dữ liệu sau đó về đủ.
+@@ -216,3 +200,3 @@
+   function pet(kid) {
+-    if (!D) return null; var xp = xpParts(kid).xp, L = petsOf(kid), i = 0;
++    if (!D) return null; var xp = xpParts(kid).xp, L = PETS[kid], i = 0;
+     for (var j = 0; j < L.length; j++) if (xp >= L[j][0]) i = j;
+@@ -269,3 +253,6 @@
+   function css() { if (document.getElementById('tdCss')) return; var st = document.createElement('style'); st.id = 'tdCss'; st.textContent = CSS; document.head.appendChild(st); }
+-
++  var SCENE = {
++    anhphong: ['#FEF3C7,#FDE68A', '#FEF3C7,#FCD34D', '#DCFCE7,#86EFAC', '#D9F99D,#65A30D', '#BEF264,#4D7C0F', '#A7F3D0,#047857', '#6EE7B7,#065F46', '#FDBA74,#9A3412', '#FDE047,#B45309'],
++    thanhnghi: ['#E0F2FE,#BAE6FD', '#E2E8F0,#94A3B8', '#BAE6FD,#38BDF8', '#E0F2FE,#7DD3FC', '#1E3A8A,#0F172A', '#334155,#0F172A', '#4C1D95,#1E1B4B', '#581C87,#0B1026', '#7C3AED,#020617']
++  };
+   function nameOf(kid) { var k = BANK.kid(kid); return k ? k.name : kid; }
+@@ -276,3 +263,3 @@
+     var pct = p.next ? Math.round((p.xp - p.from) / (p.next[0] - p.from) * 100) : 100, td = xpToday(kid);
+-    return '<div class="td-card"><div class="pet"><div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="background:linear-gradient(160deg,' + sceneOf(kid, p.i) + ')">' +
++    return '<div class="td-card"><div class="pet"><div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="background:linear-gradient(160deg,' + SCENE[kid][p.i] + ')">' +
+       '<span class="pet-e" style="font-size:' + (46 + p.i * 4) + 'px">' + p.e + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span><span class="pet-a a2">' + (p.i >= 6 ? '✨' : '') + '</span>' : '') + '</div>' +
+@@ -283,3 +270,3 @@
+       '<details><summary>⚡ Linh vật lớn lên thế nào?</summary><ul><li>Mỗi ngày học đủ bài tiếng Anh: <b>+10 ⚡</b></li><li>Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' trong ngày (' + D.goal[kid] + ' câu): <b>+5 ⚡</b></li><li>Mở rương báu: <b>+3 ⚡</b></li><li>Mỗi cúp vô địch tuần: <b>+20 ⚡</b></li></ul>' +
+-      '<div>' + petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
++      '<div>' + PETS[kid].map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
+   }
+@@ -288,3 +275,3 @@
+     var p = pet(kid); if (!p) return ''; css(); px = px || 140;
+-    return '<div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="width:' + px + 'px;height:' + px + 'px;background:linear-gradient(160deg,' + sceneOf(kid, p.i) + ')">' +
++    return '<div class="pet-scene' + (p.i === p.n - 1 ? ' top' : '') + '" style="width:' + px + 'px;height:' + px + 'px;background:linear-gradient(160deg,' + SCENE[kid][p.i] + ')">' +
+       '<span class="pet-e" style="font-size:' + Math.round(px * (0.42 + p.i * 0.03)) + 'px">' + p.e + '</span>' + (p.acc ? '<span class="pet-a a1">' + p.acc + '</span>' + (p.i >= 6 ? '<span class="pet-a a2">✨</span>' : '') : '') + '</div>';
+@@ -297,3 +284,3 @@
+       '<div class="pl-how"><b>Linh vật lớn lên nhờ năng lượng ⚡</b><br>Học đủ bài tiếng Anh +10 · Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' +5 · Mở rương báu +3 · Cúp tuần +20<br>' +
+-      petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details>';
++      PETS[kid].map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? x[1] : '❔') + '</span>'; }).join(' → ') + '</div></details>';
+   }
+@@ -496,3 +483,3 @@
+     var sub = kid === 'anhphong' ? 'Toán và Tiếng Việt lớp 2' : 'Toán và Ngữ văn lớp 6', g = D ? D.goal[kid] : 20;
+-    var SP = SPECIES[spOf(kid)], mas = SP.e, mn = spOf(kid) === 'egg' ? 'Quả trứng' : SP.n;
++    var mas = kid === 'anhphong' ? '🦖' : '🚀', mn = kid === 'anhphong' ? 'Khủng long' : 'Tên lửa';
+     return '<div class="hw"><p class="hw-lead">Con chỉ cần nhớ <b>3 điều chính</b> dưới đây. Mỗi ngày làm hết <b>🎯 Nhiệm vụ hôm nay</b> là con có đủ cả ba!</p>' +
+@@ -612,3 +599,3 @@
+     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
+-    pet: pet, SPECIES: SPECIES, spOf: spOf, tcOf: tcOf, tasks: function (k) { return D ? tasks(k) : []; }, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
++    pet: pet, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
+     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
+diff --git a/tools/hoctap.py b/tools/hoctap.py
+index 17280f5..82bdee2 100644
+--- a/tools/hoctap.py
++++ b/tools/hoctap.py
+@@ -30,3 +30,3 @@ KIDS = ('anhphong', 'thanhnghi')
+ VERSIONED = ('claude-shim.js', 'bank.js', 'thidua.js')
+-HTML_APPS = ('index.html', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html')
++HTML_APPS = ('index.html', 'tuvung.html', 'lop2.html', 'lop6.html')
+ 
+@@ -263,3 +263,3 @@ def cmd_taopatch(a):
+ FLOWS = [('anhphong', 'tuvung'), ('anhphong', 'lop2'), ('anhphong', 'sao'), ('anhphong', 'huyhieu'),
+-         ('thanhnghi', 'tuvung'), ('thanhnghi', 'lop6'), ('anhphong', 'thu'), ('thanhnghi', 'thu')]
++         ('thanhnghi', 'tuvung'), ('thanhnghi', 'lop6')]
+ PARENT = ['p-sao', 'p-report', 'p-tuvung', 'p-lop2', 'p-lop6']
