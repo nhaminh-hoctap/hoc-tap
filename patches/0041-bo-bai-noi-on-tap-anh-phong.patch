@@ -1,0 +1,71 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 752c212..89df623 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 21/11 | 0041 | Từ vựng Anh Phong: bỏ câu tự đọc to (bài nói) trong Ôn tập và Luyện thêm, chỉ còn nghe → nghĩa, nghĩa → từ; phần Luyện nghe & nói và Học từ mới giữ nguyên. |
+ | 20/11 | 0040 | Bắn bóng không còn bị phóng to, mất bóng trên iPhone (khung vẽ theo đúng cỡ màn hình). Thêm trò **⛏️ Đào vàng** trong Nuôi thú. Thoát giữa ván không mất lượt chơi (chỉ tính khi chơi hết ván). Từ vựng · Luyện thêm: thoát ra hoặc tắt ứng dụng giữa bài vẫn giữ tiến độ, có nút "⏯ Làm tiếp bài đang dở" (lưu trên máy đó, giữ 3 ngày; bắt đầu bài mới thì bỏ bài dở). |
+ | 20/11 | 0039 | Mở trang không còn chớp hình khủng long 🦖 rồi mới đổi sang hình trứng: linh vật vẽ ngay từ thú đã lưu trên máy, không chờ tải dữ liệu học. |
+@@ -49,5 +50,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ 
+ - Mỗi bé học **5 từ mới/ngày**; mục tiêu 3.000 từ phổ thông mỗi bé, từ dễ đến khó; giữ thứ tự 1–700 của danh sách Thanh Nghị.
+-- Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ.
++- Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ. Ôn tập và Luyện thêm không có bài nói (chốt 21/11); luyện nói chỉ ở phần Luyện nghe & nói.
+ - Sao tính cho cả Toán, Tiếng Việt / Ngữ văn; Sao thưởng là mục riêng dùng chung cho mọi ứng dụng.
+ - Thưởng thuộc chắc (chốt 19/11): từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao; từ 401 / 601 trở đi mỗi 50 từ = 150 sao.
+diff --git a/index.html b/index.html
+index 683d717..23bf254 100644
+--- a/index.html
++++ b/index.html
+@@ -132,7 +132,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=40"></script>
+-<script src="bank.js?v=40"></script>
+-<script src="thidua.js?v=40"></script>
++<script src="claude-shim.js?v=41"></script>
++<script src="bank.js?v=41"></script>
++<script src="thidua.js?v=41"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/sw.js b/sw.js
+index ac6a5b4..dad3e74 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v40';
++const V = 'hoc-tap-v41';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=40', 'bank.js?v=40', 'thidua.js?v=40', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=41', 'bank.js?v=41', 'thidua.js?v=41', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/tuvung.html b/tuvung.html
+index 3af6f5c..a616594 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -878,5 +878,5 @@ function reviewType(b,kd,w){
+   const say=canSay(),clz=w&&sentOf(w);
+   const P=(...a)=>pick(a.filter(Boolean));
+-  if(say&&b>=1&&Math.random()<0.12) return 'say'; // thỉnh thoảng đọc to (tỉ lệ nhỏ)
++  if(say&&!kd.young&&b>=1&&Math.random()<0.12) return 'say'; // thỉnh thoảng đọc to (tỉ lệ nhỏ); Anh Phong không có bài nói ở Ôn tập (bố mẹ chốt 21/11)
+   if(b<=0) return P('listen','vi2en');
+   if(b===1) return P('vi2en','listen',!kd.young&&clz&&'cloze');
+@@ -989,5 +989,5 @@ async function startPractice(ws,type,meta){
+   S.meta=Object.assign({type,start:Date.now(),words:new Set(seq.map(w=>w.n)).size},meta);
+   const srsT=srsOf(kd);
+-  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
++  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&!kd.young&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
+ }
+ $('pGo').onclick=async()=>{
+@@ -1039,5 +1039,5 @@ function renderQ(){
+   stopListening();clearTimeout(autoTimer);
+   const it=S.items[S.i],w=it.w;if(it.t==='auto')it.t=reviewType(it.b||0,kid(),w);
+-  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&!canSay()))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
++  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&(!canSay()||(kid().young&&it.ph!=='new'))))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
+   const t=it.t;S.answered=false;S.sayTries=0;S.hinted=false;prSave(S.i);
+   $('qBar').style.width=(S.i/S.items.length*100)+'%';$('qTag').textContent=`${S.i+1}/${S.items.length} · ⭐${S.score}`;
