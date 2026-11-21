@@ -131,9 +131,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=41"></script>
-<script src="bank.js?v=41"></script>
-<script src="thidua.js?v=41"></script>
+<script src="claude-shim.js?v=42"></script>
+<script src="bank.js?v=42"></script>
+<script src="thidua.js?v=42"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -177,7 +177,7 @@ h2{font-size:19px;margin:24px 2px 10px}
     <h2>⚙️ Cài đặt các ứng dụng</h2>
     <div class="setList" id="pParSet"></div>
     <h2>💾 Sao lưu dữ liệu</h2>
-    <div class="bk"><div class="bk-t"><b>Tải bản sao lưu toàn bộ việc học</b><small>Gồm từ vựng, Toán, Tiếng Việt, Ngữ văn, sao thưởng và đấu trường của cả hai con. Nên tải mỗi tháng một lần và cất vào Tệp hoặc Google Drive.</small><small id="pBkLast"></small></div><button class="btnp" id="pBkBtn">💾 Tải bản sao lưu</button></div>
+    <div class="bk"><div class="bk-t"><b>Tải bản sao lưu toàn bộ việc học</b><small>Gồm từ vựng, Toán, Tiếng Việt, Ngữ văn, sao thưởng, đấu trường và nuôi thú của cả hai con. Nên tải mỗi tháng một lần và cất vào Tệp hoặc Google Drive.</small><small id="pBkLast"></small></div><button class="btnp" id="pBkBtn">💾 Tải bản sao lưu</button></div>
     <div class="foot"><button class="ghost" id="pParOut">🚪 Thoát Góc bố mẹ</button><span>Các con không thấy các mục chấm sao, phạt sao và cài đặt.</span></div>
   </section>
 
@@ -478,7 +478,7 @@ async function doBackup(){var btn=$('pBkBtn');if(!btn||btn.disabled)return;btn.d
   try{await BANK.ready;var db=BANK.db;if(!db)throw new Error('Chưa kết nối được dữ liệu');
     var out={app:'goc-hoc-tap',ver:1,at:new Date().toISOString(),docs:{}},n=0;
     function put(path,data){out.docs[path]=data;n++}
-    var cols=['sync','league','bankx/anhphong/e','bankx/thanhnghi/e'];
+    var cols=['sync','league','bankx/anhphong/e','bankx/thanhnghi/e','thu-cung'];
     for(var i=0;i<cols.length;i++){var sn=await db.collection(cols[i]).get();sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}
     var docs=['data/users/gia-dinh/sync','data/users/gia-dinh/progress','tien-do/hoc-sinh'];
     for(var j=0;j<docs.length;j++){var s1=await db.doc(docs[j]).get();if(s1.exists)put(docs[j],s1.data())}
