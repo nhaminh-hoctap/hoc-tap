@@ -877,7 +877,7 @@ $('fNext').onclick=()=>{
 function reviewType(b,kd,w){
   const say=canSay(),clz=w&&sentOf(w);
   const P=(...a)=>pick(a.filter(Boolean));
-  if(say&&b>=1&&Math.random()<0.12) return 'say'; // thỉnh thoảng đọc to (tỉ lệ nhỏ)
+  if(say&&!kd.young&&b>=1&&Math.random()<0.12) return 'say'; // thỉnh thoảng đọc to (tỉ lệ nhỏ); Anh Phong không có bài nói ở Ôn tập (bố mẹ chốt 21/11)
   if(b<=0) return P('listen','vi2en');
   if(b===1) return P('vi2en','listen',!kd.young&&clz&&'cloze');
   if(b===2) return kd.young?P('vi2en','listen'):P(clz&&'cloze','vi2en','spell');
@@ -988,7 +988,7 @@ async function startPractice(ws,type,meta){
   prSet(kd,null); // bắt đầu bài mới thì bỏ bài làm dở
   S.meta=Object.assign({type,start:Date.now(),words:new Set(seq.map(w=>w.n)).size},meta);
   const srsT=srsOf(kd);
-  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
+  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&!kd.young&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
 }
 $('pGo').onclick=async()=>{
   const kd=kid(),N=Math.max(1,learned(kd));let a=Math.max(1,Math.min(N,+$('pFrom').value||1)),b=Math.max(a,Math.min(N,+$('pTo').value||a));
@@ -1038,7 +1038,7 @@ let autoTimer=null;
 function renderQ(){
   stopListening();clearTimeout(autoTimer);
   const it=S.items[S.i],w=it.w;if(it.t==='auto')it.t=reviewType(it.b||0,kid(),w);
-  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&!canSay()))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
+  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&(!canSay()||(kid().young&&it.ph!=='new'))))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
   const t=it.t;S.answered=false;S.sayTries=0;S.hinted=false;prSave(S.i);
   $('qBar').style.width=(S.i/S.items.length*100)+'%';$('qTag').textContent=`${S.i+1}/${S.items.length} · ⭐${S.score}`;
   $('fb').className='fb';

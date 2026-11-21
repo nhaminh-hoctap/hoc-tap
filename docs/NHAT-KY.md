@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 21/11 | 0041 | Từ vựng Anh Phong: bỏ câu tự đọc to (bài nói) trong Ôn tập và Luyện thêm, chỉ còn nghe → nghĩa, nghĩa → từ; phần Luyện nghe & nói và Học từ mới giữ nguyên. |
 | 20/11 | 0040 | Bắn bóng không còn bị phóng to, mất bóng trên iPhone (khung vẽ theo đúng cỡ màn hình). Thêm trò **⛏️ Đào vàng** trong Nuôi thú. Thoát giữa ván không mất lượt chơi (chỉ tính khi chơi hết ván). Từ vựng · Luyện thêm: thoát ra hoặc tắt ứng dụng giữa bài vẫn giữ tiến độ, có nút "⏯ Làm tiếp bài đang dở" (lưu trên máy đó, giữ 3 ngày; bắt đầu bài mới thì bỏ bài dở). |
 | 20/11 | 0039 | Mở trang không còn chớp hình khủng long 🦖 rồi mới đổi sang hình trứng: linh vật vẽ ngay từ thú đã lưu trên máy, không chờ tải dữ liệu học. |
 | 20/11 | 0038 | Biểu tượng nhỏ cạnh tên (bảng Đấu trường, thanh trên cùng, trang của bé) theo loài thú bé đã chọn trong Nuôi thú (🦖 🐉 🦅 🦄; chưa chọn: Anh Phong 🦖, Thanh Nghị 🥚) thay cho 🦖/🚀 cố định (`BANK.avOf`). |
@@ -48,7 +49,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 ## Những điều bố mẹ đã chốt
 
 - Mỗi bé học **5 từ mới/ngày**; mục tiêu 3.000 từ phổ thông mỗi bé, từ dễ đến khó; giữ thứ tự 1–700 của danh sách Thanh Nghị.
-- Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ.
+- Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ. Ôn tập và Luyện thêm không có bài nói (chốt 21/11); luyện nói chỉ ở phần Luyện nghe & nói.
 - Sao tính cho cả Toán, Tiếng Việt / Ngữ văn; Sao thưởng là mục riêng dùng chung cho mọi ứng dụng.
 - Thưởng thuộc chắc (chốt 19/11): từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao; từ 401 / 601 trở đi mỗi 50 từ = 150 sao.
 - Từ vựng (chốt 19/11): mỗi ngày học đúng 5 từ, không có "Học thêm"; bỏ "Kiểm tra từ cũ" và Phonics.
