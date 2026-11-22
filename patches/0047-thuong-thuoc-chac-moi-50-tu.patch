@@ -1,0 +1,117 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 26beb3c..6969823 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 22/11 | 0047 | Sao thuộc chắc Từ vựng (bố mẹ chốt): **cứ đủ thêm 50 từ thuộc chắc là thưởng**, không cần đủ cả một khối 1–50, 51–100…; mức sao giữ nguyên (50 sao/mốc đến 400 từ với Anh Phong, 600 từ với Thanh Nghị; sau đó 150 sao/mốc). Mở Từ vựng là tự trả các mốc đã đủ (Anh Phong 74 từ → +50 sao). |
+ | 22/11 | 0046 | Từ vựng · Ôn tập: hết từ đến hạn vẫn có nút **🔁 Ôn thêm 20 từ cho chắc** (làm bao nhiêu lần cũng được): chọn từ chưa thuộc chắc, hay sai, sắp đến hạn; trả lời đúng được tính lên mức nhớ / thuộc chắc như Luyện thêm (chỉ khi đã đủ thời gian giãn cách), sai thì ôn lại hôm sau; không cộng sao. |
+ | 22/11 | 0045 | Từ vựng: bé đã ôn hết từ đến hạn qua Luyện thêm / Nghe & nói (nút Ôn tập báo "Không có từ cần ôn") thì nay vẫn được tính **xong Ôn tập** hôm nay cho Nhiệm vụ, rương báu và chuỗi ngày (trước đây không được nhận nên rương không mở, chuỗi có thể đứt); không cộng thêm sao ôn tập. |
+@@ -56,5 +57,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ - Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ. Ôn tập và Luyện thêm không có bài nói (chốt 21/11); luyện nói chỉ ở phần Luyện nghe & nói.
+ - Sao tính cho cả Toán, Tiếng Việt / Ngữ văn; Sao thưởng là mục riêng dùng chung cho mọi ứng dụng.
+-- Thưởng thuộc chắc (chốt 19/11): từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao; từ 401 / 601 trở đi mỗi 50 từ = 150 sao.
++- Thưởng thuộc chắc (chốt 19/11, đổi 22/11): tính theo **tổng số từ thuộc chắc** (không cần cùng khối), cứ đủ thêm 50 từ là thưởng; đến 400 từ (Anh Phong) / 600 từ (Thanh Nghị) mỗi 50 từ = 50 sao, sau đó mỗi 50 từ = 150 sao.
+ - Từ vựng (chốt 19/11): mỗi ngày học đúng 5 từ, không có "Học thêm"; bỏ "Kiểm tra từ cũ" và Phonics.
+ - Thi đua: danh hiệu / khung tên theo huy hiệu; đấu trường tuần (cúp +30 sao); rương báu mỗi ngày khi học đủ tiếng Anh (5 từ mới, ôn, 2 lần luyện thêm, 1 lần nghe nói → 5–10 sao); linh vật lớn lên; khiên giữ chuỗi chỉ thưởng khi bé hoàn thành tốt cả tuần; bé thua nhưng làm tốt cũng được +15 sao.
+diff --git a/docs/SUA-NOI-DUNG.md b/docs/SUA-NOI-DUNG.md
+index 15322d9..f64a516 100644
+--- a/docs/SUA-NOI-DUNG.md
++++ b/docs/SUA-NOI-DUNG.md
+@@ -87,5 +87,5 @@ Sao của mọi môn dồn vào một kho chung (xem `KIEN-TRUC.md`). Các nơi
+ | Sao Toán / Ngữ văn lớp 6 | `bank.js` → `RULES.thanhnghi` | Luyện 10 câu: 100% +2, từ 90% +1 (4/ngày) · Ôn đến hạn từ 10 câu, từ 90% +2 (1/ngày) · Sửa đúng từ 5 câu Sổ lỗi sai +1 (1/ngày) · Hoàn thành bài học lần đầu +3 · Kiểm tra từ 20 câu: từ 98% +5, 94% +3, 90% +1 (2/ngày) · Bài viết bố mẹ chấm +2 đến +10 |
+ | Sao Từ vựng hằng ngày | `tuvung.html` → `STAR`, `STAR2` | Học từ mới xong +2 (1 lần/ngày; đã bỏ "Học thêm" — mỗi ngày học đúng số từ quy định) · Ôn xong +1, đúng ngay từ 90% +1 · Chuỗi 7 ngày +10, 30 ngày +50 · Luyện thêm 50 câu (từ 20 từ khác nhau, 4 bài/ngày): 45–46 đúng +1, 47–48 +3, 49–50 +5 · Nghe & nói (2 bài/ngày): đúng 80–90% +3, 91–100% +5 · Mục tiêu tuần (5/7 ngày) +5. Đã bỏ "Kiểm tra từ cũ" (từ cũ vào dần bài Ôn tập theo cài đặt `l.old`) và Phonics (`PHON_ON = false`). |
+-| Thưởng thuộc chắc theo khối | `tuvung.html` → `BLOCK_SPLIT`, `blockOf`, `STAR.blockLow`, `STAR.blockStars` | (Chốt 19/11/2026) Anh Phong từ 1–400, Thanh Nghị từ 1–600: mỗi khối 50 từ thuộc chắc = 50 sao. Từ 401 / 601 trở đi: mỗi khối 50 từ = 150 sao. Khối nào đủ thì thưởng khối đó, mỗi khối một lần. Sao bố mẹ thưởng ngoài ứng dụng trước đây (theo số từ đã học) không ảnh hưởng đến quy tắc này. Từ "thuộc chắc" khi lên mức ôn 3 qua Ôn tập, Luyện thêm, Nghe & nói. |
++| Thưởng thuộc chắc | `tuvung.html` → `BLOCK_SPLIT`, `payMilestones`, `mileStars`, `STAR.blockLow`, `STAR.blockStars`; số mốc đã thưởng ở `vocab_stars_v1[bé].paidM` | (Đổi 22/11/2026) Tính theo **tổng số từ thuộc chắc**, không cần cùng khối: cứ đủ thêm 50 từ là một mốc. Mốc đến 400 từ (Anh Phong) / 600 từ (Thanh Nghị) = 50 sao, sau đó mỗi mốc 50 từ = 150 sao. Mỗi mốc thưởng một lần; mở Từ vựng là tự trả các mốc đã đủ (sau khi tải xong dữ liệu kho). |
+ | Quy tắc gia đình (việc nhà, phạt, đổi quà) | `tuvung.html` → `FAMILY` | Theo tệp "Quy tắc tích sao – V3" trên NotebookLM. `earn` thưởng, `pen` phạt (`both` trừ cả hai anh em), `spend` tiêu sao (1 sao = 1.000đ; game/TV 1 sao = 3 phút, tối đa `TIME_MAX` = 60 phút/ngày). Thưởng thêm tự nhập tối đa 100 sao/lần. |
+ 
+diff --git a/index.html b/index.html
+index 9551484..067e907 100644
+--- a/index.html
++++ b/index.html
+@@ -134,7 +134,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=48"></script>
+-<script src="bank.js?v=48"></script>
+-<script src="thidua.js?v=48"></script>
++<script src="claude-shim.js?v=49"></script>
++<script src="bank.js?v=49"></script>
++<script src="thidua.js?v=49"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/sw.js b/sw.js
+index 043e0f7..0351500 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v48';
++const V = 'hoc-tap-v49';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=48', 'bank.js?v=48', 'thidua.js?v=48', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=49', 'bank.js?v=49', 'thidua.js?v=49', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/tuvung.html b/tuvung.html
+index 5300269..c94beed 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -774,4 +774,7 @@ function renderHome(){
+   $('nPer').querySelectorAll('button').forEach(b=>b.onclick=()=>{const l=logOf(kd);l.per=+b.dataset.n;logSave(kd,l);renderHome()});
+ 
++  // thưởng các mốc thuộc chắc đã đủ (vd. sau khi đổi quy tắc 22/11) — chỉ khi đã tải xong dữ liệu kho, tránh thưởng trùng
++  {let ready=true;try{ready=!SYNC.db||syncLoaded}catch(e){ready=false}
++   if(ready&&L>0)try{if(mastCount(kd)>=50*(paidMiles(kd)+1)){const b0=ownStars(kd).bal;payMilestones(kd);S.earned=[];const v=ownStars(kd).bal-b0;if(v>0&&!NF(kd))setTimeout(()=>toast(`🏆 Giỏi quá! Thuộc chắc ${paidMiles(kd)*50} từ: +${v} ⭐`,4500),600)}}catch(e){}}
+   // review part
+   const rp=reviewPlan(kd);
+@@ -1225,5 +1228,5 @@ function ownStars(kd){const a=store.get('vocab_stars_v1',{});return a[kd.id]||{b
+ function starsOf(kd){const o=ownStars(kd);const B=window.BANK;if(!B)return o;
+   const ext=B.extList(kd.id).map(e=>({t:e.t,v:e.v,r:e.r,k:'x',x:e.id,src:e.src}));
+-  return {bal:(+o.bal||0)+B.extSum(kd.id),led:ext.length?[...o.led,...ext].sort((a,b)=>b.t-a.t):o.led,paidB:o.paidB}}
++  return {bal:(+o.bal||0)+B.extSum(kd.id),led:ext.length?[...o.led,...ext].sort((a,b)=>b.t-a.t):o.led,paidB:o.paidB,paidM:o.paidM}}
+ function addStars(kd,v,reason,k,m){if(!v)return 0;const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});
+   s.bal=s.bal+v;s.led.unshift({t:Date.now(),v,r:reason,k:k||'auto',m:m||0});s.led=s.led.slice(0,500);store.set('vocab_stars_v1',a);
+@@ -1241,7 +1244,7 @@ function renderStars(){
+   $('stRuleBox').open=false;
+   $('stRules').innerHTML=
+-    (()=>{const B=BLOCK_SPLIT[kd.id],bp=blockProgress(kd),done=allBlocks(kd).filter(b=>b.paid).length;
+-      return T('🏆 Thuộc chắc theo khối',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Từ 1–${B}: mỗi 50 từ thuộc chắc = +${STAR.blockLow} ⭐<br>Từ ${B+1} trở đi: mỗi 50 từ = +${STAR.blockStars} ⭐<br>`+
+-        (bp?`Gần xong nhất: khối ${bp.from}–${bp.to}: <b>${bp.c}/${bp.size}</b> từ`:'Đã thưởng hết các khối 🎉')+(done?` · đã thưởng ${done} khối`:''))})()+
++    (()=>{const B=BLOCK_SPLIT[kd.id],g=mastProgress(kd);
++      return T('🏆 Thuộc chắc',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là được thưởng<br>Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó mỗi 50 từ = +${STAR.blockStars} ⭐<br>`+
++        `Đã thuộc chắc <b>${g.M}</b> từ · còn <b>${g.left}</b> từ nữa đến mốc ${g.next}`+(g.paid?` · đã thưởng ${g.paid} mốc`:''))})()+
+     T('📘 Học từ mới',`+${STAR.newDone} ⭐ / ngày`,'1 lần/ngày')+
+     T('🔁 Ôn tập',`+${STAR.revDone} ⭐ / ngày`,`Đúng ngay ≥ 90%: +${STAR.revAcc}`)+
+@@ -1365,18 +1368,16 @@ function blockOf(kd,n){const B=BLOCK_SPLIT[kd.id]||0;
+   if(n<=B){const from=Math.floor((n-1)/50)*50+1,to=Math.min(from+49,B);return{from,to,size:to-from+1,stars:STAR.blockLow}}
+   const from=B+Math.floor((n-B-1)/50)*50+1;return{from,to:from+49,size:50,stars:STAR.blockStars}}
+-function paidBlocks(kd){return starsOf(kd).paidB||[]}
+-function blockStat(kd,b){const srs=srsOf(kd);let c=0;for(let n=b.from;n<=Math.min(b.to,kd.words.length);n++)if(srs[n]&&srs[n].m)c++;
+-  return Object.assign({},b,{c,paid:paidBlocks(kd).includes(b.from+'-'+b.to)})}
+-function allBlocks(kd){const out=[];let n=1;while(n<=kd.words.length){const b=blockOf(kd,n);out.push(blockStat(kd,b));n=b.to+1}return out}
+-function blockProgress(kd){ // khối nên hiện: khối chưa thưởng có nhiều từ thuộc chắc nhất (ưu tiên khối đầu nếu bằng nhau)
+-  const open=allBlocks(kd).filter(b=>!b.paid);if(!open.length)return null;
+-  return open.reduce((a,b)=>b.c/b.size>a.c/a.size?b:a,open[0])}
+-function payBlock(kd,b){const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});s.paidB=[...(s.paidB||[]),b.from+'-'+b.to];store.set('vocab_stars_v1',a);
+-  addStars(kd,b.stars,`🏆 Thuộc chắc đủ ${b.size} từ (từ ${b.from}–${b.to})`)}
++/* (đổi 22/11/2026, bố mẹ chốt) thưởng theo TỔNG số từ thuộc chắc, không cần cùng khối: cứ đủ thêm 50 từ là thưởng một mốc.
++   Mốc thứ k (k×50 từ): k×50 ≤ BLOCK_SPLIT → STAR.blockLow sao, sau đó STAR.blockStars sao. Số mốc đã thưởng lưu ở sổ sao (paidM). */
++const mastCount=kd=>Object.values(srsOf(kd)).filter(x=>x&&x.m).length;
++const mileStars=(kd,k)=>k*50<=(BLOCK_SPLIT[kd.id]||0)?STAR.blockLow:STAR.blockStars;
++function paidMiles(kd){const o=ownStars(kd);return Math.max(+o.paidM||0,(o.paidB||[]).length)}
++function mastProgress(kd){const M=mastCount(kd),p=paidMiles(kd),next=(p+1)*50;return {M,paid:p,next,left:Math.max(0,next-M),stars:mileStars(kd,p+1)}}
++function payMilestones(kd){let p=paidMiles(kd);const due=Math.floor(mastCount(kd)/50);
++  while(p<due){p++;const a=store.get('vocab_stars_v1',{});const o=a[kd.id]||(a[kd.id]={bal:0,led:[]});o.paidM=p;store.set('vocab_stars_v1',a);
++    addStars(kd,mileStars(kd,p),`🏆 Thuộc chắc ${p*50} từ`)}}
+ function masteryReward(kd,w){
+-  const b=blockStat(kd,blockOf(kd,w.n));
+-  if(!b.paid){if(b.c<b.size){S.blockNote=S.blockNote||{};S.blockNote[b.from]=`khối ${b.from}–${b.to}: ${b.c}/${b.size}`}else payBlock(kd,b)}
+-  // khối 50 từ đã đủ từ trước khi đổi quy tắc (19/11) thì thưởng nốt ở lần thuộc chắc kế tiếp
+-  allBlocks(kd).forEach(x=>{if(!x.paid&&x.c>=x.size&&x.from!==b.from)payBlock(kd,x)});
++  payMilestones(kd);const g=mastProgress(kd);
++  S.blockNote={m:`còn ${g.left} từ nữa đến mốc ${g.next} từ (+${g.stars} ⭐)`};
+ }
+ 
