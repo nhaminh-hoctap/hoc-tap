@@ -1294,7 +1294,10 @@ const FAMILY={
   {e:'🛒',r:'Mua đồ ăn, đồ chơi ở siêu thị',v:'1 sao = 1.000đ',q:{lbl:'Số tiền (nghìn đồng)',calc:x=>x,f:x=>`${x}.000đ`}},
   {e:'🎮',r:'Chơi game / xem TV (sau khi làm bài xong)',v:'1 sao = 3 phút',q:{lbl:'Số phút',calc:x=>Math.ceil(x/3),f:x=>`${x} phút`},time:true},
  ]};
-const TIME_MAX=60;let PG={g:'earn',i:-1};
+/* bố mẹ chốt 22/11/2026: bỏ giới hạn 60 phút game/TV mỗi ngày; được tiêu sao cả khi đang âm (nợ, trả dần bằng sao kiếm sau);
+   Thưởng · Phạt · Tiêu sao chỉ dành cho bé có sao (Anh Phong, Thanh Nghị), không hiện các bạn học cùng */
+let PG={g:'earn',i:-1};
+const starKids=()=>KIDS.filter(k=>!NF(k));
 function penaltyThisWeek(kd){const from=Date.now()-7*864e5;return starsOf(kd).led.some(e=>e.k==='pen'&&e.t>=from)}
 function timeToday(kd){const d=today();return starsOf(kd).led.filter(e=>e.k==='time'&&ymd(new Date(e.t))===d).reduce((s,e)=>s+(e.m||0),0)}
 function itemsFor(g,kd){return FAMILY[g].map((x,i)=>[x,i]).filter(([x])=>!x.only||x.only===kd.id)}
@@ -1302,9 +1305,9 @@ function renderPresets(){
   const kd=kid(),g=PG.g;
   $('pgTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.g===g));
   $('pgNote').textContent=g==='earn'?(penaltyThisWeek(kd)?'7 ngày qua bé có bị phạt sao.':'✓ 7 ngày qua bé chưa bị phạt sao nào.'):
-    g==='pen'?'Trừ sao có thể làm số sao âm.':`Đang có ${starsOf(kd).bal} sao · game/TV hôm nay đã đổi ${timeToday(kd)}/${TIME_MAX} phút.`;
+    g==='pen'?'Trừ sao có thể làm số sao âm.':(starsOf(kd).bal<0?`Bé đang nợ ${-starsOf(kd).bal} sao (trả dần bằng sao kiếm được sau)`:`Đang có ${starsOf(kd).bal} sao`)+` · game/TV hôm nay đã đổi ${timeToday(kd)} phút. Được tiêu cả khi chưa đủ sao (ghi nợ).`;
   $('pgTiles').innerHTML=itemsFor(g,kd).map(([x,i])=>{
-    const dis=(x.week&&penaltyThisWeek(kd))||(g==='spend'&&typeof x.v==='number'&&x.v>starsOf(kd).bal);
+    const dis=(x.week&&penaltyThisWeek(kd));
     const val=typeof x.v==='number'?(g==='spend'?x.v+' sao':(x.v>0?'+':'')+x.v+' ⭐'):x.v;
     return `<button class="ptile ${g} ${PG.i===i?'sel':''}" data-i="${i}" ${dis?'disabled':''}><span class="e">${x.e}</span><span class="r">${esc(x.r)}</span><span class="v">${val}</span></button>`}).join('');
   $('pgTiles').querySelectorAll('.ptile').forEach(b=>b.onclick=()=>{PG.i=+b.dataset.i;renderPresets();openConfirm()});
@@ -1314,9 +1317,9 @@ function pgStars(){const x=FAMILY[PG.g][PG.i];if(!x)return 0;const q=Math.max(0,
 function openConfirm(){const x=FAMILY[PG.g][PG.i];if(!x)return;$('pgBox').classList.remove('hide');
   $('pgSel').textContent=`${x.e} ${x.r}${x.both?' — trừ cả Anh Phong và Thanh Nghị':''}`;
   $('pgQtyWrap').classList.toggle('hide',!x.q);$('pgReasonWrap').classList.toggle('hide',!x.custom);if(x.custom)$('pgReason').value='';
-  if(x.q){$('pgQtyLbl').textContent=x.q.lbl+':';$('pgQty').value=x.time?Math.max(0,Math.min(30,TIME_MAX-timeToday(kid()))):(x.e==='📖'?3:x.custom?5:1)}
+  if(x.q){$('pgQtyLbl').textContent=x.q.lbl+':';$('pgQty').value=x.time?30:(x.e==='📖'?3:x.custom?5:1)}
   updCalc();(x.custom?$('pgReason'):$('stPin')).focus()}
-function updCalc(){const n=pgStars(),g=PG.g;$('pgCalc').textContent=g==='earn'?`→ +${n} sao`:g==='pen'?`→ −${n} sao`:`→ trừ ${n} sao`}
+function updCalc(){const n=pgStars(),g=PG.g;$('pgCalc').textContent=g==='earn'?`→ +${n} sao`:g==='pen'?`→ −${n} sao`:`→ trừ ${n} sao`+((b=>b-n<0?` (sau khi đổi: nợ ${n-b} sao)`:'')(starsOf(kid()).bal))}
 $('pgQty').oninput=updCalc;
 $('pgTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{PG={g:b.dataset.g,i:-1};renderPresets()});
 $('pgCancel').onclick=()=>{PG.i=-1;renderPresets()};
@@ -1330,20 +1333,20 @@ $('pgOk').onclick=()=>{
     if(n>100){toast('Mỗi lần thưởng thêm tối đa 100 sao');return}
     addStars(kd,n,`➕ 🎁 ${why}`,'earn')}
   else if(g==='earn') addStars(kd,n,`➕ ${x.e} ${x.r}${qtxt}`,'earn');
-  else if(g==='pen'){(x.both?KIDS:[kd]).forEach(k=>addStars(k,-n,`➖ ${x.e} ${x.r}`,'pen'))}
+  else if(g==='pen'){(x.both?starKids():[kd]).forEach(k=>addStars(k,-n,`➖ ${x.e} ${x.r}`,'pen'))}
   else{
-    if(n>starsOf(kd).bal){toast(`Bé chưa đủ sao (đang có ${starsOf(kd).bal} sao)`);return}
-    if(x.time){const m=+$('pgQty').value||0;if(timeToday(kd)+m>TIME_MAX){toast(`Mỗi ngày tối đa ${TIME_MAX} phút game/TV (còn ${TIME_MAX-timeToday(kd)} phút)`);return}
+    if(x.time){const m=+$('pgQty').value||0;
       addStars(kd,-n,`🎁 ${x.e} ${x.r}${qtxt}`,'time',m)}
     else addStars(kd,-n,`🎁 ${x.e} ${x.r}${qtxt}`,'spend');
   }
-  $('stPin').value='';PG.i=-1;renderStars();renderPresets();renderStarPill();
-  toast(g==='earn'?`Đã cộng ${n} sao ⭐`:g==='pen'?`Đã trừ ${n} sao`:`Đã đổi ${n} sao 🎁`);
+  $('stPin').value='';PG.i=-1;renderStarTabs();renderStars();renderPresets();renderStarPill();
+  toast(g==='earn'?`Đã cộng ${n} sao ⭐`:g==='pen'?`Đã trừ ${n} sao`:`Đã đổi ${n} sao 🎁`+(starsOf(kd).bal<0?` · bé đang nợ ${-starsOf(kd).bal} sao`:''));
 };
 
-function renderStarTabs(){$('stTabs').innerHTML=KIDS.map((k,i)=>`<button class="tab ${i===KI?'on':''}" data-i="${i}">${esc(k.name)}<small>⭐ ${starsOf(k).bal} sao</small></button>`).join('');
+function renderStarTabs(){$('stTabs').innerHTML=KIDS.map((k,i)=>[k,i]).filter(([k])=>!NF(k)).map(([k,i])=>`<button class="tab ${i===KI?'on':''}" data-i="${i}">${esc(k.name)}<small>⭐ ${starsOf(k).bal} sao</small></button>`).join('');
   $('stTabs').querySelectorAll('.tab').forEach(b=>b.onclick=()=>{KI=+b.dataset.i;saveSettings();PG.i=-1;openStars()})}
 function openStars(){if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').classList.contains('hide'))savePracticeLog(true);statTime();stopListening();clearTimeout(autoTimer);
+  if(NF(kid())){const i=KIDS.findIndex(k=>!NF(k));if(i>=0){KI=i;applyKidTheme()}}   // bạn học cùng không có sao: mở trang sao của bé có sao
   renderStarTabs();renderStars();renderPresets();show('stars')}
 $('btnStars').onclick=openStars;
 function openBadges(){if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').classList.contains('hide'))savePracticeLog(true);statTime();stopListening();clearTimeout(autoTimer);

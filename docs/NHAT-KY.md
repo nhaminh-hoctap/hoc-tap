@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 22/11 | 0049 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: chỉ còn Anh Phong và Thanh Nghị (các bạn học cùng không có sao); phạt "trừ cả hai" chỉ trừ hai anh em. **Bỏ giới hạn 60 phút game/TV mỗi ngày**; **được tiêu sao cả khi chưa đủ / đang âm** (ghi nợ, trả dần bằng sao kiếm sau), màn đổi sao báo trước số sao sẽ nợ. Bảng sao trên cùng cập nhật ngay sau khi chấm. |
 | 22/11 | 0048 | **Xu thuộc chắc** (bố mẹ chốt): mỗi mốc 50 từ thuộc chắc **+150 xu** — 4 bạn học cùng được ngay từ mốc đầu; Anh Phong từ mốc vượt 400 từ (450, 500…), Thanh Nghị từ mốc vượt 600 từ (650…), cộng thêm vào sao như cũ. Xu tính từ sổ sao Từ vựng (`mastMiles`, `XU.mast` trong `thidua.js`); dòng thưởng thuộc chắc không còn bị tính là "bài làm tốt". |
 | 22/11 | 0047 | Sao thuộc chắc Từ vựng (bố mẹ chốt): **cứ đủ thêm 50 từ thuộc chắc là thưởng**, không cần đủ cả một khối 1–50, 51–100…; mức sao giữ nguyên (50 sao/mốc đến 400 từ với Anh Phong, 600 từ với Thanh Nghị; sau đó 150 sao/mốc). Mở Từ vựng là tự trả các mốc đã đủ (Anh Phong 74 từ → +50 sao). |
 | 22/11 | 0046 | Từ vựng · Ôn tập: hết từ đến hạn vẫn có nút **🔁 Ôn thêm 20 từ cho chắc** (làm bao nhiêu lần cũng được): chọn từ chưa thuộc chắc, hay sai, sắp đến hạn; trả lời đúng được tính lên mức nhớ / thuộc chắc như Luyện thêm (chỉ khi đã đủ thời gian giãn cách), sai thì ôn lại hôm sau; không cộng sao. |
@@ -56,7 +57,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 - Mỗi bé học **5 từ mới/ngày**; mục tiêu 3.000 từ phổ thông mỗi bé, từ dễ đến khó; giữ thứ tự 1–700 của danh sách Thanh Nghị.
 - Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ. Ôn tập và Luyện thêm không có bài nói (chốt 21/11); luyện nói chỉ ở phần Luyện nghe & nói.
-- Sao tính cho cả Toán, Tiếng Việt / Ngữ văn; Sao thưởng là mục riêng dùng chung cho mọi ứng dụng.
+- Sao tính cho cả Toán, Tiếng Việt / Ngữ văn; Sao thưởng là mục riêng dùng chung cho mọi ứng dụng. Tiêu sao (chốt 22/11): không giới hạn phút game/TV mỗi ngày; được tiêu cả khi đang âm sao (nợ, trả dần).
 - Thưởng thuộc chắc (chốt 19/11, đổi 22/11): tính theo **tổng số từ thuộc chắc** (không cần cùng khối), cứ đủ thêm 50 từ là thưởng; đến 400 từ (Anh Phong) / 600 từ (Thanh Nghị) mỗi 50 từ = 50 sao, sau đó mỗi 50 từ = 150 sao.
 - Từ vựng (chốt 19/11): mỗi ngày học đúng 5 từ, không có "Học thêm"; bỏ "Kiểm tra từ cũ" và Phonics.
 - Thi đua: danh hiệu / khung tên theo huy hiệu; đấu trường tuần (cúp +30 sao); rương báu mỗi ngày khi học đủ tiếng Anh (5 từ mới, ôn, 2 lần luyện thêm, 1 lần nghe nói → 5–10 sao); linh vật lớn lên; khiên giữ chuỗi chỉ thưởng khi bé hoàn thành tốt cả tuần; bé thua nhưng làm tốt cũng được +15 sao.
