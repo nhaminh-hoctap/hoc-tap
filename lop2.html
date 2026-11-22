@@ -624,6 +624,7 @@ body.portal-kid [data-act=parent]{display:none!important}
 .pbarlab{display:flex;gap:6px;font-size:12px;color:var(--ink2)}.pbarlab span{flex:1;text-align:center}
 .ptag{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 8px;margin-right:4px;border:2px solid var(--ink)}.ptag.toan{background:#D0EBFF}.ptag.tv{background:#FFDEEB}
 @media (max-width:620px){.pkv{grid-template-columns:1fr 1fr}}
+.nx-band{background:#fff;border:3px solid var(--ink);border-radius:22px;padding:14px 16px;margin:4px 0 16px;box-shadow:0 5px 0 var(--ink)}.nx-h{font-size:21px;font-weight:800;margin-bottom:10px}.nx-list{display:grid;gap:10px}.nx-item{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;text-align:left;border:2px solid var(--ink);border-radius:16px;background:#FFF9DB;padding:10px 14px;font:inherit;font-size:18px;font-weight:700;color:var(--ink);cursor:pointer;touch-action:manipulation}.nx-item.first{background:#FFE066;font-size:20px;box-shadow:0 4px 0 var(--ink)}.nx-item:active{transform:translateY(3px);box-shadow:none}.nx-go{width:22px;flex:none;font-size:20px}.nx-t{flex:1;min-width:0}.nx-tag{flex:none;font-size:14px;font-weight:700;background:#fff;border:2px solid var(--ink);border-radius:99px;padding:3px 10px}.nx-tag.new{background:#D3F9D8}@media (max-width:560px){.nx-item{flex-wrap:wrap;font-size:16px}.nx-item.first{font-size:17px}.nx-tag{margin-left:34px}}
 </style>
 </head>
 <body>
@@ -1966,8 +1967,8 @@ S.L=S.L&&Array.isArray(S.L.rounds)?S.L:emptyL();S.L.pref=S.L.pref||{};if(!Array.
 const LS_OK=lsSet(LS2,S);
 const legacyBase=p=>({topics:clone(p.topics)||{},totalStars:+p.totalStars||0,rounds:+p.rounds||0,history:clone(p.history)||[]});
 function applyRounds(b,rs){b=b||{topics:{},totalStars:0,rounds:0,history:[]};b.topics=b.topics||{};b.history=b.history||[];
-  for(const r of rs){const [ts,,id,c,n,s]=r;const st=b.topics[id]||{plays:0,best:0,correct:0,total:0,last:0};
-    b.topics[id]={plays:st.plays+1,best:Math.max(st.best||0,s),correct:(st.correct||0)+c,total:(st.total||0)+n,last:Math.max(st.last||0,ts)};
+  for(const r of rs){const [ts,,id,c,n,s]=r;const st=b.topics[id]||{plays:0,best:0,correct:0,total:0,last:0,bp:-1,bp15:-1};const o3=st.best>=3?1:-1,p0=st.bp??o3,p1=st.bp15??o3,rr=n?c/n:0;
+    b.topics[id]={plays:st.plays+1,best:Math.max(st.best||0,s),correct:(st.correct||0)+c,total:(st.total||0)+n,last:Math.max(st.last||0,ts),bp:n>=10?Math.max(p0,rr):p0,bp15:n>=15?Math.max(p1,rr):p1};
     b.totalStars=(b.totalStars||0)+s;b.rounds=(b.rounds||0)+1;b.history.push({t:ts,id,c,n,s});}
   b.history=b.history.sort((x,y)=>y.t-x.t).slice(0,40);return b;}
 /* Gộp bản trên mây R với thay đổi L: lượt học hợp lại theo mã (không mất, không trùng); tên & cài đặt lấy bản mới nhất */
@@ -2184,6 +2185,17 @@ const perOfUnit=id=>PERIODS.findIndex(p=>p.tv.includes(id));
 function perItems(s,i){const p=PERIODS[i];
   if(s==='toan')return CHAPTERS.filter(c=>p.toan.includes(c.no)).flatMap(c=>c.lessons.map(l=>l.id));
   return UNITS.filter(u=>p.tv.includes(u.id)).flatMap(u=>u.review?[u.id]:[...u.weeks.map(w=>w.id),'r'+u.id]);}
+/* Bài nên học tiếp: theo thứ tự sách, bài chưa học hoặc chưa làm tốt (từ GOOD_N câu, đúng từ GOOD_P) */
+function goodNP(){return [typeof GOOD_N!=='undefined'?GOOD_N:10,typeof GOOD_P!=='undefined'?GOOD_P:0.9];}
+function bestPct(id){const s=stat(id),gn=goodNP()[0];const v=gn>=15?(s.bp15??(s.best>=3?1:-1)):(s.bp??(s.best>=3?1:-1));return v;}
+function isGood(id){return bestPct(id)>=goodNP()[1]-1e-9;}
+function nextUp(s,k){const ids=PERIODS.flatMap((p,i)=>perItems(s,i));return ids.filter(id=>REG[id]&&!isGood(id)).slice(0,k||3);}
+function nextPer(s){const id=nextUp(s,1)[0];if(!id)return null;const i=PERIODS.findIndex((p,j)=>perItems(s,j).includes(id));return i<0?null:i;}
+function nextBand(s){const ids=nextUp(s,3);if(!ids.length)return `<section class="nx-band"><div class="nx-h">🎉 Con đã làm tốt tất cả các bài! Ôn lại bài nào cũng được nhé.</div></section>`;
+  const lab=id=>{const t=REG[id]||{};if(s==='toan')return (t.b?'Bài '+t.b+'. ':'')+(t.title||'');if(/^r/.test(id))return '📖 Đọc hiểu: '+(t.title||'');return (t.tuan?'Tuần '+t.tuan+'. ':'')+(t.titles?t.titles.join(' · '):t.title||'');};
+  const btn=(id,i)=>{const st=stat(id),bp=bestPct(id),act=/^(t|w)\d+$/.test(id)?'learn':'start';const tag=!st.plays?'<span class="nx-tag new">Chưa học</span>':`<span class="nx-tag">Cố thêm chút nữa · ${bp>=0?'đạt '+Math.round(bp*100)+'%':'làm bài từ '+goodNP()[0]+' câu'}</span>`;
+    return `<button class="nx-item${i?'':' first'}" data-act="${act}" data-t="${id}"><span class="nx-go">${i?'':'▶'}</span><span class="nx-t">${esc(lab(id))}</span>${tag}</button>`;};
+  return `<section class="nx-band"><div class="nx-h">⭐ Học tiếp nhé</div><div class="nx-list">${ids.map(btn).join('')}</div></section>`;}
 function perStats(s,i){const ids=perItems(s,i);const got=ids.reduce((a,id)=>a+stat(id).best,0);return {got,max:ids.length*3,done:ids.filter(id=>stat(id).plays>0).length,total:ids.length};}
 function perScope(s,i){const p=PERIODS[i];if(s==='toan'){const cs=p.toan.map(n=>CHAPTERS.find(c=>c.no===n));const ls=cs.flatMap(c=>c.lessons);return `Chủ đề ${cs[0].no}–${cs[cs.length-1].no} · Bài ${ls[0].b}–${ls[ls.length-1].b}`;}
   const us=UNITS.filter(u=>p.tv.includes(u.id)&&!u.review);return `Tuần ${p.weeks[0]}–${p.weeks[1]} · ${us.map(u=>u.title).join(', ')}`;}
@@ -2219,24 +2231,24 @@ function renderHome(){
 }
 /* --- Toán --- */
 function hkTabs(hk){return `<div class="tabs" role="group" aria-label="Chọn tập"><button data-act="hk" data-hk="1" aria-pressed="${hk===1}">Tập một</button><button data-act="hk" data-hk="2" aria-pressed="${hk===2}">Tập hai</button></div>`;}
-function renderToan(){const pi=uiPer.toan??curPerIdx();$app.className='app s-toan';
+function renderToan(){const pi=uiPer.toan??nextPer('toan')??curPerIdx();$app.className='app s-toan';
   const tiles=CHAPTERS.filter(c=>PERIODS[pi].toan.includes(c.no)).map(c=>{const got=c.lessons.reduce((a,l)=>a+stat(l.id).best,0),max=c.lessons.length*3;
     return `<button class="tile${c.review?' review-tile':''}" style="${cv(c.col)}" data-act="chapter" data-c="${c.no}"><div class="tile-top"><div class="ic">${icon(c.icon)}</div><span class="kicker">Chủ đề ${c.no}</span></div><div class="tile-title">${esc(c.title)}</div><div class="tile-sub">${c.lessons.length} bài · Bài ${c.lessons[0].b}–${c.lessons[c.lessons.length-1].b}</div><div class="tstars">${starSVG(got>0)}<span class="n">${got}/${max} sao</span></div></button>`;}).join('');
-  $app.innerHTML=`<div class="pagehead"><button class="icon-btn" data-act="home" aria-label="Về trang chủ">${UI.back}</button><h1>Toán 2</h1><button class="btn tbtn" data-act="tsetup" data-s="toan">${icon('test',30)}Kiểm tra</button></div>${perTabs('toan',pi)}${perHead('toan',pi)}<div class="grid3">${tiles}</div>`;}
+  $app.innerHTML=`<div class="pagehead"><button class="icon-btn" data-act="home" aria-label="Về trang chủ">${UI.back}</button><h1>Toán 2</h1><button class="btn tbtn" data-act="tsetup" data-s="toan">${icon('test',30)}Kiểm tra</button></div>${nextBand('toan')}${perTabs('toan',pi)}${perHead('toan',pi)}<div class="grid3">${tiles}</div>`;}
 function renderChapter(){const c=CHAPTERS.find(x=>x.no===view.c);$app.className='app s-toan';
   const ls=c.lessons.map(l=>{const s=stat(l.id);return `<button class="lesson" style="${cv(c.col)}" data-act="learn" data-t="${l.id}"><span class="no"><span><small>Bài</small><b>${l.b}</b></span></span><span class="lt">${esc(l.title)}<span class="tstars">${starRow(s.best)}${s.plays?`<span class="n">${s.plays} lượt</span>`:''}</span></span></button>`;}).join('');
   $app.innerHTML=`<div class="pagehead"><button class="icon-btn" data-act="toan" aria-label="Quay lại">${UI.back}</button></div>
   <section class="chap-band" style="${cv(c.col)}"><div class="ic">${icon(c.icon)}</div><div class="grow"><span class="kicker" style="background:#fff">Chủ đề ${c.no} · Tập ${c.hk===1?'một':'hai'}</span><h1>${esc(c.title)}</h1></div>${c.review?'':`<button class="btn primary" data-act="start" data-t="${c.id}">Luyện cả chủ đề</button>`}</section>
   <div class="lessons">${ls}</div>`;}
 /* --- Tiếng Việt --- */
-function renderTV(){const pi=uiPer.tv??curPerIdx();$app.className='app s-tv';const cur=schoolWeek();
+function renderTV(){const pi=uiPer.tv??nextPer('tv')??curPerIdx();$app.className='app s-tv';const cur=schoolWeek();
   const body=UNITS.filter(u=>PERIODS[pi].tv.includes(u.id)).map(u=>{
     if(u.review){const s=stat(u.id);return `<div class="grid3" style="margin-top:18px"><button class="tile review-tile" style="${cv('yellow')}" data-act="start" data-t="${u.id}"><div class="tile-top"><div class="ic">${icon('star')}</div><span class="kicker">Tuần ${u.tuan}</span></div><div class="tile-title">${esc(u.title)}</div><div class="tile-sub">Trộn các dạng bài của những tuần trước</div><div class="tstars">${starRow(s.best)}</div></button></div>`;}
     const wk=u.weeks.map(w=>{const s=stat(w.id);return `<button class="tile" style="${cv(u.col)}" data-act="learn" data-t="${w.id}"><div class="tile-top"><span class="kicker">Tuần ${w.tuan}${cur===w.tuan?' · tuần này':''}</span><span class="tile-sub">Bài ${w.b.join(' – ')}</span></div><div class="tile-title">${esc(w.titles.join(' · '))}</div><div class="tile-sub">${esc(w.extra)}</div><div>${w.spell.length?`<span class="tag">${esc(w.spell.map(PAIR_LABEL).join(' · '))}</span>`:''}<span class="tag">Chữ hoa ${esc(w.hoa)}</span></div><div class="tstars">${starRow(s.best)}</div></button>`;}).join('');
     const rs=stat('r'+u.id);
     const rd=`<button class="tile" style="${cv(u.col)};background:#fff" data-act="start" data-t="r${u.id}"><div class="tile-top"><div class="ic">${icon('book')}</div><span class="kicker">Đọc hiểu</span></div><div class="tile-title">${u.read.map(r=>esc(STORIES[r].title)).join(' · ')}</div><div class="tile-sub">Bài đọc viết mới theo chủ điểm</div><div class="tstars">${starRow(rs.best)}</div></button>`;
     return `<section><div class="unit-h" style="${cv(u.col)}">${icon(u.icon)}<div><span>Chủ điểm</span><h2>${esc(u.title)}</h2></div></div><div class="grid3">${wk}${rd}</div></section>`;}).join('');
-  $app.innerHTML=`<div class="pagehead"><button class="icon-btn" data-act="home" aria-label="Về trang chủ">${UI.back}</button><h1>Tiếng Việt 2</h1><button class="btn tbtn" data-act="tsetup" data-s="tv">${icon('test',30)}Kiểm tra</button></div>${perTabs('tv',pi)}${perHead('tv',pi)}${body}`;}
+  $app.innerHTML=`<div class="pagehead"><button class="icon-btn" data-act="home" aria-label="Về trang chủ">${UI.back}</button><h1>Tiếng Việt 2</h1><button class="btn tbtn" data-act="tsetup" data-s="tv">${icon('test',30)}Kiểm tra</button></div>${nextBand('tv')}${perTabs('tv',pi)}${perHead('tv',pi)}${body}`;}
 
 /* ================= LÀM BÀI ================= */
 function startTopic(id){const qs=buildRound(id,P.settings.n||10);if(!qs.length)return;
@@ -2691,7 +2703,7 @@ document.addEventListener('click',e=>{
   if(bin&&!e.target.closest('[data-drag]')&&round&&view.name==='quiz'){const st=round.state;if(!st.answered&&st.isel!==null){placeItem(st.isel,+bin.dataset.bin);}return;}
   const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;const st=round&&round.state;
   switch(a){
-    case 'home':if(window.PORTAL&&PORTAL.parent){PORTAL.home();break;}go({name:'home'});break;
+    case 'home':uiPer.toan=uiPer.tv=null;if(window.PORTAL&&PORTAL.parent){PORTAL.home();break;}go({name:'home'});break;
     case 'toan':go({name:'toan'});break;
     case 'tv':go({name:'tv'});break;
     case 'per':uiPer[b.dataset.s]=+b.dataset.p;render();break;

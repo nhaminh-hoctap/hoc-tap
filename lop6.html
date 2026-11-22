@@ -434,6 +434,7 @@ details.mau .a p{margin:8px 0;text-indent:1.5em;line-height:1.65}
 .starbox.off{background:#F8FAFC;border-color:#E2E8F0}
 .starpill{font-weight:800;color:#B45309;background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:99px;padding:4px 11px;margin-right:8px;white-space:nowrap}
 .dialog .in.wide{max-width:680px;width:calc(100% - 24px)}
+.nx-band{background:#fff;border:2px solid #CBD5E1;border-radius:18px;padding:14px 16px;margin:0 0 16px}.nx-band h2{margin:0 0 10px;font-size:20px}.nx-item{display:flex;align-items:center;gap:12px;min-height:54px;text-decoration:none;color:inherit;border:2px solid #E2E8F0;border-radius:14px;background:#F8FAFC;padding:10px 14px;margin-top:8px;font-size:17px;font-weight:600;touch-action:manipulation}.nx-item.first{background:#E2F0EB;border-color:var(--board);font-size:19px;font-weight:700}.nx-band.van .nx-item.first{background:#FFF4E0;border-color:#D97706}.nx-go{width:22px;flex:none}.nx-t{flex:1;min-width:0}.nx-tag{flex:none;font-size:14px;font-weight:600;background:#fff;border:1px solid #CBD5E1;border-radius:99px;padding:3px 10px}.nx-tag.new{background:#DCFCE7}@media (max-width:560px){.nx-item{flex-wrap:wrap}.nx-tag{margin-left:34px}}
 </style>
 </head>
 <body>
@@ -4394,7 +4395,9 @@ function markHtml(lid) {
 /* ---------- Môn học ---------- */
 function vSubject(s) {
   var sub = SUBJ[s];
-  var vol = view.vol || (s === 'toan' ? (ORDER.toan.some(function (l) { return l.vol === 2 && S.lessons[l.id]; }) ? 2 : 1) : (ORDER.van.some(function (l) { return l.vol === 2 && S.lessons[l.id]; }) ? 2 : 1));
+  /* bài nên học tiếp: theo thứ tự sách, bài chưa học hoặc chưa thành thạo */
+  var nx = ORDER[s].filter(function (L) { return !lessonDone(L.id); }).slice(0, 3);
+  var vol = view.vol || (nx.length ? nx[0].vol : 1);
   view.vol = vol;
   var p = subjProgress(s), due = dueList(s).length;
   var head = '<div class="subjhead ' + s + '"><h1>' + sub.name + '</h1><p>' + sub.desc + '</p><p>Thành thạo ' + p.done + '/' + p.total + (due ? ' · ' + due + ' câu đến hạn ôn' : '') + '</p>' +
@@ -4405,6 +4408,10 @@ function vSubject(s) {
       return '<li><a href="#bai-' + L.id + '"><span class="no">' + esc(pt.no) + '</span><span class="lt">' + esc(pt.t) + '<small>' + lessonStatus(L.id) + (L.subj === 'toan' && sgkShort(L) ? ' · ' + sgkShort(L) : '') + '</small></span>' + markHtml(L.id) + '</a></li>';
     }).join('') + '</ul></section>';
   }).join('') + '</div>';
+  var band = nx.length ? '<section class="nx-band ' + s + '"><h2>⭐ Học tiếp nhé</h2>' + nx.map(function (L, i) {
+      return '<a class="nx-item' + (i ? '' : ' first') + '" href="#bai-' + L.id + '"><span class="nx-go">' + (i ? '' : '▶') + '</span><span class="nx-t">' + esc(lname(L)) + '</span><span class="nx-tag' + (S.lessons[L.id] ? '' : ' new') + '">' + (S.lessons[L.id] ? 'Chưa thành thạo' + (lessonScore(L.id) !== null ? ' · điểm ' + vnNum(lessonScore(L.id)) : '') : 'Chưa học') + '</span></a>';
+    }).join('') + '</section>' : '<section class="nx-band"><h2>🎉 Em đã thành thạo tất cả các bài! Ôn lại bài nào cũng được nhé.</h2></section>';
+  body = band + body;
   if (due) body = '<div class="btnrow"><button class="btn ' + (s === 'toan' ? 'board' : '') + '" data-act="review" data-subj="' + s + '">' + ICON.review + ' Ôn ' + due + ' câu đến hạn</button></div>' + body;
   return head + body;
 }

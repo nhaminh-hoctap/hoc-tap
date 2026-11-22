@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 22/11 | 0043 | **Thêm 4 bạn học cùng** (Hưng lớp 1, Mun lớp 3, Pi lớp 5, Khôi lớp 7) dùng chung nhóm: ứng dụng `lop1/3/5/7.html` Toán + Tiếng Việt/Ngữ văn cả năm theo SGK KNTT (bài đọc viết mới); các bạn mới không có sao, chỉ có xu, nuôi thú, đấu thú, xếp hạng tuần. Luật xu mới (xem phần chốt). Từ vựng: bỏ bài nói ở Từ mới/Ôn tập/Luyện thêm cho mọi bạn; Hưng 3 từ/ngày, từ dễ trước; bạn mới bắt đầu luyện thêm theo số từ đã học. Toán/TV: ô **Học tiếp** (bài chưa học/chưa làm tốt từ bài đầu). Nuôi thú: bỏ no bụng, thêm ⚡ năng lượng 5/ngày (mỗi trận 1); hết năng lượng và lượt chơi chỉ ở thêm 15 phút; đấu thú với bạn và quái, trang bị 5 lối × 4 độ hiếm, hiệu ứng bộ theo độ hiếm, cân bằng bằng mô phỏng, may rủi (±25%, đòn may mắn, hăng máu). Góc bố mẹ: **Quản lý đấu thú**. Trang chọn bạn chỉ còn thú, danh hiệu, tên; bỏ nút Cách chơi; Anh Phong, Thanh Nghị hiện thêm xu. Xu của Anh Phong, Thanh Nghị về 0 và bỏ thức ăn thừa (một lần). |
 | 21/11 | 0041 | Từ vựng Anh Phong: bỏ câu tự đọc to (bài nói) trong Ôn tập và Luyện thêm, chỉ còn nghe → nghĩa, nghĩa → từ; phần Luyện nghe & nói và Học từ mới giữ nguyên. |
 | 20/11 | 0040 | Bắn bóng không còn bị phóng to, mất bóng trên iPhone (khung vẽ theo đúng cỡ màn hình). Thêm trò **⛏️ Đào vàng** trong Nuôi thú. Thoát giữa ván không mất lượt chơi (chỉ tính khi chơi hết ván). Từ vựng · Luyện thêm: thoát ra hoặc tắt ứng dụng giữa bài vẫn giữ tiến độ, có nút "⏯ Làm tiếp bài đang dở" (lưu trên máy đó, giữ 3 ngày; bắt đầu bài mới thì bỏ bài dở). |
 | 20/11 | 0039 | Mở trang không còn chớp hình khủng long 🦖 rồi mới đổi sang hình trứng: linh vật vẽ ngay từ thú đã lưu trên máy, không chờ tải dữ liệu học. |
@@ -56,6 +57,9 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 - Thi đua: danh hiệu / khung tên theo huy hiệu; đấu trường tuần (cúp +30 sao); rương báu mỗi ngày khi học đủ tiếng Anh (5 từ mới, ôn, 2 lần luyện thêm, 1 lần nghe nói → 5–10 sao); linh vật lớn lên; khiên giữ chuỗi chỉ thưởng khi bé hoàn thành tốt cả tuần; bé thua nhưng làm tốt cũng được +15 sao.
 - Lớp 6: bỏ gia sư AI; bài giảng chi tiết nhưng dễ hiểu. Lớp 2: tiến độ theo Giữa kì 1, Học kì 1, Giữa kì 2, Học kì 2; có luyện cộng trừ nhanh và bảng cửu chương.
 - Nuôi thú (chốt 19/11): cả hai bé tự chọn loại trứng; thú lớn nhờ học; thức ăn từ nhiệm vụ, huy hiệu, danh hiệu và mua bằng sao (1 ⭐ phần ăn, 5 ⭐ món đặc biệt, tối đa 3 lần/ngày); chơi để thư giãn, không cộng sao hay điểm.
+- **Bạn học cùng (chốt 21/11)**: Hưng (lớp 1), Mun (lớp 3), Pi (lớp 5), Khôi (lớp 7) chung nhóm; không có sao, chỉ xu; Từ vựng theo danh sách của Anh Phong; Hưng 3 từ/ngày, từ dễ trước. Bài làm tốt: từ 10 câu đúng từ 90% (Khôi: từ 15 câu, 85%).
+- **Xu (chốt 21/11)**: xong tiếng Anh +15, đạt mục tiêu môn +10, rương 5–10, bài làm tốt +2 (tối đa 3 tiếng Anh + 2 môn khác/ngày), lần đầu làm tốt một bài +2, chuỗi 7 ngày +20; xếp hạng tuần (từ 50 điểm) +50/+40/+30/+20/+20/+20 (bỏ +10 khi từ 60 điểm); tiến bộ nhất tuần (tăng từ 10 điểm) +30; cả nhóm từ 400 điểm mỗi bạn +10; thắng thú của bạn +2 (thú cấp cao hơn +3), thắng quái +1; tổng 5 trận/ngày (⚡ năng lượng).
+- **Nuôi thú (chốt 21/11)**: bỏ no bụng; hết năng lượng và hết 5 lượt trò chơi chỉ ở thêm 15 phút (bố mẹ chỉnh trong Quản lý đấu thú); hiệu ứng đủ bộ theo món kém hiếm nhất; phông nền vẫn cần đủ cả số huy hiệu và cấp danh hiệu.
 - Thiết kế ưu tiên iPad (cả dọc và ngang), dùng được trên iPhone; tiến độ đồng bộ giữa các máy.
 
 ## Việc có thể làm tiếp

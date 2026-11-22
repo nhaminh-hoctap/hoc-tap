@@ -10,8 +10,15 @@
   if (window.BANK) return;
   var KIDS = [
     { id: 'anhphong', name: 'Anh Phong', av: '🦖', grade: 'Lớp 2', color: '#EA580C', soft: '#FFEBD6', app: 'lop2', appName: 'Toán & Tiếng Việt lớp 2' },
-    { id: 'thanhnghi', name: 'Thanh Nghị', av: '🚀', grade: 'Lớp 6', color: '#15803D', soft: '#E2F6E8', app: 'lop6', appName: 'Toán & Ngữ văn lớp 6' }
+    { id: 'thanhnghi', name: 'Thanh Nghị', av: '🚀', grade: 'Lớp 6', color: '#15803D', soft: '#E2F6E8', app: 'lop6', appName: 'Toán & Ngữ văn lớp 6' },
+    /* 4 bạn nhỏ học cùng (bố mẹ chốt 21/11/2026): không có sao thưởng (fam:false), chỉ học để được xu nuôi thú, đấu thú;
+       từ vựng dùng chung danh sách của Anh Phong (words: 'anhphong'); app Toán/Tiếng Việt theo lớp: làm sau */
+    { id: 'hung', name: 'Hưng', av: '🐯', grade: 'Lớp 1', color: '#DB2777', soft: '#FCE7F3', light: '#F472B6', app: 'lop1', fam: false, words: 'anhphong', nw: 3, easyFirst: true },   // bố mẹ chốt 21/11: lớp 1 học 3 từ mới/ngày, từ dễ trước
+    { id: 'moon', name: 'Mun', av: '🌙', grade: 'Lớp 3', color: '#7C3AED', soft: '#EDE9FE', light: '#A78BFA', app: 'lop3', fam: false, words: 'anhphong' },
+    { id: 'bi', name: 'Pi', av: '⚽', grade: 'Lớp 5', color: '#0284C7', soft: '#E0F2FE', light: '#38BDF8', app: 'lop5', fam: false, words: 'anhphong' },
+    { id: 'khoi', name: 'Khôi', av: '🦅', grade: 'Lớp 7', color: '#B45309', soft: '#FEF3C7', light: '#FBBF24', app: 'lop7', fam: false, words: 'anhphong' }
   ];
+  KIDS[0].light = '#FB923C'; KIDS[1].light = '#4ADE80';
   var SRC = {
     vocab: { e: '📘', n: 'Từ vựng' },
     toan: { e: '🧮', n: 'Toán' },
@@ -44,10 +51,11 @@
   function rid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
   var CACHE_KEY = 'bank_ext_cache_v1';
-  var cache = { anhphong: {}, thanhnghi: {} };   // id -> dòng sao (Toán/TV/Văn)
+  var cache = {};   // id -> dòng sao (Toán/TV/Văn), mỗi bé một ngăn
+  KIDS.forEach(function (k) { cache[k.id] = {}; });
   var pending = {};                               // id -> dòng chưa lên kho
   var vocab = { anhphong: null, thanhnghi: null };// {bal, led} của Học từ vựng (đọc từ kho)
-  try { var c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); if (c && c.anhphong) cache = c; } catch (e) { }
+  try { var c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); if (c && c.anhphong) { cache = c; KIDS.forEach(function (k) { if (!cache[k.id]) cache[k.id] = {}; }); } } catch (e) { }
   function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) { } }
 
   var listeners = [], PIN = null;
@@ -56,6 +64,7 @@
     db: null, state: 'loading', pinSet: false,
     pin: function () { return PIN; },
     kid: function (id) { return KIDS.filter(function (k) { return k.id === id; })[0] || null; },
+    fam: function (id) { var k = B.kid(id); return !k || k.fam !== false; },   // bé nhà mình (có sao thưởng)
     onChange: function (f) { listeners.push(f); },
     _emit: function () { listeners.forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); },
     /* các dòng sao Toán/TV/Văn còn hiệu lực, mới nhất trước */
@@ -126,7 +135,7 @@
           var m = {};
           snap.docs.forEach(function (d) { var x = d.data(); if (x && x.id) m[x.id] = x; });
           Object.keys(pending).forEach(function (p) { if (p.indexOf(k.id + '/') === 0) { var e = pending[p]; m[e.id] = e; } });
-          cache[k.id] = m; saveCache(); extGot[k.id] = 1; if (extGot.anhphong && extGot.thanhnghi) extDone(true); B._emit();
+          cache[k.id] = m; saveCache(); extGot[k.id] = 1; if (KIDS.every(function (x) { return extGot[x.id]; })) extDone(true); B._emit();
         }, function () { B.state = 'err'; B._emit(); });
       } catch (e) { }
       try {

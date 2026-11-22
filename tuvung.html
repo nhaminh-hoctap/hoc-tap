@@ -595,9 +595,9 @@ const PROPER=/^(I|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Janua
 const optWord=s=>PROPER.test(s)?s:s.charAt(0).toLowerCase()+s.slice(1);
 const viKey=s=>norm(s.replace(/\(.*?\)/g,''));
 function toast(t,ms=2600){const el=$('toast');el.textContent=t;el.style.display='block';clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',ms)}
-const KID_AV={anhphong:'🦖',thanhnghi:'🚀'};
+const KID_AV={anhphong:'🦖',thanhnghi:'🚀',hung:'🐯',moon:'🌙',bi:'⚽',khoi:'🦅'};
 function kidAv(k){return KID_AV[k.id]||'🙂'}
-function applyKidTheme(){const kd=KIDS[KI];if(!kd)return;document.documentElement.dataset.kid=kd.id;document.documentElement.style.setProperty('--bg',{anhphong:'#FFEBD6',thanhnghi:'#E2F6E8'}[kd.id]||'#FFF8EE');document.body.dataset.kid=kd.id;
+function applyKidTheme(){const kd=KIDS[KI];if(!kd)return;document.documentElement.dataset.kid=kd.id;document.documentElement.style.setProperty('--bg',{anhphong:'#FFEBD6',thanhnghi:'#E2F6E8'}[kd.id]||(window.BANK&&BANK.kid(kd.id)||{}).soft||'#FFF8EE');{const bk=window.BANK&&BANK.kid(kd.id);if(bk&&!{anhphong:1,thanhnghi:1}[kd.id]){const r=document.documentElement.style;r.setProperty('--kbg',bk.soft);r.setProperty('--kc',bk.color);r.setProperty('--ksoft',bk.soft)}}document.body.dataset.kid=kd.id;
   if(window.BANK&&BANK.nameplate&&window.PORTAL&&PORTAL.kid){const d=titleDoc(kd);$('kidChip').innerHTML=plate(kd,'S',d);$('kidChip').classList.add('hasnp')}
   else{$('kidChip').textContent=`${kidAv(kd)} ${kd.name}`;$('kidChip').classList.remove('hasnp')}document.querySelectorAll('[data-kidline]').forEach(e=>e.textContent=`${kidAv(kd)} ${kd.name} đang học`)}
 function openWho(){if(!KIDS.length)return;
@@ -616,7 +616,13 @@ let KIDS=[];
 function parseWord(w){const m=w.match(/^(.*?)\s*\((.*)\)\s*$/);if(!m)return{main:w.trim(),alts:[]};
   return{main:m[1].trim(),alts:m[2].replace(/hoặc\s*/i,'').split(/[\/,]/).map(s=>s.trim()).filter(Boolean)}}
 function buildKids(raw){KIDS=raw.map(k=>({id:k.id,name:k.name,note:k.note,young:k.id==='anhphong',
-  words:k.words.map(([w,vi],i)=>{const p=parseWord(w);return{n:i+1,raw:w,main:p.main,alts:p.alts,vi}})}))}
+  words:k.words.map(([w,vi],i)=>{const p=parseWord(w);return{n:i+1,raw:w,main:p.main,alts:p.alts,vi}})}));
+  /* các bạn học cùng (bank.js): dùng chung danh sách từ của bé ghi trong words (bố mẹ chốt: danh sách của Anh Phong), tiến độ riêng */
+  if(window.BANK&&BANK.KIDS)BANK.KIDS.forEach(b=>{if(KIDS.some(k=>k.id===b.id))return;const src=KIDS.find(k=>k.id===(b.words||'anhphong'));if(!src)return;
+    const g=parseInt(String(b.grade||'').replace(/\D/g,''))||1;KIDS.push({id:b.id,name:b.name,note:b.grade,young:g<=3,nw:b.nw||0,words:b.easyFirst?easyOrder(src.words):src.words})})}
+/* từ dễ lên trước (bạn lớp 1): từ một tiếng, ngắn, có hình minh hoạ trước; cụm từ dài để sau. Giữ thứ tự gốc trong cùng mức */
+function easyOrder(ws){const sc=w=>{const m=w.main||w.raw||'';return (/[\s-]/.test(m)?6:0)+Math.max(0,m.length-3)*0.8+(EMOJI[String(m).toLowerCase()]?0:2.5);};
+  return ws.map((w,i)=>({w,i,s:Math.round(sc(w))})).sort((a,b)=>a.s-b.s||a.i-b.i).map((x,i)=>({...x.w,n:i+1}));}
 const settings=store.get('vocab_settings_v1',{});
 let KI=settings.kid||0;
 const kid=()=>KIDS[KI];
@@ -628,7 +634,7 @@ function setLearned(kd,n){n=Math.min(kd.words.length,Math.max(0,Math.round(+n||0
 const INTERVALS=[1,3,7,14,30,60];
 function srsOf(kd){return store.get('vocab_srs_v1',{})[kd.id]||{}}
 function srsSave(kd,o){const a=store.get('vocab_srs_v1',{});a[kd.id]=o;store.set('vocab_srs_v1',a)}
-function logOf(kd){const l=store.get('vocab_daily_v1',{})[kd.id]||{};l.per=l.per||5;l.old=l.old||15;l.days=l.days||{};return l}
+function logOf(kd){const l=store.get('vocab_daily_v1',{})[kd.id]||{};l.per=l.per||kd.nw||5;l.old=l.old||15;l.days=l.days||{};return l}
 function logSave(kd,o){const a=store.get('vocab_daily_v1',{});a[kd.id]=o;store.set('vocab_daily_v1',a)}
 function recToday(kd){const l=logOf(kd);return l.days[today()]||{}}
 function updRec(kd,fn){const l=logOf(kd);const t=today();l.days[t]=l.days[t]||{};fn(l.days[t]);logSave(kd,l)}
@@ -783,7 +789,7 @@ function renderHome(){
   $('plGo').textContent=`🧭 Kiểm tra từ cũ (${un} từ chưa xếp)`;$('plGo').onclick=startPlacement}
   renderJourney();renderPhonCard();checkBadges(kd);renderBadgePill();
   renderLsCard();renderStarPill();
-  {const pl=plogOf(kd).filter(e=>e.type!=='ls');$('pLast').textContent='Nghe → nghĩa · Nghĩa → từ'+(pl.length?` · lần trước ${pl[0].score}/${pl[0].done}`:'')+` · hôm nay đã làm ${pracDoneToday(kd)} bài · `+(pracStarLeft(kd)?`còn ${pracStarLeft(kd)}/${STAR.pracPerDay} lượt nhận sao (cần đúng từ 45/50 câu)`:`đã nhận đủ sao ${STAR.pracPerDay} bài`);}
+  {const pl=plogOf(kd).filter(e=>e.type!=='ls');$('pLast').textContent='Nghe → nghĩa · Nghĩa → từ'+(pl.length?` · lần trước ${pl[0].score}/${pl[0].done}`:'')+` · hôm nay đã làm ${pracDoneToday(kd)} bài · `+(pracStarLeft(kd)?`còn ${pracStarLeft(kd)}/${STAR.pracPerDay} lượt nhận sao (cần đúng từ ${Math.ceil(prN(kd)*0.9)}/${prN(kd)} câu)`:`đã nhận đủ sao ${STAR.pracPerDay} bài`);$('pLast').textContent=nfTxt(kd,$('pLast').textContent);}
   // practice defaults
   syncPracticeRange(kd);
   {const r=prOf(kd),b=$('pResume');b.classList.toggle('hide',!r);
@@ -804,7 +810,7 @@ function syncPracticeRange(kd){
   const weakN=Object.values(srsOf(kd)).filter(s=>(s.l||0)>0).length;
   const weak=$('pSrc').value==='weak';
   $('pGo').disabled=weak?!weakN:!L;
-  $('pGo').textContent=weak?(weakN?`▶ Bắt đầu 50 câu (${weakN} từ hay sai)`:'Chưa có từ hay sai 🎉'):(L?`▶ Bắt đầu 50 câu (từ ${from}–${to})`:'Học từ mới trước nhé');
+  $('pGo').textContent=weak?(weakN?`▶ Bắt đầu ${prN(kd)} câu (${weakN} từ hay sai)`:'Chưa có từ hay sai 🎉'):(L?`▶ Bắt đầu ${prN(kd)} câu (từ ${from}–${to})`:'Học từ mới trước nhé');
   try{if(!weak&&L&&to>=from){const o=practiceOutlook(kd,kd.words.slice(from-1,to));$('pOut').textContent=o.up?`📈 Bài này: ${o.up} từ có thể lên mức nhớ`+(o.near?` · ${o.near} từ sắp thuộc chắc 🏆`:''):'Hôm nay các từ trong khoảng này đã được tính rồi — vẫn luyện được nhưng không lên mức thêm'}else $('pOut').textContent=''}catch(e){}
 }
 function savePracticeRange(){const kd=kid(),L=learned(kd);let from=Math.max(1,+$('pFrom').value||1),to=Math.min(L,Math.max(1,+$('pTo').value||L));
@@ -868,7 +874,7 @@ $('fNext').onclick=()=>{
     shuffle(S.newWords).forEach(w=>items.push({w,t:'spell',ph:'new'}));
   }
   // một vài câu tự đọc to (khoảng 1/8 số câu) khi máy nghe được giọng nói
-  if(canSay()){const k=Math.max(1,Math.round(items.length/8));shuffle(S.newWords).slice(0,k).forEach(w=>items.push({w,t:'say',ph:'new'}))}
+  // bố mẹ chốt 21/11: bỏ câu tự đọc to khỏi Từ mới, Ôn tập, Luyện thêm — phần nói chỉ còn trong Nghe & nói
   startSession('new',items);
 };
 
@@ -877,7 +883,6 @@ $('fNext').onclick=()=>{
 function reviewType(b,kd,w){
   const say=canSay(),clz=w&&sentOf(w);
   const P=(...a)=>pick(a.filter(Boolean));
-  if(say&&!kd.young&&b>=1&&Math.random()<0.12) return 'say'; // thỉnh thoảng đọc to (tỉ lệ nhỏ); Anh Phong không có bài nói ở Ôn tập (bố mẹ chốt 21/11)
   if(b<=0) return P('listen','vi2en');
   if(b===1) return P('vi2en','listen',!kd.young&&clz&&'cloze');
   if(b===2) return kd.young?P('vi2en','listen'):P(clz&&'cloze','vi2en','spell');
@@ -935,6 +940,8 @@ $('pSrc').onchange=()=>{const weak=$('pSrc').value==='weak';$('pRange').classLis
   $('pSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===$('pSrc').value));syncPracticeRange(kid())};
 $('pSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('pSrc').value=b.dataset.v;$('pSrc').onchange()});
 const PRACTICE_N=50;
+/* bố mẹ chốt 21/11: bé mới học ít từ thì bài luyện thêm ngắn lại — 4 câu cho mỗi từ đã học, ít nhất 12, nhiều nhất 50 */
+const prN=kd=>Math.min(PRACTICE_N,Math.max(12,learned(kd)*4));
 const TYPE_LABEL={ls:'🗣️ Nghe & nói',mix:'🔀 Trộn',listen:'🎧 Nghe → nghĩa',see:'👀 Đọc → nghĩa',vi2en:'🇻🇳 Nghĩa → từ',say:'🎤 Tự đọc',spell:'✍️ Nghe → viết',pic:'🖼️ Nhìn hình',cloze:'🧩 Điền vào câu'};
 // 50 câu: nếu ít từ thì lặp theo vòng, mỗi vòng xáo trộn, tránh 1 từ ra 2 lần liền nhau
 // --- Ưu tiên ngầm: từ chưa luyện lần nào và từ hay sai được chọn trước ---
@@ -965,13 +972,13 @@ function practicePriority(kd,ws){
     if(k&&k.bad>k.ok) sc+=0.5;                      // phát âm còn yếu
     return [sc,w]}).sort((a,b)=>b[0]-a[0]).map(x=>x[1]);
 }
-function build50(ws){
-  if(ws.length>=PRACTICE_N) return shuffle(ws.slice(0,PRACTICE_N));
-  const out=[];while(out.length<PRACTICE_N){let r=shuffle(ws);if(out.length&&r.length>1&&r[0]===out[out.length-1]){[r[0],r[1]]=[r[1],r[0]]}out.push(...r)}
-  return out.slice(0,PRACTICE_N);
+function build50(ws,N){N=N||PRACTICE_N;
+  if(ws.length>=N) return shuffle(ws.slice(0,N));
+  const out=[];while(out.length<N){let r=shuffle(ws);if(out.length&&r.length>1&&r[0]===out[out.length-1]){[r[0],r[1]]=[r[1],r[0]]}out.push(...r)}
+  return out.slice(0,N);
 }
 async function startPractice(ws,type,meta){
-  const kd=kid();
+  const kd=kid(),PN=prN(kd);
   if(ws.length>PRACTICE_N)ws=practicePick(kd,ws);
   if(type==='say'&&!canSay()){toast('Phần tự đọc cần Chrome/Edge trên máy tính');return}
   if(type==='pic'){ws=ws.filter(w=>picOK(w));if(!ws.length){toast('Các từ này chưa có hình minh họa');return}}
@@ -984,11 +991,11 @@ async function startPractice(ws,type,meta){
       try{for(let i=0;i<need.length&&i<48;i+=12)await enrich(kd,need.slice(i,i+12))}finally{$('pGo').disabled=false}}
     if(type==='cloze'){ws=ws.filter(w=>sentOf(w));if(!ws.length){toast('Chưa có câu ví dụ cho các từ này (cần cho phép Claude soạn câu)');return}}
   }
-  const seq=build50(ws);
+  const seq=build50(ws,PN);
   prSet(kd,null); // bắt đầu bài mới thì bỏ bài làm dở
-  S.meta=Object.assign({type,start:Date.now(),words:new Set(seq.map(w=>w.n)).size},meta);
+  S.meta=Object.assign({type,start:Date.now(),words:new Set(seq.map(w=>w.n)).size,n:PN},meta);
   const srsT=srsOf(kd);
-  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':(canSay()&&!kd.young&&Math.random()<0.1?'say':pick(mixTypes(kd,w)))):type,ph:'practice'})));
+  startSession('practice',seq.map(w=>({w,t:type==='mix'?((srsT[w.n]&&srsT[w.n].b===2)?'vi2en':pick(mixTypes(kd,w))):type,ph:'practice'})));
 }
 $('pGo').onclick=async()=>{
   const kd=kid(),N=Math.max(1,learned(kd));let a=Math.max(1,Math.min(N,+$('pFrom').value||1)),b=Math.max(a,Math.min(N,+$('pTo').value||a));
@@ -1038,7 +1045,7 @@ let autoTimer=null;
 function renderQ(){
   stopListening();clearTimeout(autoTimer);
   const it=S.items[S.i],w=it.w;if(it.t==='auto')it.t=reviewType(it.b||0,kid(),w);
-  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||(it.t==='say'&&(!canSay()||(kid().young&&it.ph!=='new'))))))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
+  if(it.t==='pic'||(it.t==='see'&&it.ph!=='retry')||(it.ph!=='ls'&&(it.t==='readW'||it.t==='say')))it.t=kid().young?'vi2en':'spell'; /* đã bỏ dạng nhìn hình đoán từ */ if(it.t==='cloze'&&!sentOf(w))it.t='vi2en';
   const t=it.t;S.answered=false;S.sayTries=0;S.hinted=false;prSave(S.i);
   $('qBar').style.width=(S.i/S.items.length*100)+'%';$('qTag').textContent=`${S.i+1}/${S.items.length} · ⭐${S.score}`;
   $('fb').className='fb';
@@ -1127,14 +1134,14 @@ function finishSession(){
     $('rMsg').innerHTML=`${S.newWords.map(w=>`${emojiOf(w)} <b>${esc(w.main)}</b>`).join(', ')}<br>Đúng ngay lần đầu ${right}/${firstTry} câu · ngày mai sẽ ôn lại`+(mile?`<br>🏅 <b>Mốc mới: bé đã học ${mile} từ!</b>`:'');
     const rp=reviewPlan(kd);
     if(rp.words.length&&!rp.done)btns+=`<button class="btn blue" id="rbRev">🔁 Tiếp theo: Ôn tập ${rp.words.length} từ</button>`;
-    else btns+=`<button class="btn" style="background:#0F9488" id="rbPrac">🎯 Tiếp theo: Luyện thêm 50 câu</button>`;
+    else btns+=`<button class="btn" style="background:#0F9488" id="rbPrac">🎯 Tiếp theo: Luyện thêm ${prN(kd)} câu</button>`;
   } else if(S.kind==='review'){
     updRec(kd,r=>{r.reviewDone=true});
     if(!starFlag(kd,'rev'))addStars(kd,STAR.revDone,'🔁 Hoàn thành ôn tập hôm nay');
     if(firstTry&&right/firstTry>=0.9&&!starFlag(kd,'revAcc'))addStars(kd,STAR.revAcc,`🎯 Ôn tập đúng ${right}/${firstTry}`);
     $('rTitle').textContent=`Ôn xong! ${right}/${firstTry}`;
     $('rMsg').textContent=firstWrong?`${firstWrong} từ chưa nhớ sẽ được ôn lại vào ngày mai:`:'Bé nhớ hết các từ, lần ôn sau sẽ lùi xa hơn 🎉';
-    {const l=pracStarLeft(kd);btns+=`<button class="btn" style="background:#0F9488" id="rbPrac">🎯 Tiếp theo: Luyện thêm 50 câu${l?` (còn ${l} bài được sao)`:''}</button>`}
+    {const l=pracStarLeft(kd);btns+=`<button class="btn" style="background:#0F9488" id="rbPrac">🎯 Tiếp theo: Luyện thêm ${prN(kd)} câu${l?` (còn ${l} bài được sao)`:''}</button>`}
     if(!newPlan(kd).done&&newPlan(kd).words.length)btns+=`<button class="btn orange" id="rbNew">📘 Học từ mới</button>`;
   } else if(S.kind==='ls'){
     {const p=firstTry?right/firstTry:0;const v=p>=0.91?STAR.lsPerfect:p>=0.8?STAR.lsGood:0;
@@ -1145,16 +1152,16 @@ function finishSession(){
     $('rMsg').textContent=S.wrong.length?'Các từ cần luyện thêm (bấm để nghe lại):':'Bé nghe và nói rất tốt! 🎉';
     btns+=`<button class="btn" style="background:#7C3AED" id="rbLs">🔁 Luyện tiếp</button><button class="btn ghost" id="rbHist">📜 Lịch sử</button>`;
   } else {
-    {const clean=S.score-(S.hintOk||0),v=pracStars(clean),m=S.meta||{};const distinct=new Set(S.items.map(x=>x.w.n)).size;
-     if(v){ if(S.items.length<PRACTICE_N)S.starNote='Chưa đủ 50 câu nên chưa tính sao.';
-       else if(distinct<STAR.pracMinWords)S.starNote=`Bài có dưới ${STAR.pracMinWords} từ khác nhau (từ bị lặp nhiều) nên chưa tính sao — chọn khoảng rộng hơn nhé.`;
+    {const m=S.meta||{},len=S.items.length,need=m.n||PRACTICE_N,clean=S.score-(S.hintOk||0),v=pracStars(Math.round(clean*PRACTICE_N/Math.max(1,len))),minW=Math.min(STAR.pracMinWords,learned(kd));const distinct=new Set(S.items.map(x=>x.w.n)).size;
+     if(v){ if(len<need)S.starNote=`Chưa đủ ${need} câu nên chưa tính sao.`;
+       else if(distinct<minW)S.starNote=`Bài có dưới ${minW} từ khác nhau (từ bị lặp nhiều) nên chưa tính sao — chọn khoảng rộng hơn nhé.`;
        else if(((g,f)=>Math.max(g,f))(pracStarGot(kd),starFlag(kd,'prac'))>=STAR.pracPerDay)S.starNote=`Hôm nay đã nhận sao cho ${STAR.pracPerDay} bài luyện thêm.`;
-       else S.pracStar=addStars(kd,v,`🎯 Luyện thêm ${clean}/50 câu đúng`)}
-     else if(S.items.length>=PRACTICE_N)S.starNote=`Bài này đúng ${clean}/50 câu`+(S.hintOk?` (không tính ${S.hintOk} câu có gợi ý)`:'')+' — cần đúng từ 45 câu mới có sao.'}
+       else S.pracStar=addStars(kd,v,`🎯 Luyện thêm ${clean}/${len} câu đúng`)}
+     else if(len>=need)S.starNote=`Bài này đúng ${clean}/${len} câu`+(S.hintOk?` (không tính ${S.hintOk} câu có gợi ý)`:'')+' — cần đúng từ 90% mới có sao.'}
     savePracticeLog(false);
     $('rTitle').textContent=`${S.score}/${S.items.length}`;
     {const l=pracStarLeft(kd);btns+=l?`<button class="btn" style="background:#0F9488" id="rbPrac">🎯 Làm tiếp bài nữa — còn ${l} bài được sao hôm nay</button>`:`<button class="btn ghost" id="rbPrac">🎯 Làm tiếp (hôm nay đã đủ ${STAR.pracPerDay} bài có sao)</button>`;
-     if(l)S.starNote=(S.starNote?S.starNote+' · ':'')+`Bài tiếp theo vẫn được sao nếu đúng từ 45/50 câu 💪`}
+     if(l)S.starNote=(S.starNote?S.starNote+' · ':'')+`Bài tiếp theo vẫn được sao nếu đúng từ 90% số câu 💪`}
     btns+=`<button class="btn ghost" id="rbHist">📜 Lịch sử luyện</button>`;
     $('rMsg').textContent=S.wrong.length?'Các từ cần chú ý:':'Hoàn hảo! 🎉';
   }
@@ -1173,10 +1180,10 @@ function finishSession(){
   const earned=S.earned||[];S.earned=[];const note=S.starNote;S.starNote='';
   $('rWrong').insertAdjacentHTML('beforebegin','');
   {let el=$('rStarBox');if(!el){$('rWrong').insertAdjacentHTML('beforebegin','<div id="rStarBox"></div>');el=$('rStarBox')}
-   el.innerHTML=earned.length||note?`<div class="starline">${earned.map(([v,r])=>`⭐ +${v} · ${esc(r)}`).join('<br>')}${note?`<div class="hint" style="margin:4px 0 0">${esc(note)}</div>`:''}${earned.length?`<div class="hint" style="margin:4px 0 0">Tổng: ${starsOf(kd).bal} sao</div>`:''}</div>`:''}
+   el.innerHTML=earned.length||note?`<div class="starline">${earned.map(([v,r])=>`⭐ +${v} · ${esc(r)}`).join('<br>')}${note?`<div class="hint" style="margin:4px 0 0">${esc(nfTxt(kd,note))}</div>`:''}${earned.length?`<div class="hint" style="margin:4px 0 0">Tổng: ${starsOf(kd).bal} sao</div>`:''}</div>`:''}
   const st=streakOf(kd);if(S.kind!=='practice'&&dayDone(recToday(kd)))$('rMsg').innerHTML+=`<br>🔥 Hoàn thành bài hôm nay · chuỗi ${st} ngày`;
   btns+=`<button class="btn ghost" id="rbHome">🏠 Trang chính</button>`;
-  $('rBtns').innerHTML=btns;
+  $('rBtns').innerHTML=nfTxt(kd,btns);
   if($('rbRev'))$('rbRev').onclick=startReview;
   if($('rbNew'))$('rbNew').onclick=()=>startNew(false);
   if($('rbLs'))$('rbLs').onclick=startLS;
@@ -1191,6 +1198,10 @@ const STAR={block:50,blockLow:50,blockStars:150,bigStars:300,newDone:2,extra:1,r
 const pracDoneToday=kd=>plogOf(kd).filter(e=>e.type!=='ls'&&e.total>0&&e.done>=e.total&&ymd(new Date(e.t))===today()).length; // số bài luyện thêm làm trọn vẹn hôm nay
 const pracStarGot=kd=>{const d=today();return Math.max((((recToday(kd).st)||{}).prac||0),ownStars(kd).led.filter(e=>e.v>0&&String(e.r).startsWith('🎯 Luyện thêm')&&ymd(new Date(e.t))===d).length)};
 const pracStarLeft=kd=>Math.max(0,STAR.pracPerDay-pracStarGot(kd));
+/* các bạn học cùng (không có sao): đổi lời nhắc "sao" thành "bài làm tốt" (được tính xu nuôi thú) */
+const NF=kd=>!!(window.BANK&&BANK.fam&&kd&&!BANK.fam(kd.id));
+function nfTxt(kd,t){if(!t||!NF(kd))return t;return String(t).replace(/lượt nhận sao/g,'lượt tính bài làm tốt').replace(/đã nhận đủ sao (\d+) bài/g,'đã đủ $1 bài làm tốt').replace(/Hôm nay đã nhận sao cho/g,'Hôm nay đã đủ bài làm tốt cho').replace(/mới có sao/g,'mới được tính bài làm tốt')
+  .replace(/bài được sao/g,'bài làm tốt được tính').replace(/bài có sao/g,'bài làm tốt').replace(/vẫn được sao/g,'vẫn được tính bài làm tốt').replace(/đã nhận đủ sao phần/g,'đã đủ bài làm tốt phần').replace(/chưa tính sao/g,'chưa được tính bài làm tốt')}
 const pracStars=c=>c>=49?5:c>=47?3:c>=45?1:0;   // luyện thêm 50 câu: 45–46 → 1, 47–48 → 3, 49–50 → 5
 function ownStars(kd){const a=store.get('vocab_stars_v1',{});return a[kd.id]||{bal:0,led:[]}}
 // Sao chung: sao Từ vựng + sao Toán / Tiếng Việt / Ngữ văn (kho Sao thưởng chung)
@@ -1199,7 +1210,7 @@ function starsOf(kd){const o=ownStars(kd);const B=window.BANK;if(!B)return o;
   return {bal:(+o.bal||0)+B.extSum(kd.id),led:ext.length?[...o.led,...ext].sort((a,b)=>b.t-a.t):o.led,paidB:o.paidB}}
 function addStars(kd,v,reason,k,m){if(!v)return 0;const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});
   s.bal=s.bal+v;s.led.unshift({t:Date.now(),v,r:reason,k:k||'auto',m:m||0});s.led=s.led.slice(0,500);store.set('vocab_stars_v1',a);
-  if(v>0&&S)(S.earned=S.earned||[]).push([v,reason]);return v}
+  if(v>0&&S&&!(window.BANK&&BANK.fam&&!BANK.fam(kd.id)))(S.earned=S.earned||[]).push([v,reason]);return v}  // bạn không có sao: vẫn ghi sổ (để tính bài làm tốt → xu) nhưng không hiện sao
 function starFlag(kd,key){let got=0;updRec(kd,r=>{r.st=r.st||{};got=r.st[key]||0;r.st[key]=got+1});return got} // trả về số lần đã nhận hôm nay
 function todayStars(kd){const d=today();return starsOf(kd).led.filter(e=>e.v>0&&!String(e.r).startsWith('📌')&&ymd(new Date(e.t))===d).reduce((s,e)=>s+e.v,0)}
 function checkStreakStars(kd){const st=streakOf(kd);if(!st)return;
@@ -1332,7 +1343,7 @@ $('btnBadge').onclick=openBadges;
 //  Thanh Nghị: từ 1–600 → mỗi khối 50 từ = 50 sao; từ 601 trở đi → mỗi khối 50 từ = 150 sao
 //  Sao bố mẹ thưởng ngoài ứng dụng trước đây (tính theo số từ đã học) không ảnh hưởng: các khối 50 từ được thưởng theo thuộc chắc thật.
 //  Khối nào thuộc chắc đủ thì thưởng khối đó (không cần theo thứ tự), mỗi khối chỉ thưởng một lần.
-const BLOCK_SPLIT={anhphong:400,thanhnghi:600};
+const BLOCK_SPLIT={anhphong:400,thanhnghi:600,hung:400,moon:400,bi:400,khoi:400};
 function blockOf(kd,n){const B=BLOCK_SPLIT[kd.id]||0;
   if(n<=B){const from=Math.floor((n-1)/50)*50+1,to=Math.min(from+49,B);return{from,to,size:to-from+1,stars:STAR.blockLow}}
   const from=B+Math.floor((n-B-1)/50)*50+1;return{from,to:from+49,size:50,stars:STAR.blockStars}}
@@ -1382,7 +1393,7 @@ function renderLsCard(){
   $('lsGo').disabled=L<4;$('lsGo').textContent=L<4?'Học ít nhất 4 từ trước nhé':'▶ Bắt đầu luyện nghe & nói';
 }
 async function startLS(){
-  const kd=kid(),lv=lsLevel(kd),ws=lsPickWords(kd,LS_LEVELS[lv].words);if(ws.length<4){toast('Bé cần học ít nhất 4 từ');return}
+  const kd=kid(),lv=lsLevel(kd),ws=lsPickWords(kd,LS_LEVELS[lv].words);if(ws.length<3){toast('Bé cần học ít nhất 3 từ');return}
   if(lv!=='easy'&&V.sample&&ws.some(w=>!sentOf(w))){$('lsGo').disabled=true;toast('Đang chuẩn bị câu nghe…',4000);try{await enrich(kd,ws)}finally{$('lsGo').disabled=false}}
   const items=[];const P=(arr,t)=>shuffle(arr).forEach(w=>items.push({w,t,ph:'ls'}));
   if(lv==='easy'){P(ws,'lsPick');P(ws,'rep')}
@@ -1528,7 +1539,7 @@ $('btnHome').onclick=()=>{if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').cl
 // Mở trên máy nào (đăng nhập Claude) cũng tải về cùng một dữ liệu; thay đổi tự đẩy lên và các máy khác nhận ngay.
 const SYNC_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1',
   'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_cfg_20261119','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1','vocab_adj_tn240','vocab_enrich_v1'];
-const KID_IDS=['anhphong','thanhnghi'];
+const KID_IDS=(window.BANK&&BANK.KIDS?BANK.KIDS.map(k=>k.id):['anhphong','thanhnghi']);
 // Dấu của bản đã đồng bộ gần nhất cho từng tài liệu: bản trên máy khác dấu này = có thay đổi chưa kịp gửi
 // (tắt ứng dụng, mất mạng…) -> giữ bản trên máy và gửi lên, không để bản cũ trên kho đè mất sao / tiến độ.
 const LH_KEY='vocab_sync_lh';
@@ -1928,7 +1939,7 @@ function renderJourney(){
     `<div class="hint" style="margin:2px 0 0">📍 Đang ở <b>${cur[2]}</b>`+(nx?` · còn <b>${nx[0]-L}</b> từ nữa đến ${nx[1]} ${nx[2]}`:' · 🎉 Hoàn thành hành trình!')+`</div>`;
   const ws=weekStart(today()),days=logOf(kd).days;let n=0;for(let d=ws,k=0;k<7;k++,d=addDays(d,1))if(dayDone(days[d]))n++;
   const got=(logOf(kd).wk||{})[ws];
-  $('sWeek').textContent=got?`🎯 Tuần này: ${n}/7 ngày ✓ +${STAR2.week}⭐`:`🎯 Mục tiêu tuần: ${n}/${STAR2.weekDays} ngày`;
+  $('sWeek').textContent=got?`🎯 Tuần này: ${n}/7 ngày ✓`+(NF(kd)?'':` +${STAR2.week}⭐`):`🎯 Mục tiêu tuần: ${n}/${STAR2.weekDays} ngày`;
   $('sWeek').classList.toggle('ok',!!got);
 }
 function checkWeekGoal(kd){
@@ -2155,26 +2166,27 @@ function canDecorate(kd){return canDecorate0(kd)}
 // ================= RƯƠNG BÁU & KHIÊN GIỮ CHUỖI =================
 const CHEST_NEW=5,SHIELD_MAX=2;
 const PORTAL_PARENT=()=>!!(window.PORTAL&&PORTAL.parent);
-function chestState(kd,k){k=k||today();const r=logOf(kd).days[k]||{},pl=plogOf(kd).filter(e=>e&&e.t&&ymd(new Date(e.t))===k&&e.total>0&&e.done>=e.total);
+function chestState(kd,k){k=k||today();const CHEST_NEW=kd.nw||5;const r=logOf(kd).days[k]||{},pl=plogOf(kd).filter(e=>e&&e.t&&ymd(new Date(e.t))===k&&e.total>0&&e.done>=e.total);
   const nd=!!(r.newDone||r.done),nw=nd?(r.new||[]).length:0,part=!nd&&!!(r.new&&r.new.length),rv=!!(r.reviewDone||r.done), // từ mới chỉ tính khi học xong cả bước kiểm tra
     pr=pl.filter(e=>e.type!=='ls').length,ls=pl.filter(e=>e.type==='ls').length;
-  return {nw,part,rv,pr,ls,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
+  return {nw,part,rv,pr,ls,need:CHEST_NEW,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
 function renderChest(kd){const box=$('chestCard');if(!box)return;if(PORTAL_PARENT()){box.classList.add('hide');return}box.classList.remove('hide');
-  const st=chestState(kd),it=(ok,t)=>`<span class="${ok?'ok':''}">${ok?'✅':'⬜'} ${t}</span>`;
+  const st=chestState(kd),CHEST_NEW=st.need,it=(ok,t)=>`<span class="${ok?'ok':''}">${ok?'✅':'⬜'} ${t}</span>`;
   const items=[it(st.nw>=CHEST_NEW,st.part?`${CHEST_NEW} từ mới (còn bước kiểm tra)`:`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
   const left=[st.nw>=CHEST_NEW,st.rv,st.pr>=2,st.ls>=1].filter(x=>!x).length;
   [[st.nw>=CHEST_NEW,st.part?'Còn bước kiểm tra':`${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW} từ`],[st.rv,''],[st.pr>=2,`${Math.min(st.pr,2)}/2 bài`],[st.ls>=1,`${Math.min(st.ls,1)}/1 bài`]].forEach(([ok,t],i)=>{
     const a=$('st'+(i+1)),b=$('ss'+(i+1));if(!a)return;a.classList.toggle('ok',!!ok);a.textContent=ok?'✓':String(i+1);b.textContent=ok?'Xong':t;b.classList.toggle('ok',!!ok)});
   box.className='card chestcard '+(st.opened?'open':st.ok?'ready':'');
-  box.innerHTML=`<div class="chIc">${st.opened?'🪙':'🎁'}</div><div class="chB"><b>Rương báu hôm nay</b> <span class="sub">· làm xong 4 bước để mở, được 5–10 ⭐</span><div class="chL">${items.join('')}</div>
+  box.innerHTML=`<div class="chIc">${st.opened?'🪙':'🎁'}</div><div class="chB"><b>Rương báu hôm nay</b> <span class="sub">· làm xong 4 bước để mở, được 5–10 ${NF(kd)?'🪙 xu':'⭐'}</span><div class="chL">${items.join('')}</div>
     </div>
-    <button class="btn" id="chestGo" ${st.opened||!st.ok?'disabled':''}>${st.opened?`Đã mở: +${st.opened} ⭐`:st.ok?'🎁 Mở rương!':`Còn ${left} việc`}</button>`;
+    <button class="btn" id="chestGo" ${st.opened||!st.ok?'disabled':''}>${st.opened?(NF(kd)?`Đã mở: +${chXu(kd)} 🪙`:`Đã mở: +${st.opened} ⭐`):st.ok?'🎁 Mở rương!':`Còn ${left} việc`}</button>`;
   $('chestGo').onclick=()=>openChest(kd)}
+function chXu(kd){try{return window.THIDUA&&THIDUA.chestXu?THIDUA.chestXu(kd.id,today()):0}catch(e){return 0}}
 function openChest(kd){const st=chestState(kd);if(!st.ok||st.opened)return;
   const v=5+Math.floor(Math.random()*6),d=today().split('-').reverse().slice(0,2).join('/');
   updRec(kd,r=>{r.chest=v});addStars(kd,v,`🎁 Rương báu ngày ${d}`,'auto');if(S&&S.earned)S.earned.pop();
   $('bdPopBody').innerHTML=`<div class="rays"></div><div class="chestAnim">🎁</div><div class="bpT">Đang mở rương…</div>`;$('bdPop').classList.remove('hide');
-  setTimeout(()=>{$('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:78px;line-height:1.2">✨🪙✨</div><div class="bpT">Rương báu!</div><div class="bpN" style="font-size:2.4rem">+${v} ⭐</div><div class="bpD">Sao đã vào kho Sao thưởng. Linh vật của con cũng được thêm ⚡ năng lượng!</div><div class="bpK">${esc(kd.name)}</div>`;confetti();setTimeout(()=>speak(pick(['Wow!','Amazing!','Treasure!'])),200)},1400);
+  setTimeout(()=>{$('bdPopBody').innerHTML=`<div class="rays"></div><div style="font-size:78px;line-height:1.2">✨🪙✨</div><div class="bpT">Rương báu!</div>${NF(kd)?`<div class="bpN" style="font-size:2.4rem">+${chXu(kd)} 🪙</div><div class="bpD">Xu đã vào túi của con, vào 🐾 Nuôi thú mua thức ăn cho thú nhé!</div>`:`<div class="bpN" style="font-size:2.4rem">+${v} ⭐</div><div class="bpD">Sao đã vào kho Sao thưởng. Con còn được thêm <b>+${chXu(kd)} 🪙</b> xu nuôi thú!</div>`}<div class="bpK">${esc(kd.name)}</div>`;confetti();setTimeout(()=>speak(pick(['Wow!','Amazing!','Treasure!'])),200)},1400);
   renderHome()}
 let LEAGUE={docs:{},at:0};
 async function loadLeague(){if(!SYNC.db||!syncLoaded||SYNC.hold)return false;if(Date.now()-LEAGUE.at<60000)return true;
@@ -2287,7 +2299,9 @@ $('fFix').onclick=()=>{const w=S.newWords&&S.newWords[S.fi];if(w)openFix(w)};$('
   if(!store.get('vocab_cfg_20261118',false)){ // cài đặt khuyến nghị sau khi mô phỏng: Anh Phong 4 từ mới; ôn 10 từ cũ/ngày
     KIDS.forEach(k=>{const l=logOf(k);if(k.id==='anhphong')l.per=4;l.old=10;logSave(k,l)});store.set('vocab_cfg_20261118',true)}
   if(!store.get('vocab_cfg_20261119',false)&&!SYNC.hold){ // bố mẹ chốt: mặc định mỗi bé 5 từ mới/ngày (khớp điều kiện rương báu)
-    KIDS.forEach(k=>{const l=logOf(k);l.per=5;logSave(k,l)});store.set('vocab_cfg_20261119',true)}
+    KIDS.forEach(k=>{const l=logOf(k);l.per=k.nw||5;logSave(k,l)});store.set('vocab_cfg_20261119',true)}
+  if(!store.get('vocab_cfg_20261121',false)&&!SYNC.hold){ // bố mẹ chốt: Hưng (lớp 1) học 3 từ mới/ngày
+    KIDS.forEach(k=>{if(k.nw){const l=logOf(k);l.per=k.nw;logSave(k,l)}});store.set('vocab_cfg_20261121',true)}
   if(!store.get('vocab_adj_tn240',false)&&!SYNC.hold){ // bố mẹ chỉnh: số sao hiện có của Thanh Nghị = −240 (điều chỉnh vào dòng số sao chuyển ban đầu)
     const a=store.get('vocab_stars_v1',{}),s=a.thanhnghi;
     if(s&&s.led){const e=s.led.find(x=>String(x.r).startsWith('📌 Số sao chuyển'));

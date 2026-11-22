@@ -10,7 +10,15 @@
   if (window.THIDUA) return;
   var START = '2026-11-16', CUP = 30, WIN_MIN = 50, SHIELD_MIN = 75, SHIELD_MAX = 2, NEWW = 5;
   var GOOD = 15, GOOD_MIN = 60; // bé không vô địch nhưng đạt từ 60 điểm: +15 sao
-  var KIDS = ['anhphong', 'thanhnghi'];
+  var KIDS = (window.BANK && BANK.KIDS ? BANK.KIDS.map(function (k) { return k.id; }) : ['anhphong', 'thanhnghi']);
+  function appOf(kid) { var k = window.BANK && BANK.kid(kid); return k ? k.app || null : null; }
+  /* các ứng dụng Toán/TV cùng kiểu Vở Vui (lớp 2, lớp 3…): [tên tài liệu trên kho, khoá lưu trên máy] */
+  var L2F = { lop1: ['lop1', 'vovui-lop1-sync-v4'], lop2: ['sync', 'vovui-lop2-sync-v4'], lop3: ['lop3', 'vovui-lop3-sync-v4'], lop5: ['lop5', 'vovui-lop5-sync-v4'], lop7: ['lop7', 'vovui-lop7-sync-v4'] };
+  function vvDoc(kid, n) { var a = appOf(kid); return L2F[a] ? (n || D).lx[a] : null; }
+  /* tên môn chính theo bé: 0 ngắn, 1 vừa, 2 dài (bạn chưa có ứng dụng lớp: tạm tính theo 4 việc tiếng Anh) */
+  function subN(kid, f) { var a = appOf(kid); if (a === 'lop7') return ['Toán/Văn', 'Toán/Ngữ văn', 'Toán và Ngữ văn lớp 7'][f]; if (a === 'lop3' || a === 'lop1' || a === 'lop5') return ['Toán/TV', 'Toán/Tiếng Việt', 'Toán và Tiếng Việt lớp ' + a.slice(3)][f]; if (a === 'lop2') return ['Toán/TV', 'Toán/Tiếng Việt', 'Toán và Tiếng Việt lớp 2'][f]; if (a === 'lop6') return ['Toán/Văn', 'Toán/Ngữ văn', 'Toán và Ngữ văn lớp 6'][f]; return ['4 việc tiếng Anh', 'đủ 4 việc tiếng Anh', 'đủ 4 việc tiếng Anh'][f]; }
+  function subIc(kid) { var a = appOf(kid); return a === 'lop1' || a === 'lop2' || a === 'lop3' || a === 'lop5' ? '🧮' : a === 'lop7' ? '📐' : a === 'lop6' ? '📐' : '📘'; }
+  function famOf(kid) { return !window.BANK || !BANK.fam || BANK.fam(kid); }
   function pad(n) { return String(n).padStart(2, '0'); }
   function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function parse(s) { var a = s.split('-').map(Number); return new Date(a[0], a[1] - 1, a[2]); }
@@ -24,13 +32,15 @@
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
   var dayDone = function (r) { return !!(r && (r.done || (r.newDone && r.reviewDone))); };
 
-  /* Rương báu: đủ 5 từ mới + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn */
-  function chestCheck(r, plog, k) {
+  /* Rương báu: đủ số từ mới trong ngày (5; Hưng lớp 1: 3) + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn */
+  function newN(kid) { var b = window.BANK && BANK.kid(kid); return (b && b.nw) || NEWW; }   // số từ mới mỗi ngày (Hưng 3, các bạn khác 5)
+  function chestCheck(r, plog, k, kid) {
+    var need = kid ? newN(kid) : NEWW;
     var lg = (plog || []).filter(function (e) { return e && e.t && dayOf(e.t) === k && e.total > 0 && e.done >= e.total; });
     /* từ mới chỉ tính khi bé học xong cả bước kiểm tra từ mới (có dấu newDone), mở ra học chưa tính */
     var nd = !!(r && (r.newDone || r.done)), nw = nd ? (r.new || []).length : 0, part = !nd && !!(r && r.new && r.new.length), rv = !!(r && (r.reviewDone || r.done));
     var pr = lg.filter(function (e) { return e.type !== 'ls'; }).length, ls = lg.filter(function (e) { return e.type === 'ls'; }).length;
-    return { nw: nw, part: part, rv: rv, pr: pr, ls: ls, ok: nw >= NEWW && rv && pr >= 2 && ls >= 1 };
+    return { nw: nw, part: part, rv: rv, pr: pr, ls: ls, need: need, ok: nw >= need && rv && pr >= 2 && ls >= 1 };
   }
 
   /* ---------- đọc dữ liệu ---------- */
@@ -49,24 +59,24 @@
     if (LOADING) return LOADING;
     LOADING = (async function () {
       await BANK.ready; var db = BANK.db;
-      var R = !db ? [null, null, null, null, null, null, null, null, null, null, null, WORDS] : await Promise.all([
-        readDoc(db, 'sync/vocab_daily_v1.anhphong'), readDoc(db, 'sync/vocab_practice_log_v1.anhphong'),
-        readDoc(db, 'sync/vocab_daily_v1.thanhnghi'), readDoc(db, 'sync/vocab_practice_log_v1.thanhnghi'),
-        readDoc(db, 'data/users/gia-dinh/sync'), readDoc(db, 'tien-do/hoc-sinh'),
-        readDoc(db, 'sync/vocab_shield_v1.anhphong'), readDoc(db, 'sync/vocab_shield_v1.thanhnghi'),
-        readDoc(db, 'thu-cung/anhphong'), readDoc(db, 'thu-cung/thanhnghi'),
-        db.collection('league').get().catch(function () { return null; }),
-        WORDS || fetch('words.json').then(function (r) { return r.json(); }).catch(function () { return null; })]);
-      if (R[11]) WORDS = R[11];
-      var lg = {}; if (R[10]) R[10].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
-      var n = {
-        vd: { anhphong: (R[0] && R[0].days) || {}, thanhnghi: (R[2] && R[2].days) || {} },
-        pl: { anhphong: R[1] || [], thanhnghi: R[3] || [] }, l2: R[4], l6: R[5], lg: lg,
-        sh: { anhphong: R[6] || {}, thanhnghi: R[7] || {} }, tc: { anhphong: R[8] || null, thanhnghi: R[9] || null }
-      };
+      var per = ['sync/vocab_daily_v1.', 'sync/vocab_practice_log_v1.', 'sync/vocab_shield_v1.', 'thu-cung/'], jobs = [];
+      if (db) {
+        KIDS.forEach(function (k) { per.forEach(function (p) { jobs.push(readDoc(db, p + k)); }); });
+        var uid = 'gia-dinh';   // cả nhà dùng chung một tài khoản trên trang thật
+        try { var us = window.claude && claude.use && await claude.use('user'); var u2 = us && await us.id(); if (u2) uid = u2; } catch (e) { }
+        jobs.push(readDoc(db, 'data/users/' + uid + '/sync'), readDoc(db, 'tien-do/hoc-sinh'), db.collection('league').get().catch(function () { return null; }));
+        Object.keys(L2F).forEach(function (a) { if (a !== 'lop2') jobs.push(readDoc(db, 'data/users/' + uid + '/' + L2F[a][0])); });
+      }
+      jobs.push(WORDS || fetch('words.json').then(function (r) { return r.json(); }).catch(function () { return null; }));
+      var R = await Promise.all(jobs), W = R[R.length - 1];
+      if (W) WORDS = W;
+      var lg = {}, n = { vd: {}, pl: {}, sh: {}, tc: {}, l2: null, l6: null, lx: {}, lg: lg };
+      KIDS.forEach(function (k, i) { var o = i * 4; n.vd[k] = (db && R[o] && R[o].days) || {}; n.pl[k] = (db && R[o + 1]) || []; n.sh[k] = (db && R[o + 2]) || {}; n.tc[k] = (db && R[o + 3]) || null; });
+      if (db) { var z = KIDS.length * 4; n.l2 = R[z]; n.l6 = R[z + 1]; if (R[z + 2]) R[z + 2].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
+        Object.keys(L2F).filter(function (a) { return a !== 'lop2'; }).forEach(function (a, i) { n.lx[a] = R[z + 3 + i] || null; }); }
       try { mergeLocal(n); } catch (e) { console.error(e); }
-      n.sj = { anhphong: subjDays('anhphong', n), thanhnghi: subjDays('thanhnghi', n) };
-      n.goal = { anhphong: 20, thanhnghi: (n.l6 && n.l6.cfg && +n.l6.cfg.goal) || 20 };
+      n.sj = {}; n.goal = {};
+      KIDS.forEach(function (k) { n.sj[k] = subjDays(k, n); n.goal[k] = k === 'thanhnghi' ? ((n.l6 && n.l6.cfg && +n.l6.cfg.goal) || 20) : 20; });
       D = n; AT = Date.now(); LOADING = null;
       try { await finalize(); } catch (e) { console.error(e); }
       subs.forEach(function (f) { try { f(); } catch (e) { console.error(e); } });
@@ -90,17 +100,20 @@
         n.pl[k] = all.sort(function (a, b) { return b.t - a.t; });
       }
     });
-    /* Lớp 2: các lượt chưa gửi + bản kho đã lưu trên máy */
-    var s2 = lsGet('vovui-lop2-sync-v4', null);
-    if (s2 && typeof s2 === 'object') {
-      var c2 = n.l2 || {}, out = { rounds: [], tests: [] };
+    /* Lớp 2, Lớp 3…: các lượt chưa gửi + bản kho đã lưu trên máy */
+    n.lx.lop2 = n.l2;
+    Object.keys(L2F).forEach(function (a) {
+      var s2 = lsGet(L2F[a][1], null);
+      if (!s2 || typeof s2 !== 'object') return;
+      var c2 = n.lx[a] || {}, out = { rounds: [], tests: [] };
       ['rounds', 'tests'].forEach(function (f) {
         var seen = {};
         [].concat(c2[f] || [], (s2.D && s2.D[f]) || [], (s2.L && s2.L[f]) || []).forEach(function (r) {
           if (!Array.isArray(r)) return; var id = r[0] + '|' + r[1]; if (seen[id]) return; seen[id] = 1; out[f].push(r); });
       });
-      n.l2 = Object.assign({}, c2, out);
-    }
+      n.lx[a] = Object.assign({}, c2, out);
+    });
+    n.l2 = n.lx.lop2;
     /* Lớp 6: mỗi ngày, mỗi môn lấy số câu lớn hơn giữa máy này và kho */
     var s6 = lsGet('vo-on-luyen-lop6-v1', null);
     if (s6 && s6.days) {
@@ -116,11 +129,11 @@
   function subjDays(kid, n) {
     var o = {};
     function put(k, q, c) { var x = o[k] || (o[k] = { q: 0, c: 0 }); x.q += q; x.c += c; }
-    if (kid === 'anhphong') {
-      var doc = n.l2; if (!doc) return o;
+    if (L2F[appOf(kid)]) {
+      var doc = vvDoc(kid, n); if (!doc) return o;
       (doc.rounds || []).forEach(function (r) { if (Array.isArray(r)) put(dayOf(r[0]), +r[4] || 0, +r[3] || 0); });
       (doc.tests || []).forEach(function (r) { if (Array.isArray(r)) put(dayOf(r[0]), +r[3] || 0, +r[4] || 0); });
-    } else {
+    } else if (appOf(kid) === 'lop6') {
       var S = n.l6; if (!S || !S.days) return o;
       Object.keys(S.days).forEach(function (k) { var dd = S.days[k] || {}; Object.keys(dd).forEach(function (s) { if (dd[s] && typeof dd[s] === 'object') put(k, +dd[s].q || 0, +dd[s].c || 0); }); });
     }
@@ -129,8 +142,9 @@
 
   /* ---------- điểm ngày / tuần ---------- */
   function dayPts(kid, k) {
-    var r = D.vd[kid][k], sj = D.sj[kid][k] || { q: 0, c: 0 }, goal = D.goal[kid], ch = chestCheck(r, D.pl[kid], k);
-    var p = { en: dayDone(r) ? 5 : 0, sub: sj.q >= goal ? 4 : 0, more: sj.q >= goal * 2 ? 2 : 0, acc: 0, chest: ch.ok || (r && r.chest) ? 2 : 0, sq: sj.q, goal: goal, ch: ch };
+    var r = D.vd[kid][k], sj = D.sj[kid][k] || { q: 0, c: 0 }, goal = D.goal[kid], ch = chestCheck(r, D.pl[kid], k, kid);
+    var na = !appOf(kid);   // bạn chưa có ứng dụng Toán/TV theo lớp: tạm tính theo tiếng Anh
+    var p = { en: dayDone(r) ? 5 : 0, sub: na ? (ch.ok ? 4 : 0) : sj.q >= goal ? 4 : 0, more: na ? (ch.pr >= 4 ? 2 : 0) : sj.q >= goal * 2 ? 2 : 0, acc: 0, chest: ch.ok || (r && r.chest) ? 2 : 0, sq: sj.q, goal: goal, ch: ch };
     var q = (r && +r.q || 0) + sj.q, c = (r && +r.ok || 0) + sj.c; p.q = q; p.pct = q ? Math.round(c / q * 100) : 0;
     if (q >= 20) p.acc = c / q >= 0.9 ? 2 : c / q >= 0.8 ? 1 : 0;
     p.t = p.en + p.sub + p.more + p.acc + p.chest; return p;
@@ -146,9 +160,10 @@
       var doc = D.lg[wk];
       if (!doc) {
         var s = {}; KIDS.forEach(function (k) { s[k] = weekPts(k, wk); });
-        var top = Math.max(s.anhphong, s.thanhnghi);
-        var win = top >= WIN_MIN ? KIDS.filter(function (k) { return s[k] === top; }) : [];
-        doc = { wk: wk, s: s, win: win, good: KIDS.filter(function (k) { return win.indexOf(k) < 0 && s[k] >= GOOD_MIN; }), sh: KIDS.filter(function (k) { return s[k] >= SHIELD_MIN; }), at: Date.now() };
+        /* cúp và sao "làm tốt" là luật riêng của nhà mình: chỉ so giữa các con trong nhà; xu xếp hạng tính cho cả 6 bạn (xpParts) */
+        var FK = KIDS.filter(famOf), top = Math.max.apply(null, FK.map(function (k) { return s[k] || 0; }));
+        var win = top >= WIN_MIN ? FK.filter(function (k) { return s[k] === top; }) : [];
+        doc = { wk: wk, s: s, win: win, good: FK.filter(function (k) { return win.indexOf(k) < 0 && s[k] >= GOOD_MIN; }), sh: KIDS.filter(function (k) { return s[k] >= SHIELD_MIN; }), at: Date.now() };
         try { await db.doc('league/' + wk).set(doc); } catch (e) { }
         D.lg[wk] = doc;
       }
@@ -177,7 +192,7 @@
 
   /* ---------- linh vật ---------- */
   /* Các loài linh vật (bé chọn trong 🐾 Nuôi thú). Mốc năng lượng giống nhau cho mọi loài. */
-  var STEPS = [0, 40, 100, 200, 350, 550, 800, 1100, 1500];
+  var STEPS = [0, 30, 80, 160, 300, 500, 800, 1200, 1800];   // bố mẹ chốt 21/11/2026: lớn nhanh lúc đầu, hết cỡ sau ~1 học kỳ
   function mk(L) { return L.map(function (x, i) { return [STEPS[i], x[0], x[1], x[2]]; }); }
   var SPECIES = {
     egg: { n: 'Quả trứng bí ẩn', e: '🥚', L: mk([['🥚', 'Quả trứng bí ẩn', ''], ['🥚', 'Trứng đang ấm lên', '✨'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫'], ['🥚', 'Trứng sắp nở', '💫']]),
@@ -214,15 +229,41 @@
      19/11/2026: Anh Phong đã học 5 từ mới, ôn tập, mở rương báu nhưng phần năng lượng tiếng Anh chưa được ghi nhận; bố mẹ bù +10. */
   var EN_BU = { anhphong: ['2026-11-19'], thanhnghi: [] };
   function enOk(kid, k) { return dayDone(D.vd[kid][k]) || (EN_BU[kid] || []).indexOf(k) >= 0; }
-  function subOk(kid, k) { var s = D.sj[kid][k]; return (s && s.q >= D.goal[kid]) || (SUB_BU[kid] || []).indexOf(k) >= 0; }
+  function subOk(kid, k) { if (!appOf(kid)) return chestCheck(D.vd[kid][k], D.pl[kid], k, kid).ok; var s = D.sj[kid][k]; return (s && s.q >= D.goal[kid]) || (SUB_BU[kid] || []).indexOf(k) >= 0; }
+  /* ---- XU nuôi thú (bố mẹ chốt 21/11/2026, chung cho mọi bé) ----
+     xong tiếng Anh +15 · đạt mục tiêu Toán/TV/Văn +10 · mở rương báu ngẫu nhiên +5…+10 (cố định theo bé và ngày, máy nào cũng như nhau) · mỗi bài làm tốt +2 (tối đa 5 bài/ngày)
+     học liền 7 ngày +20 · xếp hạng tuần (từ 50 điểm) hạng 1→6: +50/+40/+30/+20/+20/+20 · thắng đấu thú (tính trong Nuôi thú) */
+  /* bố mẹ chốt lại 21/11 (tối): bài làm tốt tối đa 3 bài tiếng Anh + 2 bài Toán/TV/Văn mỗi ngày; lần đầu làm tốt một bài +2 xu (mọi bé);
+     xếp hạng tuần (từ 50 điểm) hạng 1→6: +50/+40/+30/+20/+20/+20 */
+  var XU = { en: 15, sub: 10, chest: [5, 10], good: 2, goodEn: 3, goodSub: 2, first: 2, streak: 20, rank: [50, 40, 30, 20, 20, 20], prog: 30, progMin: 10, team: 10, teamMin: 400 };   // bố mẹ chốt 21/11 tối: tiến bộ nhất tuần +30, cả nhóm từ 400 điểm mỗi bạn +10   // bố mẹ chốt 21/11 tối: bỏ +10 xu khi tuần đạt từ 60 điểm
+  function goodDays(kid) {   // mỗi ngày: số bài làm tốt tiếng Anh (en), Toán/TV/Văn (sub), số bài lần đầu làm tốt (first)
+    var m = {};
+    function add(e, f) { if (!e || !(e.v > 0)) return; var d = ymdOf(e.t), x = m[d] || (m[d] = { en: 0, sub: 0, first: 0 }); x[f]++; }
+    try { BANK.vocabLed(kid).forEach(function (e) { if ((!e.k || e.k === 'auto') && !/^📌/.test(String(e.r))) add(e, 'en'); }); } catch (e) { }
+    try { BANK.extList(kid).forEach(function (e) { if (!/^(toan|tv|van)$/.test(e.src) || e.k === 'cup') return; add(e, e.k === 'first' || e.k === 'lesson' ? 'first' : 'sub'); }); } catch (e) { }
+    return m;
+  }
+  function goodN(g) { return g ? Math.min(XU.goodEn, g.en) + Math.min(XU.goodSub, g.sub) : 0; }
+  function chestXu(kid, d) { var h = 2166136261, s = 'ruong|' + kid + '|' + d; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return XU.chest[0] + ((h >>> 0) % (XU.chest[1] - XU.chest[0] + 1)); }
+  function ymdOf(t) { var d = new Date(+t); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
   function xpParts(kid) {
-    var o = { en: 0, sub: 0, chest: 0, cup: 0 }, vd = D.vd[kid], sj = D.sj[kid], g = D.goal[kid];
-    Object.keys(vd).forEach(function (k) { if (vd[k] && vd[k].chest) o.chest++; });
+    var o = { en: 0, sub: 0, chest: 0, good: 0, streak: 0, week: 0 }, vd = D.vd[kid], sj = D.sj[kid];
+    o.chestXu = 0; Object.keys(vd).forEach(function (k) { if (vd[k] && vd[k].chest) { o.chest++; o.chestXu += chestXu(kid, k); } });
     var ed = {}; Object.keys(vd).concat(EN_BU[kid] || []).forEach(function (k) { if (!ed[k] && enOk(kid, k)) { ed[k] = 1; o.en++; } });
     var sd = {}; Object.keys(sj).concat(SUB_BU[kid] || []).forEach(function (k) { if (!sd[k] && subOk(kid, k)) { sd[k] = 1; o.sub++; } });
-    o.cup = cupsOf(kid); o.xp = o.en * 10 + o.sub * 5 + o.chest * 3 + o.cup * 20; return o;
+    var gd = goodDays(kid); o.first = 0; Object.keys(gd).forEach(function (d) { if (d >= START) { o.good += goodN(gd[d]); o.first += gd[d].first; } });
+    var days = Object.keys(ed).sort(), run = 0, prev = null;
+    days.forEach(function (d) { run = prev && addD(prev, 1) === d ? run + 1 : 1; prev = d; if (run % 7 === 0) o.streak++; });
+    Object.keys(D.lg).forEach(function (w) {
+      var L = D.lg[w], sc = (L && L.s) || {}, me = +sc[kid] || 0; if (!L) return;
+      var pv = D.lg[addD(w, -7)];   // 🌱 tiến bộ nhất so với tuần trước (tăng từ XU.progMin điểm)
+      if (pv && pv.s) { var dl = function (k) { return (+sc[k] || 0) - (+pv.s[k] || 0); }, best = Math.max.apply(null, KIDS.map(dl)); if (best >= XU.progMin && dl(kid) === best) o.week += XU.prog; }
+      if (KIDS.reduce(function (a, k) { return a + (+sc[k] || 0); }, 0) >= XU.teamMin) o.week += XU.team;   // 🤝 mục tiêu chung cả nhóm
+      if (me >= WIN_MIN) { var better = {}; KIDS.forEach(function (k) { var v = +sc[k] || 0; if (v > me) better[v] = 1; }); var r = Object.keys(better).length; if (r < XU.rank.length) o.week += XU.rank[r]; }
+    });
+    o.xp = o.en * XU.en + o.sub * XU.sub + o.chestXu + o.good * XU.good + o.first * XU.first + o.streak * XU.streak + o.week; return o;
   }
-  function xpToday(kid) { var t = today(), r = D.vd[kid][t], s = D.sj[kid][t]; return (enOk(kid, t) ? 10 : 0) + (subOk(kid, t) ? 5 : 0) + (r && r.chest ? 3 : 0); }
+  function xpToday(kid) { var t = today(), r = D.vd[kid][t], g = goodDays(kid)[t]; return (enOk(kid, t) ? XU.en : 0) + (subOk(kid, t) ? XU.sub : 0) + (r && r.chest ? chestXu(kid, t) : 0) + goodN(g) * XU.good + (g ? g.first : 0) * XU.first; }
   function pet(kid) {
     /* không chờ tải dữ liệu học: vẽ ngay thú đã lưu trên máy, khỏi chớp hình mặc định khi mở trang */
     var tc = tcOf(kid), xp = (+tc.base || 0) + (+tc.grow || 0), L = petsOf(kid), i = 0;  // thú lớn nhờ được cho ăn (🐾 Nuôi thú)
@@ -231,7 +272,8 @@
   }
 
   /* ---------- giao diện ---------- */
-  var CSS = '.td-card{background:#fff;border:2px solid #E2E8F0;border-radius:22px;padding:14px 16px;margin-top:16px}' +
+  var CSS = '.lg-x{margin:8px 0 2px;display:grid;gap:6px;font-size:14.5px;color:#334155}.lg-x>div{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:7px 10px}.lg-tb{display:block;height:7px;border-radius:9px;background:#E2E8F0;margin-top:5px;overflow:hidden}.lg-tb i{display:block;height:100%;background:linear-gradient(90deg,#34D399,#059669)}' +
+    '.td-card{background:#fff;border:2px solid #E2E8F0;border-radius:22px;padding:14px 16px;margin-top:16px}' +
     '.td-card h3{margin:0 0 8px;font-size:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.td-card h3 small{font-weight:600;color:#64748B;font-size:13px}' +
     '.lg-rows{display:grid;grid-template-columns:max-content minmax(90px,1fr) auto;gap:10px 14px;align-items:center;margin:8px 0}.lg-row{display:contents}.lg-row .np{max-width:none}.lg-row .np .npB{display:inline}' +
     '.lg-bar{height:16px;border-radius:99px;background:#F1F5F9;overflow:hidden;position:relative}.lg-bar i{display:block;height:100%;border-radius:99px;transition:width .6s}' +
@@ -291,7 +333,7 @@
       '<div class="pet-bar"><i style="width:' + Math.max(3, pct) + '%"></i></div>' +
       '<div class="pet-nx">' + (p.next ? 'Còn <b>' + (p.next[0] - p.xp) + ' điểm lớn</b> nữa để thành <b>' + esc(p.next[2]) + '</b>' : 'Linh vật đã lớn hết cỡ. Con thật tuyệt vời! 👑') + '</div>' +
       '<span class="pet-td">' + (td ? 'Hôm nay +' + td + ' 🪙 xu' : 'Học hôm nay để có xu mua thức ăn cho thú nhé!') + '</span></div></div>' +
-      '<details><summary>🪙 Linh vật lớn lên thế nào?</summary><ul><li>Học đủ bài tiếng Anh: <b>+10 xu</b></li><li>Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' trong ngày (' + D.goal[kid] + ' câu): <b>+5 xu</b></li><li>Mở rương báu: <b>+3 xu</b></li><li>Mỗi cúp vô địch tuần: <b>+20 xu</b></li><li>Vào 🐾 Nuôi thú, dùng xu mua thức ăn, cho thú ăn để thú lớn.</li></ul>' +
+      '<details><summary>🪙 Linh vật lớn lên thế nào?</summary><ul><li>Học đủ bài tiếng Anh: <b>+15 xu</b></li><li>Đạt mục tiêu ' + subN(kid, 1) + ' trong ngày (' + D.goal[kid] + ' câu): <b>+10 xu</b></li><li>Mở rương báu: <b>+5 đến +10 xu</b> (ngẫu nhiên)</li><li>Mỗi bài làm tốt: <b>+2 xu</b> (mỗi ngày tối đa 3 bài tiếng Anh và 2 bài ' + subN(kid, 0) + ')</li><li>Lần đầu làm tốt một bài ' + subN(kid, 0) + ': <b>+2 xu</b></li><li>Học liền 7 ngày: <b>+20 xu</b></li><li>Xếp hạng tuần (từ ' + WIN_MIN + ' điểm), hạng 1 đến 6: <b>+50/+40/+30/+20/+20/+20 xu</b>; đạt từ ' + GOOD_MIN + ' điểm tuần: <b>+10 xu</b></li><li>⚔️ Đấu trường thú (tối đa 5 trận/ngày): thắng thú của bạn <b>+2 xu</b>, thắng quái <b>+1 xu</b></li><li>Vào 🐾 Nuôi thú, dùng xu mua thức ăn, cho thú ăn để thú lớn.</li></ul>' +
       '<div>' + petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? picOf(x[1], '1.4em') : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
   }
 
@@ -305,7 +347,7 @@
     var pct = p.next ? Math.round((p.xp - p.from) / (p.next[0] - p.from) * 100) : 100, td = xpToday(kid);
     return '<details class="pet-line"><summary><span class="pl-n">' + picOf(p.e, '1.5em') + ' ' + esc(p.name) + ' <small>· cấp ' + (p.i + 1) + '/' + p.n + '</small></span>' +
       '<span class="pl-bar"><i style="width:' + Math.max(3, pct) + '%"></i></span><span class="pl-x">' + (p.next ? 'còn ' + (p.next[0] - p.xp) + ' điểm nữa để lớn' : 'đã lớn hết cỡ 👑') + (td ? ' · hôm nay +' + td + ' 🪙' : '') + ' ⓘ</span></summary>' +
-      '<div class="pl-how"><b>Học được xu 🪙, xu mua thức ăn, cho ăn thì thú lớn</b><br>Học đủ bài tiếng Anh +10 xu · Đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn') + ' +5 · Mở rương báu +3 · Cúp tuần +20<br>' +
+      '<div class="pl-how"><b>Học được xu 🪙, xu mua thức ăn, cho ăn thì thú lớn</b><br>Học đủ bài tiếng Anh +15 xu · Đạt mục tiêu ' + subN(kid, 1) + ' +10 · Mở rương báu +5…+10 · Mỗi bài làm tốt +2 (3 tiếng Anh + 2 ' + subN(kid, 0) + '/ngày) · Lần đầu làm tốt một bài +2 · Học liền 7 ngày +20 · Xếp hạng tuần +50/+40/+30/+20/+20/+20 · Thắng thú của bạn +2, thắng quái +1<br>' +
       petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? picOf(x[1], '1.6em') : '❔') + '</span>'; }).join(' → ') + '</div></details>';
   }
 
@@ -314,14 +356,19 @@
     if (!D) return ''; css();
     var t = today(), wk = monday(t), left = 6 - Math.round((parse(t) - parse(wk)) / 864e5);
     var s = {}; KIDS.forEach(function (k) { s[k] = weekPts(k, wk); });
-    var top = Math.max(s.anhphong, s.thanhnghi);
-    var rows = KIDS.map(function (k) {
+    var top = Math.max.apply(null, KIDS.map(function (k) { return s[k] || 0; })), nTop = KIDS.filter(function (k) { return s[k] === top; }).length;
+    var rows = KIDS.slice().sort(function (a, b) { return (s[b] || 0) - (s[a] || 0); }).map(function (k) {
+      var kk = BANK.kid(k) || {};
       var lead = top > 0 && s[k] === top;
       return '<div class="lg-row"><div style="min-width:0">' + plate(k) + '</div>' +
-        '<div class="lg-bar"><i class="' + k + '" style="width:' + Math.min(100, s[k] / 105 * 100) + '%"></i></div><div class="lg-pt">' + (lead ? '<span title="' + (s.anhphong === s.thanhnghi ? 'Ngang điểm' : 'Đang dẫn') + '">👑</span> ' : '') + s[k] + ' <small>/105</small></div></div>';
+        '<div class="lg-bar"><i class="' + k + '" style="width:' + Math.min(100, s[k] / 105 * 100) + '%;background:linear-gradient(90deg,' + (kk.light || '#94A3B8') + ',' + (kk.color || '#475569') + ')"></i></div><div class="lg-pt">' + (lead ? '<span title="' + (nTop > 1 ? 'Ngang điểm' : 'Đang dẫn') + '">👑</span> ' : '') + s[k] + ' <small>/105</small></div></div>';
     }).join('');
-    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3><div class="lg-rows">' + rows + '</div>';
-    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Vô địch: <b>+' + CUP + ' ⭐</b> · Từ ' + GOOD_MIN + ' điểm: <b>+' + GOOD + ' ⭐</b> · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️</b></div>';
+    var sum = KIDS.reduce(function (a, k) { return a + (s[k] || 0); }, 0), pw = D.lg[addD(wk, -7)], pg = '';
+    if (pw && pw.s) { var dl = function (k) { return (s[k] || 0) - (+pw.s[k] || 0); }, bst = Math.max.apply(null, KIDS.map(dl)), who = KIDS.filter(function (k) { return dl(k) === bst; });
+      pg = bst >= XU.progMin ? '🌱 Tiến bộ nhất (so với tuần trước): <b>' + who.map(function (k) { return (BANK.kid(k) || {}).name || k; }).join(', ') + '</b> +' + bst + ' điểm → <b>+' + XU.prog + ' 🪙</b>' : '🌱 Tiến bộ nhất tuần: bạn nào tăng nhiều điểm nhất so với tuần trước (từ ' + XU.progMin + ' điểm) được <b>+' + XU.prog + ' 🪙</b>'; }
+    var extra = '<div class="lg-x"><div>🤝 Cả nhóm: <b>' + sum + '/' + XU.teamMin + '</b> điểm' + (sum >= XU.teamMin ? ' ✅ mỗi bạn <b>+' + XU.team + ' 🪙</b>' : ' · đạt thì mỗi bạn <b>+' + XU.team + ' 🪙</b>') + '<span class="lg-tb"><i style="width:' + Math.min(100, sum / XU.teamMin * 100) + '%"></i></span></div>' + (pg ? '<div>' + pg + '</div>' : '') + '</div>';
+    var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3><div class="lg-rows">' + rows + '</div>' + extra;
+    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Hạng 1–6 (từ ' + WIN_MIN + ' điểm): <b>+' + XU.rank.join('/+') + ' 🪙</b>' + (focus && famOf(focus) ? ' · Con nhất nhà: <b>+' + CUP + ' ⭐</b>' : '') + ' · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️</b></div>';
     if (mode === 'mini') return '<div class="td-card lg-mini">' + head + meta + '</div>';
     var h;
     if (mode === 'compact') {
@@ -335,7 +382,7 @@
         if (!got) {
           if (key === 'sub' || key === 'more') hint = ' (' + p.sq + '/' + (key === 'more' ? p.goal * 2 : p.goal) + ' câu)';
           if (key === 'acc') hint = p.q >= 20 ? ' (đang ' + p.pct + '%)' : ' (cần làm từ 20 câu)';
-          if (key === 'chest') hint = ' (' + Math.min(p.ch.nw, NEWW) + '/' + NEWW + ' từ · ' + (p.ch.rv ? 'ôn ✓' : 'chưa ôn') + ' · ' + Math.min(p.ch.pr, 2) + '/2 luyện · ' + Math.min(p.ch.ls, 1) + '/1 nói)';
+          if (key === 'chest') hint = ' (' + Math.min(p.ch.nw, p.ch.need) + '/' + p.ch.need + ' từ · ' + (p.ch.rv ? 'ôn ✓' : 'chưa ôn') + ' · ' + Math.min(p.ch.pr, 2) + '/2 luyện · ' + Math.min(p.ch.ls, 1) + '/1 nói)';
         }
         return '<span class="' + (got ? 'ok' : '') + '">' + (got ? '✅ ' : '') + L[0] + ' ' + L[1] + ' <b>' + (got ? '+' + got : '+' + L[2]) + '</b>' + hint + '</span>';
       }).join('') + '</div>' + (mode === 'compact' ? '' : '<div class="lg-meta">Hôm nay con đã được <b>' + p.t + '/15</b> điểm.</div>');
@@ -353,31 +400,31 @@
     h += '<div class="lg-meta">Tủ cúp: ' + KIDS.map(function (k) { return esc(nameOf(k)) + ' ' + (cupsOf(k) ? '🏆×' + cupsOf(k) : '—') + ' · khiên 🛡️ ' + shieldHave(k); }).join(' &nbsp;|&nbsp; ') + '</div>';
     if (withHist) {
       var ws = Object.keys(D.lg).sort().reverse().slice(0, 8);
-      if (ws.length) h += '<table class="lg-hist"><tr><th>Tuần</th><th>' + esc(nameOf('anhphong')) + '</th><th>' + esc(nameOf('thanhnghi')) + '</th><th>Kết quả</th></tr>' + ws.map(function (x) {
-        var d = D.lg[x]; return '<tr><td>' + dm(x) + '–' + dm(addD(x, 6)) + '</td><td>' + (d.s.anhphong || 0) + '</td><td>' + (d.s.thanhnghi || 0) + '</td><td>' + ((d.win || []).length ? '🏆 ' + d.win.map(nameOf).map(esc).join(', ') : '—') + ((d.good || []).length ? ' · 💪 ' + d.good.map(nameOf).map(esc).join(', ') : '') + ((d.sh || []).length ? ' · 🛡️ ' + d.sh.map(nameOf).map(esc).join(', ') : '') + '</td></tr>';
-      }).join('') + '</table>';
+      if (ws.length) h += '<div style="overflow-x:auto"><table class="lg-hist"><tr><th>Tuần</th>' + KIDS.map(function (k) { return '<th>' + esc(nameOf(k)) + '</th>'; }).join('') + '<th>Kết quả</th></tr>' + ws.map(function (x) {
+        var d = D.lg[x]; return '<tr><td>' + dm(x) + '–' + dm(addD(x, 6)) + '</td>' + KIDS.map(function (k) { return '<td>' + (d.s[k] || 0) + '</td>'; }).join('') + '<td>' + ((d.win || []).length ? '🏆 ' + d.win.map(nameOf).map(esc).join(', ') : '—') + ((d.good || []).length ? ' · 💪 ' + d.good.map(nameOf).map(esc).join(', ') : '') + ((d.sh || []).length ? ' · 🛡️ ' + d.sh.map(nameOf).map(esc).join(', ') : '') + '</td></tr>';
+      }).join('') + '</table></div>';
     }
     h += '<details><summary>📜 Luật đấu trường</summary><ul>' +
-      '<li>Mỗi con được chấm theo <b>mục tiêu riêng của mình</b>, nên anh và em có cơ hội thắng như nhau.</li>' +
-      '<li>Mỗi ngày tối đa <b>15 điểm</b>: 📘 học đủ bài tiếng Anh +5 · 🧮 đạt mục tiêu ' + 'Toán/Tiếng Việt hoặc Toán/Ngữ văn (' + D.goal.anhphong + ' / ' + D.goal.thanhnghi + ' câu) +4 · 🎯 đúng từ 90% (từ 80%: +1) +2 · 🎁 đủ điều kiện rương báu +2 · 💪 làm gấp đôi mục tiêu môn chính +2.</li>' +
-      '<li>Tuần chốt hết Chủ nhật. Con nhiều điểm hơn (ít nhất ' + WIN_MIN + ' điểm) nhận <b>cúp vô địch +' + CUP + ' sao</b>. Bằng điểm thì cả hai cùng nhận.</li>' +
-      '<li>Con không vô địch nhưng đạt từ <b>' + GOOD_MIN + ' điểm</b> vẫn được <b>+' + GOOD + ' sao</b> vì đã làm tốt.</li>' +
-      '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥 cho con.</li></ul></details>' + (mode === 'compact' ? '</details>' : '</div>');
+      '<li>Mỗi bạn được chấm theo <b>mục tiêu riêng của mình</b>, nên bạn lớn hay bạn nhỏ đều có cơ hội như nhau.</li>' +
+      '<li>Mỗi ngày tối đa <b>15 điểm</b>: 📘 học đủ bài tiếng Anh +5 · 🧮 đạt mục tiêu môn chính (Toán/Tiếng Việt hoặc Toán/Ngữ văn ' + D.goal.anhphong + ' câu; bạn chưa có bài Toán/Tiếng Việt thì làm đủ 4 việc tiếng Anh) +4 · 🎯 đúng từ 90% (từ 80%: +1) +2 · 🎁 đủ điều kiện rương báu +2 · 💪 làm gấp đôi mục tiêu (hoặc 4 bài luyện thêm tiếng Anh) +2.</li>' +
+      '<li>Tuần chốt hết Chủ nhật. Bạn đạt từ ' + WIN_MIN + ' điểm: hạng 1 đến 6 lần lượt <b>+' + XU.rank.join(' / +') + ' xu</b>. Bạn tăng điểm nhiều nhất so với tuần trước (từ ' + XU.progMin + ' điểm) được <b>+' + XU.prog + ' xu</b>. Cả nhóm cộng lại từ ' + XU.teamMin + ' điểm: mỗi bạn <b>+' + XU.team + ' xu</b>.</li>' +
+      (focus && famOf(focus) ? '<li>Riêng trong nhà: con nhiều điểm hơn (từ ' + WIN_MIN + ' điểm) nhận <b>cúp +' + CUP + ' sao</b>; không vô địch nhưng từ ' + GOOD_MIN + ' điểm được <b>+' + GOOD + ' sao</b>.</li>' : '') +
+      '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥.</li></ul></details>' + (mode === 'compact' ? '</details>' : '</div>');
     return h;
   }
 
   /* ---------- Nhiệm vụ hôm nay ---------- */
   function tasks(kid) {
-    var t = today(), r = D.vd[kid][t] || {}, ch = chestCheck(r, D.pl[kid], t), sj = D.sj[kid][t] || { q: 0 }, g = D.goal[kid];
-    var sub = kid === 'anhphong' ? 'Toán / Tiếng Việt lớp 2' : 'Toán / Ngữ văn lớp 6', subApp = kid === 'anhphong' ? 'lop2' : 'lop6';
+    var t = today(), r = D.vd[kid][t] || {}, ch = chestCheck(r, D.pl[kid], t, kid), sj = D.sj[kid][t] || { q: 0 }, g = D.goal[kid];
+    var subApp = appOf(kid), sub = subApp === 'lop2' ? 'Toán / Tiếng Việt lớp 2' : subApp === 'lop3' ? 'Toán / Tiếng Việt lớp 3' : subApp === 'lop1' ? 'Toán / Tiếng Việt lớp 1' : subApp === 'lop5' ? 'Toán / Tiếng Việt lớp 5' : subApp === 'lop7' ? 'Toán / Ngữ văn lớp 7' : 'Toán / Ngữ văn lớp 6';
     return [
-      { ic: '📘', t: 'Học ' + NEWW + ' từ mới', sub: ch.part ? 'Còn bước kiểm tra từ mới, làm nốt nhé!' : '', n: Math.min(ch.nw, NEWW), of: NEWW, app: 'tuvung' },
+      { ic: '📘', t: 'Học ' + ch.need + ' từ mới', sub: ch.part ? 'Còn bước kiểm tra từ mới, làm nốt nhé!' : '', n: Math.min(ch.nw, ch.need), of: ch.need, app: 'tuvung' },
       { ic: '🔁', t: 'Ôn tập từ cũ', n: ch.rv ? 1 : 0, of: 1, app: 'tuvung' },
       { ic: '🎯', t: '2 bài luyện thêm', n: Math.min(ch.pr, 2), of: 2, app: 'tuvung' },
       { ic: '🗣️', t: '1 bài nghe & nói', n: Math.min(ch.ls, 1), of: 1, app: 'tuvung' },
-      { ic: kid === 'anhphong' ? '🧮' : '📐', t: g + ' câu ' + sub, n: Math.min(sj.q, g), of: g, app: subApp },
+      subApp ? { ic: subIc(kid), t: g + ' câu ' + sub, n: Math.min(sj.q, g), of: g, app: subApp } : null,
       { ic: r.chest ? '🪙' : '🎁', t: 'Mở rương báu', n: r.chest ? 1 : 0, of: 1, app: 'tuvung', bonus: true, lock: !ch.ok && !r.chest }
-    ];
+    ].filter(Boolean);
   }
   function missionHtml(kid) {
     if (!D) return ''; css();
@@ -389,7 +436,7 @@
       L.map(function (x) {
         var ok = x.n >= x.of;
         return '<button class="ms-it' + (ok ? ' ok' : '') + (x.bonus ? ' bonus' : '') + (x.lock ? ' lock' : '') + '" data-app="' + x.app + '"><span class="ms-ck">' + (ok ? '✓' : x.lock ? '🔒' : '') + '</span><span class="ms-ic">' + x.ic + '</span><span class="ms-t">' + x.t + (x.sub && !ok ? ' <small>' + x.sub + '</small>' : '') +
-          (x.bonus ? ' <small>' + (ok ? 'đã mở' : x.lock ? 'làm xong 4 việc tiếng Anh để mở' : 'đã mở được rồi, vào lấy sao nào!') + '</small>' : '') + '</span><span class="ms-n">' + (x.of > 1 ? x.n + '/' + x.of : ok ? 'Xong' : '') + '</span></button>';
+          (x.bonus ? ' <small>' + (ok ? 'đã mở' : x.lock ? 'làm xong 4 việc tiếng Anh để mở' : (famOf(kid) ? 'đã mở được rồi, vào lấy sao nào!' : 'đã mở được rồi, vào lấy xu nào!')) + '</small>' : '') + '</span><span class="ms-n">' + (x.of > 1 ? x.n + '/' + x.of : ok ? 'Xong' : '') + '</span></button>';
       }).join('') + '</div></div>';
   }
   function missionSpeech(kid) {
@@ -411,7 +458,7 @@
   function alerts() {
     if (!D) return []; var out = [], t = today();
     KIDS.forEach(function (k) {
-      var nm = nameOf(k), vd = D.vd[k], sj = D.sj[k], g = D.goal[k], sub = k === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn';
+      var nm = nameOf(k), vd = D.vd[k], sj = D.sj[k], g = D.goal[k], sub = subN(k, 1);
       function lastDay(f) { for (var i = 0; i < 30; i++) { var d = addD(t, -i); if (f(d)) return i; } return 30; }
       var en = lastDay(function (d) { return dayDone(vd[d]); }), sb = lastDay(function (d) { return sj[d] && sj[d].q > 0; });
       if (en >= 2) out.push(['warn', nm + ' đã <b>' + (en >= 30 ? 'hơn 30' : en) + ' ngày</b> chưa học đủ bài tiếng Anh' + (en >= 30 ? '' : ' (lần gần nhất: ' + dm(addD(t, -en)) + ')') + '.']);
@@ -504,24 +551,24 @@
     '@media (max-width:860px){.hw-main{grid-template-columns:1fr}.hw-ex{grid-template-columns:1fr}}@media (max-width:480px){.hw-h h1{font-size:23px}.hw-lead{font-size:16.5px}.hw-c{padding:14px}.hw-c .ic{font-size:40px}}';
   function howHtml(kid) {
     css(); if (!document.getElementById('hwCss')) { var st = document.createElement('style'); st.id = 'hwCss'; st.textContent = HOW_CSS; document.head.appendChild(st); }
-    var sub = kid === 'anhphong' ? 'Toán và Tiếng Việt lớp 2' : 'Toán và Ngữ văn lớp 6', g = D ? D.goal[kid] : 20;
+    var sub = subN(kid, 2), g = D ? D.goal[kid] : 20;
     var SP = SPECIES[spOf(kid)], mas = SP.e, mn = spOf(kid) === 'egg' ? 'Quả trứng' : SP.n;
     return '<div class="hw"><p class="hw-lead">Con chỉ cần nhớ <b>3 điều chính</b> dưới đây. Mỗi ngày làm hết <b>🎯 Nhiệm vụ hôm nay</b> là con có đủ cả ba!</p>' +
       '<div class="hw-main">' +
       '<div class="hw-c s1"><div class="ic">⭐</div><h3>1. Sao thưởng</h3><p>Sao dùng để <b>đổi quà</b> với bố mẹ. Con nhận sao khi:</p><ul>' +
         '<li>Học từ vựng tiếng Anh, làm đúng nhiều</li><li>Làm bài ' + sub + ' đúng từ 90%</li><li>Mở 🎁 rương báu: <b>5–10 sao</b></li>' +
         '<li>Thắng đấu trường tuần: <b>+' + CUP + ' sao</b></li><li>Làm việc tốt ở nhà: bố mẹ thưởng</li></ul><p style="font-size:15px;color:#64748B">Chưa ngoan thì bố mẹ có thể trừ sao.</p></div>' +
-      '<div class="hw-c s2"><div class="ic">🔥</div><h3>2. Chuỗi ngày học</h3><p>Mỗi ngày con học <b>đủ bài tiếng Anh</b> (' + NEWW + ' từ mới và ôn tập), chuỗi tăng thêm 1 ngày.</p>' +
+      '<div class="hw-c s2"><div class="ic">🔥</div><h3>2. Chuỗi ngày học</h3><p>Mỗi ngày con học <b>đủ bài tiếng Anh</b> (' + newN(kid) + ' từ mới và ôn tập), chuỗi tăng thêm 1 ngày.</p>' +
         '<p>Nghỉ một ngày thì chuỗi về 0, <b>trừ khi con có khiên 🛡️</b>.</p><p>Chuỗi càng dài, con càng giỏi!</p></div>' +
       '<div class="hw-c s3"><div class="ic">🏆</div><h3>3. Đấu trường tuần</h3><p>Mỗi ngày con được tối đa <b>15 điểm</b>:</p><ul>' +
-        '<li>📘 Học đủ bài tiếng Anh: <b>5</b></li><li>' + (kid === 'anhphong' ? '🧮' : '📐') + ' Làm ' + g + ' câu ' + (kid === 'anhphong' ? 'Toán/TV' : 'Toán/Văn') + ': <b>4</b> (gấp đôi: thêm <b>2</b>)</li>' +
+        '<li>📘 Học đủ bài tiếng Anh: <b>5</b></li><li>' + subIc(kid) + ' Làm ' + g + ' câu ' + subN(kid, 0) + ': <b>4</b> (gấp đôi: thêm <b>2</b>)</li>' +
         '<li>🎯 Làm đúng nhiều: <b>1–2</b></li><li>🎁 Đủ việc mở rương: <b>2</b></li></ul>' +
         '<p>Hết Chủ nhật, ai nhiều điểm hơn (từ ' + WIN_MIN + ' điểm) được <b>cúp +' + CUP + ' sao</b>. Không thắng nhưng đạt từ ' + GOOD_MIN + ' điểm vẫn được <b>+' + GOOD + ' sao</b>.</p></div>' +
       '</div>' +
       '<h2 class="hw-sub">🎈 Quà thêm cho con chăm chỉ</h2><div class="hw-ex">' +
-      '<div class="hw-x"><span class="ic">🎁</span><div><b>Rương báu mỗi ngày</b><span>Làm xong 4 việc tiếng Anh (' + NEWW + ' từ mới, ôn tập, 2 bài luyện thêm, 1 bài nghe và nói) thì mở được rương, nhận ngẫu nhiên 5 đến 10 sao.</span></div></div>' +
+      '<div class="hw-x"><span class="ic">🎁</span><div><b>Rương báu mỗi ngày</b><span>Làm xong 4 việc tiếng Anh (' + newN(kid) + ' từ mới, ôn tập, 2 bài luyện thêm, 1 bài nghe và nói) thì mở được rương, nhận ngẫu nhiên 5 đến 10 sao.</span></div></div>' +
       '<div class="hw-x"><span class="ic">🛡️</span><div><b>Khiên giữ chuỗi</b><span>Tuần nào đạt từ ' + SHIELD_MIN + ' điểm, con được 1 khiên (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học cho con.</span></div></div>' +
-      '<div class="hw-x"><span class="ic">' + mas + '</span><div><b>Nuôi thú</b><span>Học được xu 🪙: học đủ tiếng Anh +10, đạt mục tiêu ' + (kid === 'anhphong' ? 'Toán/TV' : 'Toán/Văn') + ' +5, mở rương +3, cúp tuần +20. Vào 🐾 Nuôi thú dùng xu mua thức ăn, cho ăn thì ' + mn + ' lớn lên (9 cấp). Học xong Nhiệm vụ hôm nay được chơi 5 lượt trò chơi cùng thú.</span></div></div>' +
+      '<div class="hw-x"><span class="ic">' + mas + '</span><div><b>Nuôi thú</b><span>Học được xu 🪙: học đủ tiếng Anh +15, đạt mục tiêu ' + subN(kid, 0) + ' +10, mở rương +5…+10, mỗi bài làm tốt +2, lần đầu làm tốt một bài +2, học liền 7 ngày +20, xếp hạng tuần +50/+40/+30/+20/+20/+20, thắng thú của bạn +2, thắng quái +1. Vào 🐾 Nuôi thú dùng xu mua thức ăn, cho ăn thì ' + mn + ' lớn lên (9 cấp). Học xong Nhiệm vụ hôm nay được chơi 5 lượt trò chơi cùng thú.</span></div></div>' +
       '<div class="hw-x"><span class="ic">🏅</span><div><b>Huy hiệu và danh hiệu</b><span>Học từ vựng chăm sẽ mở khóa huy hiệu. Đủ điểm huy hiệu thì con lên cấp danh hiệu (7 cấp) và được trang trí khung tên.</span></div></div>' +
       '</div>' +
       '<div class="hw-day">💡 <b>Mẹo:</b> mỗi ngày mở trang của con, xem <b>🎯 Nhiệm vụ hôm nay</b> và bấm vào từng việc để làm. Xong hết là con có sao, chuỗi ngày và điểm thi đua!</div>' +
@@ -553,11 +600,12 @@
       if (!full && e.total > 0) o.part++; else if (e.type === 'ls') o.ls++; else o.pr++;
       if (e.wrong) Object.keys(e.wrong).forEach(function (n) { o.wrong[n] = (o.wrong[n] || 0) + e.wrong[n]; });
     });
-    if (kid === 'anhphong' && D.l2) {
-      (D.l2.rounds || []).forEach(function (r) { if (!Array.isArray(r) || !inW(r[0])) return; var x = o.lessons[r[2]] || (o.lessons[r[2]] = { c: 0, n: 0, x: 0 }); x.c += +r[3] || 0; x.n += +r[4] || 0; x.x++; });
-      (D.l2.tests || []).forEach(function (r) { if (Array.isArray(r) && inW(r[0])) o.tests.push({ s: r[2] === 'toan' ? 'Toán' : 'Tiếng Việt', c: +r[4] || 0, n: +r[3] || 0, d: dayOf(r[0]) }); });
+    var vv = vvDoc(kid);
+    if (vv) {
+      (vv.rounds || []).forEach(function (r) { if (!Array.isArray(r) || !inW(r[0])) return; var x = o.lessons[r[2]] || (o.lessons[r[2]] = { c: 0, n: 0, x: 0 }); x.c += +r[3] || 0; x.n += +r[4] || 0; x.x++; });
+      (vv.tests || []).forEach(function (r) { if (Array.isArray(r) && inW(r[0])) o.tests.push({ s: r[2] === 'toan' ? 'Toán' : 'Tiếng Việt', c: +r[4] || 0, n: +r[3] || 0, d: dayOf(r[0]) }); });
     }
-    if (kid === 'thanhnghi' && D.l6) {
+    if (appOf(kid) === 'lop6' && D.l6) {
       Object.keys(D.l6.items || {}).forEach(function (sid) { var it = D.l6.items[sid]; if (!it || !inW(it.u)) return; var lid = sid.split(':')[0], x = o.lessons[lid] || (o.lessons[lid] = { c: 0, n: 0, x: 0 }); x.n++; });
       (D.l6.tests || []).forEach(function (t) { if (t && inW(t.at)) o.tests.push({ s: t.subj === 'toan' ? 'Toán' : 'Ngữ văn', c: +t.c || 0, n: +t.n || 0, d: dayOf(t.at) }); });
     }
@@ -574,11 +622,11 @@
     var cur = monday(today()); wk = wk || cur;
     var isCur = wk === cur, L = D.lg[wk];
     var cards = KIDS.map(function (k) {
-      var o = kidWeek(k, wk), wl = WORDS && (WORDS.filter(function (x) { return x.id === k; })[0] || {}).words, sub = k === 'anhphong' ? 'Toán/Tiếng Việt' : 'Toán/Ngữ văn';
+      var o = kidWeek(k, wk), wl = WORDS && (WORDS.filter(function (x) { return x.id === k; })[0] || {}).words, sub = subN(k, 1);
       var words = o.newW.slice().sort(function (x, y) { return x - y; }).map(function (n) { var w = wl && wl[n - 1]; return w ? esc(w[0]) : '#' + n; });
       var wr = Object.keys(o.wrong).sort(function (x, y) { return o.wrong[y] - o.wrong[x]; }).slice(0, 6).map(function (n) { var w = wl && wl[n - 1]; return w ? '<b>' + esc(w[0]) + '</b> (' + esc(w[1]) + ') ×' + o.wrong[n] : ''; }).filter(Boolean);
-      var nm = k === 'anhphong' ? nameFns.l2 : nameFns.l6;
-      var les = Object.keys(o.lessons).map(function (id) { var x = o.lessons[id]; return '<li>' + (nm ? nm(id) : esc(id)) + ' <span class="wr-mu">(' + (k === 'anhphong' ? (x.x > 1 ? x.x + ' lượt, ' : '') + x.c + '/' + x.n : x.n + ' câu') + ')</span></li>'; });
+      var ap = appOf(k), nm = ap === 'lop2' ? nameFns.l2 : ap === 'lop6' ? nameFns.l6 : ap === 'lop3' ? nameFns.l3 : null;
+      var les = Object.keys(o.lessons).map(function (id) { var x = o.lessons[id]; return '<li>' + (nm ? nm(id) : esc(id)) + ' <span class="wr-mu">(' + (L2F[ap] ? (x.x > 1 ? x.x + ' lượt, ' : '') + x.c + '/' + x.n : x.n + ' câu') + ')</span></li>'; });
       var res = L ? ((L.win || []).indexOf(k) >= 0 ? '🏆 Vô địch (+' + CUP + ' ⭐)' : (L.good || []).indexOf(k) >= 0 ? '💪 Làm tốt (+' + GOOD + ' ⭐)' : '') + ((L.sh || []).indexOf(k) >= 0 ? ' · 🛡️ +1 khiên' : '') : '';
       // nhận xét tự động
       var vp = o.vq ? o.vc / o.vq : null, spp = o.sq ? o.sc / o.sq : null, good = [], need = [];
@@ -594,7 +642,7 @@
         '<h4>📘 Tiếng Anh</h4><ul><li>' + (o.vq ? o.vq + ' câu, đúng <b>' + pctTxt(o.vc, o.vq) + '</b>' + (o.sec ? ', khoảng ' + Math.round(o.sec / 60) + ' phút' : '') : 'Chưa làm câu nào') + '</li>' +
         '<li>Luyện thêm <b>' + o.pr + '</b> bài · Nghe và nói <b>' + o.ls + '</b> bài' + (o.part ? ' · <span class="wr-warn">làm dở ' + o.part + ' bài</span>' : '') + '</li>' +
         (words.length ? '<li>Từ mới: ' + words.join(', ') + '</li>' : '') + (wr.length ? '<li>Hay sai: ' + wr.join(', ') + '</li>' : '') + '</ul>' +
-        '<h4>' + (k === 'anhphong' ? '🧮' : '📐') + ' ' + sub + '</h4><ul><li>' + (o.sq ? o.sq + ' câu, đúng <b>' + pctTxt(o.sc, o.sq) + '</b> · đạt mục tiêu ' + D.goal[k] + ' câu: <b>' + o.goalDays + '/' + o.days + '</b> ngày' : 'Chưa làm bài') + '</li>' +
+        '<h4>' + subIc(k) + ' ' + sub + '</h4><ul><li>' + (o.sq ? o.sq + ' câu, đúng <b>' + pctTxt(o.sc, o.sq) + '</b> · đạt mục tiêu ' + D.goal[k] + ' câu: <b>' + o.goalDays + '/' + o.days + '</b> ngày' : 'Chưa làm bài') + '</li>' +
         (o.tests.length ? '<li>Kiểm tra: ' + o.tests.map(function (t) { return t.s + ' ' + t.c + '/' + t.n + ' (' + dm(t.d) + ')'; }).join(' · ') + '</li>' : '') + '</ul>' +
         (les.length ? '<details><summary>Các bài đã học (' + les.length + ')</summary><ul>' + les.join('') + '</ul></details>' : '') +
         '<div class="wr-nx">' + (good.length ? '<div class="g">👍 ' + good.join('; ') + '.</div>' : '') + (need.length ? '<div class="n">👉 Cần cố gắng: ' + need.join('; ') + '.</div>' : '') + (!good.length && !need.length ? '<div class="mu">Chưa đủ dữ liệu để nhận xét.</div>' : '') + '</div></div>';
@@ -621,7 +669,7 @@
 
   window.THIDUA = {
     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
-    pet: pet, xu: function (k) { return D ? xpParts(k).xp : 0; }, picOf: picOf, SPECIES: SPECIES, spOf: spOf, tcOf: tcOf, tasks: function (k) { return D ? tasks(k) : []; }, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
+    chestXu: chestXu, pet: pet, xu: function (k) { return D ? xpParts(k).xp : 0; }, picOf: picOf, SPECIES: SPECIES, spOf: spOf, tcOf: tcOf, tasks: function (k) { return D ? tasks(k) : []; }, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
     streak: streak, leadTxt: leadTxt, howHtml: howHtml, howSpeech: howSpeech, weekReportHtml: weekReportHtml, monday: function () { return monday(today()); },
     RULE: { START: START, CUP: CUP, WIN_MIN: WIN_MIN, SHIELD_MIN: SHIELD_MIN, SHIELD_MAX: SHIELD_MAX, NEWW: NEWW }

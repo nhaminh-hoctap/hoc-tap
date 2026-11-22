@@ -28,7 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 KIDS = ('anhphong', 'thanhnghi')
 VERSIONED = ('claude-shim.js', 'bank.js', 'thidua.js')
-HTML_APPS = ('index.html', 'tuvung.html', 'lop2.html', 'lop6.html', 'nuoithu.html')
+HTML_APPS = ('index.html', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html')
 
 OK, WARN, ERR = '✅', '⚠️ ', '❌'
 problems = []
