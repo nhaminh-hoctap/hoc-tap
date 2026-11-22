@@ -236,10 +236,19 @@
   /* bố mẹ chốt lại 21/11 (tối): bài làm tốt tối đa 3 bài tiếng Anh + 2 bài Toán/TV/Văn mỗi ngày; lần đầu làm tốt một bài +2 xu (mọi bé);
      xếp hạng tuần (từ 50 điểm) hạng 1→6: +50/+40/+30/+20/+20/+20 */
   var XU = { en: 15, sub: 10, chest: [5, 10], good: 2, goodEn: 3, goodSub: 2, first: 2, streak: 20, rank: [50, 40, 30, 20, 20, 20], prog: 30, progMin: 10, team: 10, teamMin: 400 };   // bố mẹ chốt 21/11 tối: tiến bộ nhất tuần +30, cả nhóm từ 400 điểm mỗi bạn +10   // bố mẹ chốt 21/11 tối: bỏ +10 xu khi tuần đạt từ 60 điểm
+  /* 🏆 Thuộc chắc → xu (bố mẹ chốt 22/11/2026): mỗi mốc 50 từ thuộc chắc +150 xu. Bạn học cùng: mọi mốc;
+     Anh Phong: mốc từ 401 từ trở đi (450, 500…); Thanh Nghị: từ 601 trở đi (650, 700…). Đọc từ sổ sao Từ vựng ("🏆 Thuộc chắc N từ"). */
+  XU.mast = 150; var MAST_XU_FROM = { anhphong: 400, thanhnghi: 600 };
+  var MAST_RE = /^🏆 Thuộc chắc (\d+) từ/;
+  function mastMiles(kid) {   // [{n, t}] các mốc đã thưởng được tính xu, mỗi mốc một lần
+    var from = MAST_XU_FROM[kid] || 0, seen = {}, out = [];
+    try { BANK.vocabLed(kid).forEach(function (e) { var m = e && e.v > 0 && MAST_RE.exec(String(e.r)); if (!m) return; var n = +m[1]; if (n > from && !seen[n]) { seen[n] = 1; out.push({ n: n, t: +e.t }); } }); } catch (e) { }
+    return out;
+  }
   function goodDays(kid) {   // mỗi ngày: số bài làm tốt tiếng Anh (en), Toán/TV/Văn (sub), số bài lần đầu làm tốt (first)
     var m = {};
     function add(e, f) { if (!e || !(e.v > 0)) return; var d = ymdOf(e.t), x = m[d] || (m[d] = { en: 0, sub: 0, first: 0 }); x[f]++; }
-    try { BANK.vocabLed(kid).forEach(function (e) { if ((!e.k || e.k === 'auto') && !/^📌/.test(String(e.r))) add(e, 'en'); }); } catch (e) { }
+    try { BANK.vocabLed(kid).forEach(function (e) { if ((!e.k || e.k === 'auto') && !/^📌/.test(String(e.r)) && !MAST_RE.test(String(e.r))) add(e, 'en'); }); } catch (e) { }
     try { BANK.extList(kid).forEach(function (e) { if (!/^(toan|tv|van)$/.test(e.src) || e.k === 'cup') return; add(e, e.k === 'first' || e.k === 'lesson' ? 'first' : 'sub'); }); } catch (e) { }
     return m;
   }
@@ -261,9 +270,10 @@
       if (KIDS.reduce(function (a, k) { return a + (+sc[k] || 0); }, 0) >= XU.teamMin) o.week += XU.team;   // 🤝 mục tiêu chung cả nhóm
       if (me >= WIN_MIN) { var better = {}; KIDS.forEach(function (k) { var v = +sc[k] || 0; if (v > me) better[v] = 1; }); var r = Object.keys(better).length; if (r < XU.rank.length) o.week += XU.rank[r]; }
     });
-    o.xp = o.en * XU.en + o.sub * XU.sub + o.chestXu + o.good * XU.good + o.first * XU.first + o.streak * XU.streak + o.week; return o;
+    o.mast = mastMiles(kid).length;
+    o.xp = o.en * XU.en + o.sub * XU.sub + o.chestXu + o.good * XU.good + o.first * XU.first + o.streak * XU.streak + o.week + o.mast * XU.mast; return o;
   }
-  function xpToday(kid) { var t = today(), r = D.vd[kid][t], g = goodDays(kid)[t]; return (enOk(kid, t) ? XU.en : 0) + (subOk(kid, t) ? XU.sub : 0) + (r && r.chest ? chestXu(kid, t) : 0) + goodN(g) * XU.good + (g ? g.first : 0) * XU.first; }
+  function xpToday(kid) { var t = today(), r = D.vd[kid][t], g = goodDays(kid)[t]; return (enOk(kid, t) ? XU.en : 0) + (subOk(kid, t) ? XU.sub : 0) + (r && r.chest ? chestXu(kid, t) : 0) + goodN(g) * XU.good + (g ? g.first : 0) * XU.first + mastMiles(kid).filter(function (x) { return ymdOf(x.t) === t; }).length * XU.mast; }
   function pet(kid) {
     /* không chờ tải dữ liệu học: vẽ ngay thú đã lưu trên máy, khỏi chớp hình mặc định khi mở trang */
     var tc = tcOf(kid), xp = (+tc.base || 0) + (+tc.grow || 0), L = petsOf(kid), i = 0;  // thú lớn nhờ được cho ăn (🐾 Nuôi thú)
@@ -333,7 +343,7 @@
       '<div class="pet-bar"><i style="width:' + Math.max(3, pct) + '%"></i></div>' +
       '<div class="pet-nx">' + (p.next ? 'Còn <b>' + (p.next[0] - p.xp) + ' điểm lớn</b> nữa để thành <b>' + esc(p.next[2]) + '</b>' : 'Linh vật đã lớn hết cỡ. Con thật tuyệt vời! 👑') + '</div>' +
       '<span class="pet-td">' + (td ? 'Hôm nay +' + td + ' 🪙 xu' : 'Học hôm nay để có xu mua thức ăn cho thú nhé!') + '</span></div></div>' +
-      '<details><summary>🪙 Linh vật lớn lên thế nào?</summary><ul><li>Học đủ bài tiếng Anh: <b>+15 xu</b></li><li>Đạt mục tiêu ' + subN(kid, 1) + ' trong ngày (' + D.goal[kid] + ' câu): <b>+10 xu</b></li><li>Mở rương báu: <b>+5 đến +10 xu</b> (ngẫu nhiên)</li><li>Mỗi bài làm tốt: <b>+2 xu</b> (mỗi ngày tối đa 3 bài tiếng Anh và 2 bài ' + subN(kid, 0) + ')</li><li>Lần đầu làm tốt một bài ' + subN(kid, 0) + ': <b>+2 xu</b></li><li>Học liền 7 ngày: <b>+20 xu</b></li><li>Xếp hạng tuần (từ ' + WIN_MIN + ' điểm), hạng 1 đến 6: <b>+50/+40/+30/+20/+20/+20 xu</b>; đạt từ ' + GOOD_MIN + ' điểm tuần: <b>+10 xu</b></li><li>⚔️ Đấu trường thú (tối đa 5 trận/ngày): thắng thú của bạn <b>+2 xu</b>, thắng quái <b>+1 xu</b></li><li>Vào 🐾 Nuôi thú, dùng xu mua thức ăn, cho thú ăn để thú lớn.</li></ul>' +
+      '<details><summary>🪙 Linh vật lớn lên thế nào?</summary><ul><li>Học đủ bài tiếng Anh: <b>+15 xu</b></li><li>Đạt mục tiêu ' + subN(kid, 1) + ' trong ngày (' + D.goal[kid] + ' câu): <b>+10 xu</b></li><li>Mở rương báu: <b>+5 đến +10 xu</b> (ngẫu nhiên)</li><li>Mỗi bài làm tốt: <b>+2 xu</b> (mỗi ngày tối đa 3 bài tiếng Anh và 2 bài ' + subN(kid, 0) + ')</li><li>Lần đầu làm tốt một bài ' + subN(kid, 0) + ': <b>+2 xu</b></li><li>Học liền 7 ngày: <b>+20 xu</b></li><li>🏆 Thuộc chắc thêm 50 từ tiếng Anh: <b>+150 xu</b>' + (MAST_XU_FROM[kid] ? ' (tính từ từ thứ ' + (MAST_XU_FROM[kid] + 1) + ' trở đi)' : '') + '</li><li>Xếp hạng tuần (từ ' + WIN_MIN + ' điểm), hạng 1 đến 6: <b>+50/+40/+30/+20/+20/+20 xu</b>; đạt từ ' + GOOD_MIN + ' điểm tuần: <b>+10 xu</b></li><li>⚔️ Đấu trường thú (tối đa 5 trận/ngày): thắng thú của bạn <b>+2 xu</b>, thắng quái <b>+1 xu</b></li><li>Vào 🐾 Nuôi thú, dùng xu mua thức ăn, cho thú ăn để thú lớn.</li></ul>' +
       '<div>' + petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? picOf(x[1], '1.4em') : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
   }
 

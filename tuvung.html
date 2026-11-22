@@ -775,7 +775,7 @@ function renderHome(){
 
   // thưởng các mốc thuộc chắc đã đủ (vd. sau khi đổi quy tắc 22/11) — chỉ khi đã tải xong dữ liệu kho, tránh thưởng trùng
   {let ready=true;try{ready=!SYNC.db||syncLoaded}catch(e){ready=false}
-   if(ready&&L>0)try{if(mastCount(kd)>=50*(paidMiles(kd)+1)){const b0=ownStars(kd).bal;payMilestones(kd);S.earned=[];const v=ownStars(kd).bal-b0;if(v>0&&!NF(kd))setTimeout(()=>toast(`🏆 Giỏi quá! Thuộc chắc ${paidMiles(kd)*50} từ: +${v} ⭐`,4500),600)}}catch(e){}}
+   if(ready&&L>0)try{if(mastCount(kd)>=50*(paidMiles(kd)+1)){const b0=ownStars(kd).bal;payMilestones(kd);S.earned=[];const v=ownStars(kd).bal-b0;if(v>0){const p=paidMiles(kd);setTimeout(()=>toast(`🏆 Giỏi quá! Thuộc chắc ${p*50} từ: `+(NF(kd)?'được thưởng xu 🪙':`+${v} ⭐`+(p*50>(BLOCK_SPLIT[kd.id]||0)?' và xu 🪙':'')),4500),600)}}}catch(e){}}
   // review part
   const rp=reviewPlan(kd);
   if(rp.words.length){
@@ -1244,7 +1244,7 @@ function renderStars(){
   $('stRuleBox').open=false;
   $('stRules').innerHTML=
     (()=>{const B=BLOCK_SPLIT[kd.id],g=mastProgress(kd);
-      return T('🏆 Thuộc chắc',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là được thưởng<br>Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó mỗi 50 từ = +${STAR.blockStars} ⭐<br>`+
+      return T('🏆 Thuộc chắc',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là được thưởng<br>Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó mỗi 50 từ = +${STAR.blockStars} ⭐ và +150 🪙<br>`+
         `Đã thuộc chắc <b>${g.M}</b> từ · còn <b>${g.left}</b> từ nữa đến mốc ${g.next}`+(g.paid?` · đã thưởng ${g.paid} mốc`:''))})()+
     T('📘 Học từ mới',`+${STAR.newDone} ⭐ / ngày`,'1 lần/ngày')+
     T('🔁 Ôn tập',`+${STAR.revDone} ⭐ / ngày`,`Đúng ngay ≥ 90%: +${STAR.revAcc}`)+
@@ -1376,9 +1376,11 @@ function mastProgress(kd){const M=mastCount(kd),p=paidMiles(kd),next=(p+1)*50;re
 function payMilestones(kd){let p=paidMiles(kd);const due=Math.floor(mastCount(kd)/50);
   while(p<due){p++;const a=store.get('vocab_stars_v1',{});const o=a[kd.id]||(a[kd.id]={bal:0,led:[]});o.paidM=p;store.set('vocab_stars_v1',a);
     addStars(kd,mileStars(kd,p),`🏆 Thuộc chắc ${p*50} từ`)}}
+/* phần thưởng một mốc, để hiện cho bé: bạn học cùng chỉ có xu; Anh Phong / Thanh Nghị có sao, thêm 150 xu khi vượt BLOCK_SPLIT (bố mẹ chốt 22/11) */
+function mileTxt(kd,k){const xu=NF(kd)||k*50>(BLOCK_SPLIT[kd.id]||0);return NF(kd)?'+150 🪙':`+${mileStars(kd,k)} ⭐`+(xu?' +150 🪙':'')}
 function masteryReward(kd,w){
   payMilestones(kd);const g=mastProgress(kd);
-  S.blockNote={m:`còn ${g.left} từ nữa đến mốc ${g.next} từ (+${g.stars} ⭐)`};
+  S.blockNote={m:`còn ${g.left} từ nữa đến mốc ${g.next} từ (${mileTxt(kd,g.next/50)})`};
 }
 
 // ================= LUYỆN NGHE & NÓI =================
