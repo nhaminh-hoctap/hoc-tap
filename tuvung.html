@@ -779,6 +779,10 @@ function renderHome(){
     $('rBody').innerHTML=`<div class="num">${rp.words.length} từ</div><div class="sub">đến hạn ôn hôm nay${rp.backlog?` (gồm ${rp.backlog} từ cũ)`:''}${rp.more?` · còn ${rp.more} từ chờ`:''}</div><div class="sub">Đang theo dõi ${rp.tracked} từ · lịch ôn 1→3→7→14→30→60 ngày</div>`;
     $('rGo').textContent=rp.done?'▶ Ôn tiếp':'▶ Ôn ngay';$('rGo').disabled=false;$('rGo').onclick=startReview;
   } else {
+    /* không còn từ đến hạn (bé đã ôn qua Luyện thêm / Nghe & nói, hoặc chưa có từ nào đến hạn): tính là xong Ôn tập hôm nay
+       cho Nhiệm vụ, rương báu, chuỗi ngày — như khi học xong từ mới mà không có từ cần ôn; không cộng thêm sao ôn tập */
+    {let ready=true;try{ready=!SYNC.db||syncLoaded}catch(e){ready=false}
+     if(ready&&!rp.done&&L>0){updRec(kd,r=>{r.reviewDone=true;r.rvAuto=1});try{renderChest(kd)}catch(e){}}}
     $('rBody').innerHTML=`<div class="done">✓ Hôm nay không còn từ cần ôn</div><div class="sub">Đang theo dõi ${rp.tracked} từ. Từ trả lời đúng sẽ được ôn lại sau 3, 7, 14… ngày.</div>`;
     $('rGo').textContent='Không có từ cần ôn';$('rGo').disabled=true;
   }
