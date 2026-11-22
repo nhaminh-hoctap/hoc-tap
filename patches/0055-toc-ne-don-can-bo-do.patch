@@ -1,0 +1,98 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 3ff6239..1bfb68e 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 22/11 | 0055 | **Đấu thú: tốc độ cho thêm né đòn** (bố mẹ chốt): nhanh hơn đối thủ 10% thì né thêm 2%, tối đa +8%; phần này được vượt mức trần né 30%, tổng né không quá 38%; đầu trận báo né thêm bao nhiêu, màn Chỉ số có dòng giải thích. **Cân lại hiệu ứng bộ đồ** (bố mẹ nhờ cân cho hợp lý, đã thử trên bản thử): Cuồng công +9/9/10/12% sát thương (đồ lối Cuồng công công mỗi món ×1,3 thay ×1,5); Bạo kích +17% ×2,1 / +17% ×2,3 / +19% ×2,5 / +22% ×2,6; Trâu bò nhận ít hơn 7/11/13/14%; Tốc độ +9% né +10% / +11% +18% / +12% +22% / +14% +28%; Hồi phục 4,5/6,5/7/7,5% máu mỗi lượt. Mô phỏng: mọi độ hiếm, mỗi bộ thắng 46–55% trước các bộ khác. |
+ | 22/11 | 0054 | **🔥 Lực chiến** cho từng thú (tính từ cấp, trang bị, rèn, hiệu ứng bộ, phông nền; hiện ở chuồng, Túi đồ, đấu trường, khi xem món đồ thấy lực chiến tăng/giảm nếu đeo hoặc rèn; `lcOf` trong `nuoithu.html`, lưu `S.lc`). Góc bố mẹ → ⚔️ Quản lý đấu thú: **🎒 Theo dõi nhặt đồ** (lực chiến, số món theo độ hiếm, điểm đồ, 7 ngày qua, ⚠️ bạn ít đồ / lực chiến thấp so với nhóm; nhật ký `S.dlog` ghi từ bản này) và **🎁 Cân bằng đồ (bí mật)**: chọn kiểu đồ cho N rương học tốt kế tiếp (độ hiếm ít nhất, loại đồ, lối, ưu tiên món chưa có) và tặng thêm rương; con thấy như rương học tốt bình thường (`ADM.buff[bé]`, đã dùng ở `S.bu`). |
+ | 22/11 | 0053 | **Giao diện điện thoại** (Nuôi thú + thanh trên cùng): bảng hỏi từ tiếng Anh khi tung tuyệt chiêu, rương đồ và mọi hộp thoại không còn tràn ra ngoài màn hình (gọn hơn, 2 cột đáp án, cuộn được khi máy thấp); thẻ thú ở trang chuồng xếp gọn (tên trên, xu dưới; nút có "còn …" xuống dòng); phông nền 2 cột đều; điện thoại xoay ngang: trận đấu chia 2 bên (sân đấu trái, nút phải), không phải cuộn. Thanh trên cùng: màn ≤ 430 px nút Quay lại chỉ còn ⬅, sao/xu gọn; ≤ 760 px ẩn chữ "Chỉ trên máy này" (giữ ⚠️). |
+diff --git a/index.html b/index.html
+index 6f91af4..8745820 100644
+--- a/index.html
++++ b/index.html
+@@ -134,7 +134,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=56"></script>
+-<script src="bank.js?v=56"></script>
+-<script src="thidua.js?v=56"></script>
++<script src="claude-shim.js?v=57"></script>
++<script src="bank.js?v=57"></script>
++<script src="thidua.js?v=57"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/nuoithu.html b/nuoithu.html
+index 48f49d6..3f7c435 100644
+--- a/nuoithu.html
++++ b/nuoithu.html
+@@ -878,5 +878,6 @@ function startG5(){if(!playsLeft())return;show('ntG5');
+    Mỗi loài mạnh một kiểu (đã thử 100.000 trận giả lập: cùng Lv thì mỗi cặp thắng 35–65%). */
+ var LUCK={vr:.25,lk:.1,lkm:1.6,rally:.3,rallyAt:.3};   // bố mẹ chốt 21/11/2026 tối: dao động ±25%, 10% đòn may mắn ×1,6, hăng máu +30% sát thương khi còn dưới 30% máu (1 lần/trận), bằng tốc thì bốc thăm đánh trước
+-var FIGHT={lvStep:30,lvMax:50,dodge:7,rageMax:3,K:1.6,maxRound:12,perDay:5,   // bố mẹ chốt 21/11/2026: 5 trận/ngày sau khi xong Nhiệm vụ, tính riêng, không chung với trò chơi
++var FIGHT={lvStep:30,lvMax:50,dodge:7,spdK:.2,spdCap:8,dgMax:38,   // bố mẹ chốt 22/11/2026: nhanh hơn đối thủ 10% thì né thêm 2%, tối đa +8%; phần này được vượt mức trần né 30%, tổng né không quá 38%
++ rageMax:3,K:1.6,maxRound:12,perDay:5,   // bố mẹ chốt 21/11/2026: 5 trận/ngày sau khi xong Nhiệm vụ, tính riêng, không chung với trò chơi
+  
+   win:{sib:2,sibUp:3,q1:1,q2:1,q3:1}};   // bố mẹ chốt 21/11 tối: thắng thú của bạn có cấp cao hơn mình +3 xu   // bố mẹ chốt lại 21/11/2026: thắng thú của bạn +2 xu, thắng quái +1 xu; tổng cả hai loại tối đa 5 trận/ngày; thua không mất gì
+@@ -889,4 +890,7 @@ var FOES=[['soi','Sói xám'],['bocap','Bọ cạp'],['lon','Lợn rừng'],['do
+ function gOf(o){return (+o.base||0)+(+o.grow||0)}
+ function lvOf(g){return Math.min(FIGHT.lvMax,1+Math.floor((+g||0)/FIGHT.lvStep))}
++/* né thêm nhờ tốc: tính theo tỉ lệ nhanh hơn đối thủ, thú chậm hơn không bị trừ */
++function spdDg(s,s2){var r=(+s||0)/Math.max(1,+s2||1)-1;return r>0?Math.min(FIGHT.spdCap,Math.round(FIGHT.spdK*r*1000)/10):0}
++function dgIn(x,o){return Math.min(FIGHT.dgMax,Math.min(30,x.st.dg||FIGHT.dodge)+spdDg(x.st.s,o.st.s))}
+ function stageOf(sp,g){var L=T.SPECIES[sp]?T.SPECIES[sp].L:null,i=0;if(!L)return 0;for(var j=0;j<L.length;j++)if(g>=L[j][0])i=j;return i}
+ /* ---------- TRANG BỊ: 80 món = 4 nhóm × 5 lối mạnh × 4 độ hiếm (hình bố mẹ vẽ bằng Gemini, img/do/<nhóm>_<lối>_<bậc>.webp) ----------
+@@ -897,10 +901,10 @@ var DROP={rate:.08,perDay:2,pity:10,rar:[60,28,10,2],cupMin:2,dupShard:[1,2,4,8]
+ var GRP=[{k:'vk',n:'Vũ khí',e:'⚔️',p:{a:3}},{k:'gi',n:'Áo giáp',e:'🛡️',p:{d:2,h:12}},{k:'gy',n:'Giày',e:'👟',p:{s:2}},{k:'bu',n:'Bùa',e:'🔮',p:{c:2}}];
+ /* hiệu ứng đủ bộ 4 món cùng lối: mạnh dần theo độ hiếm THẤP NHẤT trong bộ (Thường/Hiếm/Sử thi/Huyền thoại) — bố mẹ chốt 21/11/2026 tối,
+-   con số đã cân lại bằng mô phỏng hàng trăm nghìn trận (mỗi bộ thắng trung bình 44–58% trước các bộ khác, cùng loài, cùng cấp) */
+-var LOI=[{k:'cong',n:'Cuồng công',e:'🔥',col:'#EF4444',q:{a:1.5},sdR:[{dm:1.08},{dm:1.11},{dm:1.14},{dm:1.17}],setT:function(v){return '+'+Math.round((v.dm-1)*100)+'% sát thương mọi đòn'}},
+-  {k:'bao',n:'Bạo kích',e:'⚡',col:'#EAB308',q:{c:3},sdR:[{c:12,cm:2},{c:13,cm:2.2},{c:16,cm:2.4},{c:20,cm:2.6}],setT:function(v){return '+'+v.c+'% tỉ lệ bạo kích, bạo kích đánh ×'+String(v.cm).replace('.',',')}},
+-  {k:'trau',n:'Trâu bò',e:'🪨',col:'#92400E',q:{h:10,d:1.2},sdR:[{tk:.88},{tk:.86},{tk:.85},{tk:.84}],setT:function(v){return 'Nhận ít hơn '+Math.round((1-v.tk)*100)+'% sát thương'}},
+-  {k:'toc',n:'Tốc độ',e:'🌪️',col:'#06B6D4',q:{s:1.5,dg:1.2},sdR:[{dg:8,dm:1.1},{dg:10,dm:1.15},{dg:12,dm:1.22},{dg:14,dm:1.3}],setT:function(v){return '+'+v.dg+'% né đòn, +'+Math.round((v.dm-1)*100)+'% sát thương'}},
+-  {k:'hoi',n:'Hồi phục',e:'💚',col:'#16A34A',q:{ls:1.4},sdR:[{rg:3.5},{rg:5},{rg:6.5},{rg:8}],setT:function(v){return 'Đầu mỗi lượt của mình hồi '+String(v.rg).replace('.',',')+'% máu'}}];
++   con số cân lại 22/11/2026 (bố mẹ nhờ cân cho hợp lý) bằng mô phỏng: ở mọi độ hiếm, mỗi bộ thắng trung bình 46–55% trước các bộ khác, cùng loài, cùng cấp */
++var LOI=[{k:'cong',n:'Cuồng công',e:'🔥',col:'#EF4444',q:{a:1.3},sdR:[{dm:1.09},{dm:1.09},{dm:1.1},{dm:1.12}],setT:function(v){return '+'+Math.round((v.dm-1)*100)+'% sát thương mọi đòn'}},
++  {k:'bao',n:'Bạo kích',e:'⚡',col:'#EAB308',q:{c:3},sdR:[{c:17,cm:2.1},{c:17,cm:2.3},{c:19,cm:2.5},{c:22,cm:2.6}],setT:function(v){return '+'+v.c+'% tỉ lệ bạo kích, bạo kích đánh ×'+String(v.cm).replace('.',',')}},
++  {k:'trau',n:'Trâu bò',e:'🪨',col:'#92400E',q:{h:10,d:1.2},sdR:[{tk:.93},{tk:.89},{tk:.87},{tk:.86}],setT:function(v){return 'Nhận ít hơn '+Math.round((1-v.tk)*100)+'% sát thương'}},
++  {k:'toc',n:'Tốc độ',e:'🌪️',col:'#06B6D4',q:{s:1.5,dg:1.2},sdR:[{dg:9,dm:1.1},{dg:11,dm:1.18},{dg:12,dm:1.22},{dg:14,dm:1.28}],setT:function(v){return '+'+v.dg+'% né đòn, +'+Math.round((v.dm-1)*100)+'% sát thương'}},
++  {k:'hoi',n:'Hồi phục',e:'💚',col:'#16A34A',q:{ls:1.4},sdR:[{rg:4.5},{rg:6.5},{rg:7},{rg:7.5}],setT:function(v){return 'Đầu mỗi lượt của mình hồi '+String(v.rg).replace('.',',')+'% máu'}}];
+ LOI.forEach(function(L){L.sd=L.sdR[0];L.set=L.setT(L.sdR[0])});
+ function setLine(L){return L.sdR.map(function(v,i){return RAR[i]+': '+L.setT(v)}).join(' · ')}
+@@ -1008,5 +1012,5 @@ function renderGear(){var o=bagOf(S),st=myStats(),list=gearList(o),sets=setOf(li
+   $('ntGearStats').innerHTML=statRow(st,true);
+   var extra=[];if(st.dg>st.base.dg)extra.push('🌪️ Né đòn '+st.dg+'%');if(st.ls)extra.push('💚 Hút máu '+st.ls+'%');
+-  var bgx=myBg()&&BGFX[myBg()];$('ntGearNote').innerHTML=(extra.length?'<b>'+extra.join(' · ')+'</b><br>':'')+(bgx?'🏞️ Phông nền <b>'+esc(DECO.bg.filter(function(b){return b.id===myBg()})[0].n)+'</b>: '+bgx.t+'<br>':'🏞️ Chọn phông nền đặc biệt để thú mạnh thêm khi đấu nhé!<br>')+'✨ Tuyệt chiêu của '+esc(SPN[S.sp]||'thú')+': <b>'+KIND[S.sp].u+'</b> — '+KIND[S.sp].ud+'.';
++  var bgx=myBg()&&BGFX[myBg()];$('ntGearNote').innerHTML=(extra.length?'<b>'+extra.join(' · ')+'</b><br>':'')+(bgx?'🏞️ Phông nền <b>'+esc(DECO.bg.filter(function(b){return b.id===myBg()})[0].n)+'</b>: '+bgx.t+'<br>':'🏞️ Chọn phông nền đặc biệt để thú mạnh thêm khi đấu nhé!<br>')+'✨ Tuyệt chiêu của '+esc(SPN[S.sp]||'thú')+': <b>'+KIND[S.sp].u+'</b> — '+KIND[S.sp].ud+'.<br>💨 Tốc cao hơn đối thủ thì được đánh trước và <b>né thêm</b>: cứ nhanh hơn 10% né thêm 2%, nhiều nhất +8%.';
+   $('ntGearSlots').innerHTML=GRP.map(function(G){var id=o.eqp[G.k],has=id&&o.bag[id]!=null,r=has?itParse(id).r:0;
+     return '<button class="nt-eq'+(has?' r'+r:'')+'" data-id="'+(has?id:'')+'">'+(has?itImg(id)+'<b>'+esc(itName(id))+(o.bag[id]?' +'+o.bag[id]:'')+'</b>':'<span class="em">'+G.e+'</span><b>'+G.n+'</b><small>chưa có</small>')+'</button>'}).join('');
+@@ -1093,5 +1097,6 @@ function startBattle(foe,kind){if(!fightsLeft()||(kind==='sib'&&!sibOk()))return
+   bars();loadWords();
+   var first=BT.me.st.s>BT.fo.st.s||(BT.me.st.s===BT.fo.st.s&&Math.random()<.5)?BT.me:BT.fo;
+-  log((first===BT.me?'💨 '+esc(BT.me.name)+' nhanh hơn, được đánh trước!':'💨 '+esc(BT.fo.name)+' nhanh hơn, đánh trước!'));banner('Bắt đầu!');snd('tap');
++  BT.me.dgE=dgIn(BT.me,BT.fo);BT.fo.dgE=dgIn(BT.fo,BT.me);var fx2=Math.round((first.dgE-Math.min(30,first.st.dg||FIGHT.dodge))*10)/10;
++  log((first===BT.me?'💨 '+esc(BT.me.name)+' nhanh hơn, được đánh trước!':'💨 '+esc(BT.fo.name)+' nhanh hơn, đánh trước!')+(fx2>0?' Né thêm <b>+'+String(fx2).replace('.',',')+'%</b>.':''));banner('Bắt đầu!');snd('tap');
+   BT.order=first===BT.me?['me','fo']:['fo','me'];BT.step=0;
+   setTimeout(function(){nextStep()},1100)}
+@@ -1120,5 +1125,5 @@ function strike(c,mul,crit,after,nd){var A=BT[c],D=BT[c==='me'?'fo':'me'],fa=$('
+   fa.classList.add('lunge');snd('shoot');
+   setTimeout(function(){fa.classList.remove('lunge');if(!alive())return;
+-    if(!nd&&Math.random()*100<(D.st.dg||FIGHT.dodge)){pop(D.cls,'Né!','miss');snd('pat');log('💨 <b>'+esc(D.name)+'</b> né được đòn!');after&&after(0);return}
++    if(!nd&&Math.random()*100<(D.dgE!=null?D.dgE:(D.st.dg||FIGHT.dodge))){pop(D.cls,'Né!','miss');snd('pat');log('💨 <b>'+esc(D.name)+'</b> né được đòn!');after&&after(0);return}
+     var r=dmgOf(A,D,mul,crit);D.H=Math.max(0,D.H-r.v);fd.classList.remove('hurt');void fd.offsetWidth;fd.classList.add('hurt');
+     pop(D.cls,(r.cr?'💥 ':r.lk?'🍀 ':'')+'-'+r.v,r.cr||r.lk?'cr':'');snd(r.cr?'crack':'pop');if(r.cr)banner('💥 BẠO KÍCH!');else if(r.lk)banner('🍀 Đòn may mắn!');
+diff --git a/sw.js b/sw.js
+index 62fc5d7..d3cbc71 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v56';
++const V = 'hoc-tap-v57';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=56', 'bank.js?v=56', 'thidua.js?v=56', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=57', 'bank.js?v=57', 'thidua.js?v=57', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
