@@ -33,7 +33,7 @@
     anhphong: {
       round: { min: 10, steps: [[100, 2], [90, 1]], cap: 4, label: 'Luyện một bài (từ 10 câu)' },
       first: { pct: 90, v: 2, label: 'Lần đầu đạt từ 90% ở một bài' },
-      test: { min: 10, steps: [[95, 5], [90, 3], [80, 1]], cap: 2, label: 'Bài kiểm tra' },
+      test: { min: 10, steps: [[95, 5], [90, 3], [80, 1]], cap: 1, label: 'Bài kiểm tra' },
       drill: { v: 1, cap: 2, label: 'Phá kỉ lục tính nhẩm / bảng cửu chương' }
     },
     thanhnghi: {
@@ -41,7 +41,7 @@
       review: { min: 10, steps: [[90, 2]], cap: 1, label: 'Ôn tập đến hạn (từ 10 câu)' },
       fix: { min: 5, v: 1, cap: 1, label: 'Sửa đúng từ 5 câu trong Sổ lỗi sai' },
       lesson: { v: 3, label: 'Hoàn thành một bài học (lần đầu)' },
-      test: { min: 20, steps: [[98, 5], [94, 3], [90, 1]], cap: 2, label: 'Bài kiểm tra (từ 20 câu)' },
+      test: { min: 20, steps: [[98, 5], [94, 3], [90, 1]], cap: 1, label: 'Bài kiểm tra (từ 20 câu)' },
       write: { min: 2, max: 10, label: 'Bài viết được bố mẹ chấm' }
     }
   };

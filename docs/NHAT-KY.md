@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 22/11 | 0050 | **Nghe & nói 30 câu** (Dễ 15 từ × 2, Vừa 10 từ × 3, Khó 10 từ × 3). **Giảm sao** (bố mẹ chốt, mỗi bé tối đa khoảng 38–39 sao/ngày, không đặt trần): Luyện thêm 2 bài/ngày, 45–46 +1 · 47–48 +2 · 49–50 +3; Nghe & nói +2 / +4; kiểm tra lớp 2 và lớp 6 chỉ 1 lần/ngày có sao; rương báu 3–5 sao (xu rương giữ 5–10). Xu và các thưởng một lần giữ nguyên. |
 | 22/11 | 0049 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: chỉ còn Anh Phong và Thanh Nghị (các bạn học cùng không có sao); phạt "trừ cả hai" chỉ trừ hai anh em. **Bỏ giới hạn 60 phút game/TV mỗi ngày**; **được tiêu sao cả khi chưa đủ / đang âm** (ghi nợ, trả dần bằng sao kiếm sau), màn đổi sao báo trước số sao sẽ nợ. Bảng sao trên cùng cập nhật ngay sau khi chấm. |
 | 22/11 | 0048 | **Xu thuộc chắc** (bố mẹ chốt): mỗi mốc 50 từ thuộc chắc **+150 xu** — 4 bạn học cùng được ngay từ mốc đầu; Anh Phong từ mốc vượt 400 từ (450, 500…), Thanh Nghị từ mốc vượt 600 từ (650…), cộng thêm vào sao như cũ. Xu tính từ sổ sao Từ vựng (`mastMiles`, `XU.mast` trong `thidua.js`); dòng thưởng thuộc chắc không còn bị tính là "bài làm tốt". |
 | 22/11 | 0047 | Sao thuộc chắc Từ vựng (bố mẹ chốt): **cứ đủ thêm 50 từ thuộc chắc là thưởng**, không cần đủ cả một khối 1–50, 51–100…; mức sao giữ nguyên (50 sao/mốc đến 400 từ với Anh Phong, 600 từ với Thanh Nghị; sau đó 150 sao/mốc). Mở Từ vựng là tự trả các mốc đã đủ (Anh Phong 74 từ → +50 sao). |
@@ -67,6 +68,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 - **Xu (chốt 21/11)**: xong tiếng Anh +15, đạt mục tiêu môn +10, rương 5–10, bài làm tốt +2 (tối đa 3 tiếng Anh + 2 môn khác/ngày), lần đầu làm tốt một bài +2, chuỗi 7 ngày +20; xếp hạng tuần (từ 50 điểm) +50/+40/+30/+20/+20/+20 (bỏ +10 khi từ 60 điểm); tiến bộ nhất tuần (tăng từ 10 điểm) +30; cả nhóm từ 400 điểm mỗi bạn +10; thắng thú của bạn +2 (thú cấp cao hơn +3), thắng quái +1; tổng 5 trận/ngày (⚡ năng lượng). · **thuộc chắc (chốt 22/11)**: mỗi mốc 50 từ +150 xu (bạn học cùng mọi mốc; Anh Phong từ 401 từ, Thanh Nghị từ 601 từ trở đi)
 - **Nuôi thú (chốt 21/11)**: bỏ no bụng; hết năng lượng và hết 5 lượt trò chơi chỉ ở thêm 15 phút (bố mẹ chỉnh trong Quản lý đấu thú); hiệu ứng đủ bộ theo món kém hiếm nhất; phông nền vẫn cần đủ cả số huy hiệu và cấp danh hiệu.
 - Thiết kế ưu tiên iPad (cả dọc và ngang), dùng được trên iPhone; tiến độ đồng bộ giữa các máy.
+- **Giảm sao (chốt 22/11)**: mỗi bé tối đa khoảng 38–39 sao/ngày từ bài tập (Từ vựng 18, môn lớp 15–16, rương 3–5); không đặt trần cứng; Nghe & nói 30 câu.
 
 ## Việc có thể làm tiếp
 

@@ -566,7 +566,7 @@
     return '<div class="hw"><p class="hw-lead">Con chỉ cần nhớ <b>3 điều chính</b> dưới đây. Mỗi ngày làm hết <b>🎯 Nhiệm vụ hôm nay</b> là con có đủ cả ba!</p>' +
       '<div class="hw-main">' +
       '<div class="hw-c s1"><div class="ic">⭐</div><h3>1. Sao thưởng</h3><p>Sao dùng để <b>đổi quà</b> với bố mẹ. Con nhận sao khi:</p><ul>' +
-        '<li>Học từ vựng tiếng Anh, làm đúng nhiều</li><li>Làm bài ' + sub + ' đúng từ 90%</li><li>Mở 🎁 rương báu: <b>5–10 sao</b></li>' +
+        '<li>Học từ vựng tiếng Anh, làm đúng nhiều</li><li>Làm bài ' + sub + ' đúng từ 90%</li><li>Mở 🎁 rương báu: <b>3–5 sao</b></li>' +
         '<li>Thắng đấu trường tuần: <b>+' + CUP + ' sao</b></li><li>Làm việc tốt ở nhà: bố mẹ thưởng</li></ul><p style="font-size:15px;color:#64748B">Chưa ngoan thì bố mẹ có thể trừ sao.</p></div>' +
       '<div class="hw-c s2"><div class="ic">🔥</div><h3>2. Chuỗi ngày học</h3><p>Mỗi ngày con học <b>đủ bài tiếng Anh</b> (' + newN(kid) + ' từ mới và ôn tập), chuỗi tăng thêm 1 ngày.</p>' +
         '<p>Nghỉ một ngày thì chuỗi về 0, <b>trừ khi con có khiên 🛡️</b>.</p><p>Chuỗi càng dài, con càng giỏi!</p></div>' +
