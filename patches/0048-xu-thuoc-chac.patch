@@ -1,0 +1,127 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 6969823..fc05e23 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 22/11 | 0048 | **Xu thuộc chắc** (bố mẹ chốt): mỗi mốc 50 từ thuộc chắc **+150 xu** — 4 bạn học cùng được ngay từ mốc đầu; Anh Phong từ mốc vượt 400 từ (450, 500…), Thanh Nghị từ mốc vượt 600 từ (650…), cộng thêm vào sao như cũ. Xu tính từ sổ sao Từ vựng (`mastMiles`, `XU.mast` trong `thidua.js`); dòng thưởng thuộc chắc không còn bị tính là "bài làm tốt". |
+ | 22/11 | 0047 | Sao thuộc chắc Từ vựng (bố mẹ chốt): **cứ đủ thêm 50 từ thuộc chắc là thưởng**, không cần đủ cả một khối 1–50, 51–100…; mức sao giữ nguyên (50 sao/mốc đến 400 từ với Anh Phong, 600 từ với Thanh Nghị; sau đó 150 sao/mốc). Mở Từ vựng là tự trả các mốc đã đủ (Anh Phong 74 từ → +50 sao). |
+ | 22/11 | 0046 | Từ vựng · Ôn tập: hết từ đến hạn vẫn có nút **🔁 Ôn thêm 20 từ cho chắc** (làm bao nhiêu lần cũng được): chọn từ chưa thuộc chắc, hay sai, sắp đến hạn; trả lời đúng được tính lên mức nhớ / thuộc chắc như Luyện thêm (chỉ khi đã đủ thời gian giãn cách), sai thì ôn lại hôm sau; không cộng sao. |
+@@ -63,5 +64,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ - Nuôi thú (chốt 19/11): cả hai bé tự chọn loại trứng; thú lớn nhờ học; thức ăn từ nhiệm vụ, huy hiệu, danh hiệu và mua bằng sao (1 ⭐ phần ăn, 5 ⭐ món đặc biệt, tối đa 3 lần/ngày); chơi để thư giãn, không cộng sao hay điểm.
+ - **Bạn học cùng (chốt 21/11)**: Hưng (lớp 1), Mun (lớp 3), Pi (lớp 5), Khôi (lớp 7) chung nhóm; không có sao, chỉ xu; Từ vựng theo danh sách của Anh Phong; Hưng 3 từ/ngày, từ dễ trước. Bài làm tốt: từ 10 câu đúng từ 90% (Khôi: từ 15 câu, 85%).
+-- **Xu (chốt 21/11)**: xong tiếng Anh +15, đạt mục tiêu môn +10, rương 5–10, bài làm tốt +2 (tối đa 3 tiếng Anh + 2 môn khác/ngày), lần đầu làm tốt một bài +2, chuỗi 7 ngày +20; xếp hạng tuần (từ 50 điểm) +50/+40/+30/+20/+20/+20 (bỏ +10 khi từ 60 điểm); tiến bộ nhất tuần (tăng từ 10 điểm) +30; cả nhóm từ 400 điểm mỗi bạn +10; thắng thú của bạn +2 (thú cấp cao hơn +3), thắng quái +1; tổng 5 trận/ngày (⚡ năng lượng).
++- **Xu (chốt 21/11)**: xong tiếng Anh +15, đạt mục tiêu môn +10, rương 5–10, bài làm tốt +2 (tối đa 3 tiếng Anh + 2 môn khác/ngày), lần đầu làm tốt một bài +2, chuỗi 7 ngày +20; xếp hạng tuần (từ 50 điểm) +50/+40/+30/+20/+20/+20 (bỏ +10 khi từ 60 điểm); tiến bộ nhất tuần (tăng từ 10 điểm) +30; cả nhóm từ 400 điểm mỗi bạn +10; thắng thú của bạn +2 (thú cấp cao hơn +3), thắng quái +1; tổng 5 trận/ngày (⚡ năng lượng). · **thuộc chắc (chốt 22/11)**: mỗi mốc 50 từ +150 xu (bạn học cùng mọi mốc; Anh Phong từ 401 từ, Thanh Nghị từ 601 từ trở đi)
+ - **Nuôi thú (chốt 21/11)**: bỏ no bụng; hết năng lượng và hết 5 lượt trò chơi chỉ ở thêm 15 phút (bố mẹ chỉnh trong Quản lý đấu thú); hiệu ứng đủ bộ theo món kém hiếm nhất; phông nền vẫn cần đủ cả số huy hiệu và cấp danh hiệu.
+ - Thiết kế ưu tiên iPad (cả dọc và ngang), dùng được trên iPhone; tiến độ đồng bộ giữa các máy.
+diff --git a/index.html b/index.html
+index 067e907..d7b0027 100644
+--- a/index.html
++++ b/index.html
+@@ -134,7 +134,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=49"></script>
+-<script src="bank.js?v=49"></script>
+-<script src="thidua.js?v=49"></script>
++<script src="claude-shim.js?v=50"></script>
++<script src="bank.js?v=50"></script>
++<script src="thidua.js?v=50"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/nuoithu.html b/nuoithu.html
+index 30a849c..adf0458 100644
+--- a/nuoithu.html
++++ b/nuoithu.html
+@@ -485,5 +485,5 @@ function render(){
+   $('ntGrow').innerHTML=p.next?'🌱 Cho thú ăn để thú lớn: mỗi phần ăn <b>+'+CFG.growN+'</b> điểm lớn (mua '+CFG.priceN+' 🪙 một phần). Còn <b>'+(p.next[0]-p.xp)+' điểm</b> nữa là thành <b>'+esc(p.next[2])+'</b>.':
+     '👑 Thú đã lớn hết cỡ. Con giỏi quá!';
+-  $('ntFood').innerHTML='<div class="mu">Con đang có <b>'+xu+' 🪙</b>. Xong tiếng Anh trong ngày <b>+15</b> · đạt mục tiêu '+(KID==='anhphong'?'Toán/Tiếng Việt':KID==='thanhnghi'?'Toán/Ngữ văn':'môn chính (tạm tính: đủ 4 việc tiếng Anh)')+' <b>+10</b> · mở rương báu <b>+5 đến +10</b> (ngẫu nhiên) · mỗi bài làm tốt <b>+2</b> (mỗi ngày tối đa 3 bài tiếng Anh và 2 bài môn khác), lần đầu làm tốt một bài thêm <b>+2</b> · học liền 7 ngày <b>+20</b> · xếp hạng tuần hạng 1 đến 6 <b>+50/+40/+30/+20/+20/+20</b> · ở ⚔️ Đấu trường thắng thú của bạn <b>+2</b> (thú cấp cao hơn con: <b>+3</b>), thắng quái <b>+1</b> · tiến bộ nhất tuần <b>+30</b> · cả nhóm đạt mục tiêu tuần <b>+10</b>.</div>';
++  $('ntFood').innerHTML='<div class="mu">Con đang có <b>'+xu+' 🪙</b>. Xong tiếng Anh trong ngày <b>+15</b> · đạt mục tiêu '+(KID==='anhphong'?'Toán/Tiếng Việt':KID==='thanhnghi'?'Toán/Ngữ văn':'môn chính (tạm tính: đủ 4 việc tiếng Anh)')+' <b>+10</b> · mở rương báu <b>+5 đến +10</b> (ngẫu nhiên) · mỗi bài làm tốt <b>+2</b> (mỗi ngày tối đa 3 bài tiếng Anh và 2 bài môn khác), lần đầu làm tốt một bài thêm <b>+2</b> · học liền 7 ngày <b>+20</b> · thuộc chắc thêm 50 từ tiếng Anh <b>+150</b>'+(KID==='anhphong'?' (từ từ thứ 401 trở đi)':KID==='thanhnghi'?' (từ từ thứ 601 trở đi)':'')+' · xếp hạng tuần hạng 1 đến 6 <b>+50/+40/+30/+20/+20/+20</b> · ở ⚔️ Đấu trường thắng thú của bạn <b>+2</b> (thú cấp cao hơn con: <b>+3</b>), thắng quái <b>+1</b> · tiến bộ nhất tuần <b>+30</b> · cả nhóm đạt mục tiêu tuần <b>+10</b>.</div>';
+   $('ntBuyN').onclick=function(){buyXu('n')};
+   $('ntPlay').innerHTML=missionDone()?'🎮 Chơi cùng thú <small>còn '+playsLeft()+'</small>':'🔒 Học xong mới chơi';
+diff --git a/sw.js b/sw.js
+index 0351500..e567df7 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v49';
++const V = 'hoc-tap-v50';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=49', 'bank.js?v=49', 'thidua.js?v=49', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=50', 'bank.js?v=50', 'thidua.js?v=50', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/thidua.js b/thidua.js
+index 4457100..da9fd1c 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -237,8 +237,17 @@
+      xếp hạng tuần (từ 50 điểm) hạng 1→6: +50/+40/+30/+20/+20/+20 */
+   var XU = { en: 15, sub: 10, chest: [5, 10], good: 2, goodEn: 3, goodSub: 2, first: 2, streak: 20, rank: [50, 40, 30, 20, 20, 20], prog: 30, progMin: 10, team: 10, teamMin: 400 };   // bố mẹ chốt 21/11 tối: tiến bộ nhất tuần +30, cả nhóm từ 400 điểm mỗi bạn +10   // bố mẹ chốt 21/11 tối: bỏ +10 xu khi tuần đạt từ 60 điểm
++  /* 🏆 Thuộc chắc → xu (bố mẹ chốt 22/11/2026): mỗi mốc 50 từ thuộc chắc +150 xu. Bạn học cùng: mọi mốc;
++     Anh Phong: mốc từ 401 từ trở đi (450, 500…); Thanh Nghị: từ 601 trở đi (650, 700…). Đọc từ sổ sao Từ vựng ("🏆 Thuộc chắc N từ"). */
++  XU.mast = 150; var MAST_XU_FROM = { anhphong: 400, thanhnghi: 600 };
++  var MAST_RE = /^🏆 Thuộc chắc (\d+) từ/;
++  function mastMiles(kid) {   // [{n, t}] các mốc đã thưởng được tính xu, mỗi mốc một lần
++    var from = MAST_XU_FROM[kid] || 0, seen = {}, out = [];
++    try { BANK.vocabLed(kid).forEach(function (e) { var m = e && e.v > 0 && MAST_RE.exec(String(e.r)); if (!m) return; var n = +m[1]; if (n > from && !seen[n]) { seen[n] = 1; out.push({ n: n, t: +e.t }); } }); } catch (e) { }
++    return out;
++  }
+   function goodDays(kid) {   // mỗi ngày: số bài làm tốt tiếng Anh (en), Toán/TV/Văn (sub), số bài lần đầu làm tốt (first)
+     var m = {};
+     function add(e, f) { if (!e || !(e.v > 0)) return; var d = ymdOf(e.t), x = m[d] || (m[d] = { en: 0, sub: 0, first: 0 }); x[f]++; }
+-    try { BANK.vocabLed(kid).forEach(function (e) { if ((!e.k || e.k === 'auto') && !/^📌/.test(String(e.r))) add(e, 'en'); }); } catch (e) { }
++    try { BANK.vocabLed(kid).forEach(function (e) { if ((!e.k || e.k === 'auto') && !/^📌/.test(String(e.r)) && !MAST_RE.test(String(e.r))) add(e, 'en'); }); } catch (e) { }
+     try { BANK.extList(kid).forEach(function (e) { if (!/^(toan|tv|van)$/.test(e.src) || e.k === 'cup') return; add(e, e.k === 'first' || e.k === 'lesson' ? 'first' : 'sub'); }); } catch (e) { }
+     return m;
+@@ -262,7 +271,8 @@
+       if (me >= WIN_MIN) { var better = {}; KIDS.forEach(function (k) { var v = +sc[k] || 0; if (v > me) better[v] = 1; }); var r = Object.keys(better).length; if (r < XU.rank.length) o.week += XU.rank[r]; }
+     });
+-    o.xp = o.en * XU.en + o.sub * XU.sub + o.chestXu + o.good * XU.good + o.first * XU.first + o.streak * XU.streak + o.week; return o;
++    o.mast = mastMiles(kid).length;
++    o.xp = o.en * XU.en + o.sub * XU.sub + o.chestXu + o.good * XU.good + o.first * XU.first + o.streak * XU.streak + o.week + o.mast * XU.mast; return o;
+   }
+-  function xpToday(kid) { var t = today(), r = D.vd[kid][t], g = goodDays(kid)[t]; return (enOk(kid, t) ? XU.en : 0) + (subOk(kid, t) ? XU.sub : 0) + (r && r.chest ? chestXu(kid, t) : 0) + goodN(g) * XU.good + (g ? g.first : 0) * XU.first; }
++  function xpToday(kid) { var t = today(), r = D.vd[kid][t], g = goodDays(kid)[t]; return (enOk(kid, t) ? XU.en : 0) + (subOk(kid, t) ? XU.sub : 0) + (r && r.chest ? chestXu(kid, t) : 0) + goodN(g) * XU.good + (g ? g.first : 0) * XU.first + mastMiles(kid).filter(function (x) { return ymdOf(x.t) === t; }).length * XU.mast; }
+   function pet(kid) {
+     /* không chờ tải dữ liệu học: vẽ ngay thú đã lưu trên máy, khỏi chớp hình mặc định khi mở trang */
+@@ -334,5 +344,5 @@
+       '<div class="pet-nx">' + (p.next ? 'Còn <b>' + (p.next[0] - p.xp) + ' điểm lớn</b> nữa để thành <b>' + esc(p.next[2]) + '</b>' : 'Linh vật đã lớn hết cỡ. Con thật tuyệt vời! 👑') + '</div>' +
+       '<span class="pet-td">' + (td ? 'Hôm nay +' + td + ' 🪙 xu' : 'Học hôm nay để có xu mua thức ăn cho thú nhé!') + '</span></div></div>' +
+-      '<details><summary>🪙 Linh vật lớn lên thế nào?</summary><ul><li>Học đủ bài tiếng Anh: <b>+15 xu</b></li><li>Đạt mục tiêu ' + subN(kid, 1) + ' trong ngày (' + D.goal[kid] + ' câu): <b>+10 xu</b></li><li>Mở rương báu: <b>+5 đến +10 xu</b> (ngẫu nhiên)</li><li>Mỗi bài làm tốt: <b>+2 xu</b> (mỗi ngày tối đa 3 bài tiếng Anh và 2 bài ' + subN(kid, 0) + ')</li><li>Lần đầu làm tốt một bài ' + subN(kid, 0) + ': <b>+2 xu</b></li><li>Học liền 7 ngày: <b>+20 xu</b></li><li>Xếp hạng tuần (từ ' + WIN_MIN + ' điểm), hạng 1 đến 6: <b>+50/+40/+30/+20/+20/+20 xu</b>; đạt từ ' + GOOD_MIN + ' điểm tuần: <b>+10 xu</b></li><li>⚔️ Đấu trường thú (tối đa 5 trận/ngày): thắng thú của bạn <b>+2 xu</b>, thắng quái <b>+1 xu</b></li><li>Vào 🐾 Nuôi thú, dùng xu mua thức ăn, cho thú ăn để thú lớn.</li></ul>' +
++      '<details><summary>🪙 Linh vật lớn lên thế nào?</summary><ul><li>Học đủ bài tiếng Anh: <b>+15 xu</b></li><li>Đạt mục tiêu ' + subN(kid, 1) + ' trong ngày (' + D.goal[kid] + ' câu): <b>+10 xu</b></li><li>Mở rương báu: <b>+5 đến +10 xu</b> (ngẫu nhiên)</li><li>Mỗi bài làm tốt: <b>+2 xu</b> (mỗi ngày tối đa 3 bài tiếng Anh và 2 bài ' + subN(kid, 0) + ')</li><li>Lần đầu làm tốt một bài ' + subN(kid, 0) + ': <b>+2 xu</b></li><li>Học liền 7 ngày: <b>+20 xu</b></li><li>🏆 Thuộc chắc thêm 50 từ tiếng Anh: <b>+150 xu</b>' + (MAST_XU_FROM[kid] ? ' (tính từ từ thứ ' + (MAST_XU_FROM[kid] + 1) + ' trở đi)' : '') + '</li><li>Xếp hạng tuần (từ ' + WIN_MIN + ' điểm), hạng 1 đến 6: <b>+50/+40/+30/+20/+20/+20 xu</b>; đạt từ ' + GOOD_MIN + ' điểm tuần: <b>+10 xu</b></li><li>⚔️ Đấu trường thú (tối đa 5 trận/ngày): thắng thú của bạn <b>+2 xu</b>, thắng quái <b>+1 xu</b></li><li>Vào 🐾 Nuôi thú, dùng xu mua thức ăn, cho thú ăn để thú lớn.</li></ul>' +
+       '<div>' + petsOf(kid).map(function (x, i) { return '<span style="opacity:' + (i <= p.i ? 1 : .35) + '">' + (i <= p.i ? picOf(x[1], '1.4em') : '❔') + '</span>'; }).join(' → ') + '</div></details></div>';
+   }
+diff --git a/tuvung.html b/tuvung.html
+index c94beed..49ce941 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -776,5 +776,5 @@ function renderHome(){
+   // thưởng các mốc thuộc chắc đã đủ (vd. sau khi đổi quy tắc 22/11) — chỉ khi đã tải xong dữ liệu kho, tránh thưởng trùng
+   {let ready=true;try{ready=!SYNC.db||syncLoaded}catch(e){ready=false}
+-   if(ready&&L>0)try{if(mastCount(kd)>=50*(paidMiles(kd)+1)){const b0=ownStars(kd).bal;payMilestones(kd);S.earned=[];const v=ownStars(kd).bal-b0;if(v>0&&!NF(kd))setTimeout(()=>toast(`🏆 Giỏi quá! Thuộc chắc ${paidMiles(kd)*50} từ: +${v} ⭐`,4500),600)}}catch(e){}}
++   if(ready&&L>0)try{if(mastCount(kd)>=50*(paidMiles(kd)+1)){const b0=ownStars(kd).bal;payMilestones(kd);S.earned=[];const v=ownStars(kd).bal-b0;if(v>0){const p=paidMiles(kd);setTimeout(()=>toast(`🏆 Giỏi quá! Thuộc chắc ${p*50} từ: `+(NF(kd)?'được thưởng xu 🪙':`+${v} ⭐`+(p*50>(BLOCK_SPLIT[kd.id]||0)?' và xu 🪙':'')),4500),600)}}}catch(e){}}
+   // review part
+   const rp=reviewPlan(kd);
+@@ -1245,5 +1245,5 @@ function renderStars(){
+   $('stRules').innerHTML=
+     (()=>{const B=BLOCK_SPLIT[kd.id],g=mastProgress(kd);
+-      return T('🏆 Thuộc chắc',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là được thưởng<br>Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó mỗi 50 từ = +${STAR.blockStars} ⭐<br>`+
++      return T('🏆 Thuộc chắc',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là được thưởng<br>Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó mỗi 50 từ = +${STAR.blockStars} ⭐ và +150 🪙<br>`+
+         `Đã thuộc chắc <b>${g.M}</b> từ · còn <b>${g.left}</b> từ nữa đến mốc ${g.next}`+(g.paid?` · đã thưởng ${g.paid} mốc`:''))})()+
+     T('📘 Học từ mới',`+${STAR.newDone} ⭐ / ngày`,'1 lần/ngày')+
+@@ -1377,7 +1377,9 @@ function payMilestones(kd){let p=paidMiles(kd);const due=Math.floor(mastCount(kd
+   while(p<due){p++;const a=store.get('vocab_stars_v1',{});const o=a[kd.id]||(a[kd.id]={bal:0,led:[]});o.paidM=p;store.set('vocab_stars_v1',a);
+     addStars(kd,mileStars(kd,p),`🏆 Thuộc chắc ${p*50} từ`)}}
++/* phần thưởng một mốc, để hiện cho bé: bạn học cùng chỉ có xu; Anh Phong / Thanh Nghị có sao, thêm 150 xu khi vượt BLOCK_SPLIT (bố mẹ chốt 22/11) */
++function mileTxt(kd,k){const xu=NF(kd)||k*50>(BLOCK_SPLIT[kd.id]||0);return NF(kd)?'+150 🪙':`+${mileStars(kd,k)} ⭐`+(xu?' +150 🪙':'')}
+ function masteryReward(kd,w){
+   payMilestones(kd);const g=mastProgress(kd);
+-  S.blockNote={m:`còn ${g.left} từ nữa đến mốc ${g.next} từ (+${g.stars} ⭐)`};
++  S.blockNote={m:`còn ${g.left} từ nữa đến mốc ${g.next} từ (${mileTxt(kd,g.next/50)})`};
+ }
+ 
