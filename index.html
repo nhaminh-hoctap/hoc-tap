@@ -133,9 +133,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=45"></script>
-<script src="bank.js?v=45"></script>
-<script src="thidua.js?v=45"></script>
+<script src="claude-shim.js?v=46"></script>
+<script src="bank.js?v=46"></script>
+<script src="thidua.js?v=46"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -329,6 +329,16 @@ var BAR_CSS='html.pmount body>*:not(#pbar){visibility:hidden!important}html.pmou
 function barTitle(){var m=P.mode,a=P.app;
   if(m==='parent-sao')return['⭐','Thưởng · Phạt · Tiêu sao'];if(m==='parent-report')return['📊','Báo cáo học từ vựng'];if(m==='parent-set')return['📘','Cài đặt Học từ vựng'];
   if(m==='parent')return a==='lop2'?['🧮','Cài đặt Lớp 2']:['📐','Cài đặt Lớp 6'];var A=APPS[a]||{ic:'',t:''};return[A.ic,A.t]}
+/* 🪙 (đồng xu) không có trên Windows 10 và iPad đời cũ (hiện ô vuông): thay mọi chữ 🪙 trên trang bằng hình đồng xu 3D */
+(function(){var SRC='img/fe/1fa99.webp',C='🪙',SKIP=/^(SCRIPT|STYLE|TEXTAREA|TITLE|OPTION|INPUT)$/;
+  function css(){if(document.getElementById('xuIcCss'))return;var st=document.createElement('style');st.id='xuIcCss';st.textContent='img.xu-ic{width:1.1em;height:1.1em;vertical-align:-.18em;display:inline-block;margin:0 .04em;object-fit:contain}';(document.head||document.documentElement).appendChild(st)}
+  function swap(t){var p=t.parentNode;if(!p||SKIP.test(p.nodeName)||t.nodeValue.indexOf(C)<0)return;var parts=t.nodeValue.split(C),f=document.createDocumentFragment();
+    parts.forEach(function(x,i){if(i){var im=document.createElement('img');im.src=SRC;im.alt='xu';im.className='xu-ic';im.draggable=false;f.appendChild(im)}if(x)f.appendChild(document.createTextNode(x))});p.replaceChild(f,t)}
+  function fix(root){if(!root)return;if(root.nodeType===3){swap(root);return}if(root.nodeType!==1||SKIP.test(root.nodeName))return;
+    var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),L=[],n;while((n=w.nextNode()))if(n.nodeValue.indexOf(C)>=0)L.push(n);L.forEach(swap)}
+  css();try{new MutationObserver(function(ms){css();ms.forEach(function(m){if(m.type==='characterData')fix(m.target);else m.addedNodes.forEach(fix)})}).observe(document.documentElement,{childList:true,subtree:true,characterData:true})}catch(e){}
+  if(document.body)fix(document.body);else document.addEventListener('DOMContentLoaded',function(){fix(document.body)});
+})();
 P.bar=function(){try{renderBar()}catch(e){}};   /* Nuôi thú gọi khi xu thay đổi */
 function renderBar(){var b=$('pbar');if(!b)return;var t=barTitle(),st=BANK.state,k=P.kid&&kidById(P.kid);
   b.style.setProperty('--pbk',P.parent?'#818CF8':k?k.color:'#CBD5E1');
