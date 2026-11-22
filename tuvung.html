@@ -773,6 +773,9 @@ function renderHome(){
   $('nPer').innerHTML=[3,4,5].map(n=>`<button class="${n===per?'on':''}" data-n="${n}">${n}</button>`).join('')+' từ';
   $('nPer').querySelectorAll('button').forEach(b=>b.onclick=()=>{const l=logOf(kd);l.per=+b.dataset.n;logSave(kd,l);renderHome()});
 
+  // thưởng các mốc thuộc chắc đã đủ (vd. sau khi đổi quy tắc 22/11) — chỉ khi đã tải xong dữ liệu kho, tránh thưởng trùng
+  {let ready=true;try{ready=!SYNC.db||syncLoaded}catch(e){ready=false}
+   if(ready&&L>0)try{if(mastCount(kd)>=50*(paidMiles(kd)+1)){const b0=ownStars(kd).bal;payMilestones(kd);S.earned=[];const v=ownStars(kd).bal-b0;if(v>0&&!NF(kd))setTimeout(()=>toast(`🏆 Giỏi quá! Thuộc chắc ${paidMiles(kd)*50} từ: +${v} ⭐`,4500),600)}}catch(e){}}
   // review part
   const rp=reviewPlan(kd);
   if(rp.words.length){
@@ -1224,7 +1227,7 @@ function ownStars(kd){const a=store.get('vocab_stars_v1',{});return a[kd.id]||{b
 // Sao chung: sao Từ vựng + sao Toán / Tiếng Việt / Ngữ văn (kho Sao thưởng chung)
 function starsOf(kd){const o=ownStars(kd);const B=window.BANK;if(!B)return o;
   const ext=B.extList(kd.id).map(e=>({t:e.t,v:e.v,r:e.r,k:'x',x:e.id,src:e.src}));
-  return {bal:(+o.bal||0)+B.extSum(kd.id),led:ext.length?[...o.led,...ext].sort((a,b)=>b.t-a.t):o.led,paidB:o.paidB}}
+  return {bal:(+o.bal||0)+B.extSum(kd.id),led:ext.length?[...o.led,...ext].sort((a,b)=>b.t-a.t):o.led,paidB:o.paidB,paidM:o.paidM}}
 function addStars(kd,v,reason,k,m){if(!v)return 0;const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});
   s.bal=s.bal+v;s.led.unshift({t:Date.now(),v,r:reason,k:k||'auto',m:m||0});s.led=s.led.slice(0,500);store.set('vocab_stars_v1',a);
   if(v>0&&S&&!(window.BANK&&BANK.fam&&!BANK.fam(kd.id)))(S.earned=S.earned||[]).push([v,reason]);return v}  // bạn không có sao: vẫn ghi sổ (để tính bài làm tốt → xu) nhưng không hiện sao
@@ -1240,9 +1243,9 @@ function renderStars(){
   const T=(h,v,sub)=>`<div class="rl"><span class="rh">${h}</span><span class="rv">${v}</span>${sub?`<span class="rs">${String(sub).replace(/<br>/g,' · ')}</span>`:''}</div>`;
   $('stRuleBox').open=false;
   $('stRules').innerHTML=
-    (()=>{const B=BLOCK_SPLIT[kd.id],bp=blockProgress(kd),done=allBlocks(kd).filter(b=>b.paid).length;
-      return T('🏆 Thuộc chắc theo khối',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Từ 1–${B}: mỗi 50 từ thuộc chắc = +${STAR.blockLow} ⭐<br>Từ ${B+1} trở đi: mỗi 50 từ = +${STAR.blockStars} ⭐<br>`+
-        (bp?`Gần xong nhất: khối ${bp.from}–${bp.to}: <b>${bp.c}/${bp.size}</b> từ`:'Đã thưởng hết các khối 🎉')+(done?` · đã thưởng ${done} khối`:''))})()+
+    (()=>{const B=BLOCK_SPLIT[kd.id],g=mastProgress(kd);
+      return T('🏆 Thuộc chắc',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là được thưởng<br>Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó mỗi 50 từ = +${STAR.blockStars} ⭐<br>`+
+        `Đã thuộc chắc <b>${g.M}</b> từ · còn <b>${g.left}</b> từ nữa đến mốc ${g.next}`+(g.paid?` · đã thưởng ${g.paid} mốc`:''))})()+
     T('📘 Học từ mới',`+${STAR.newDone} ⭐ / ngày`,'1 lần/ngày')+
     T('🔁 Ôn tập',`+${STAR.revDone} ⭐ / ngày`,`Đúng ngay ≥ 90%: +${STAR.revAcc}`)+
     T('🔥 Học liên tục',`+${STAR.streak7} ⭐ / 7 ngày`,`Mỗi 30 ngày: +${STAR.streak30}`)+
@@ -1364,20 +1367,18 @@ const BLOCK_SPLIT={anhphong:400,thanhnghi:600,hung:400,moon:400,bi:400,khoi:400}
 function blockOf(kd,n){const B=BLOCK_SPLIT[kd.id]||0;
   if(n<=B){const from=Math.floor((n-1)/50)*50+1,to=Math.min(from+49,B);return{from,to,size:to-from+1,stars:STAR.blockLow}}
   const from=B+Math.floor((n-B-1)/50)*50+1;return{from,to:from+49,size:50,stars:STAR.blockStars}}
-function paidBlocks(kd){return starsOf(kd).paidB||[]}
-function blockStat(kd,b){const srs=srsOf(kd);let c=0;for(let n=b.from;n<=Math.min(b.to,kd.words.length);n++)if(srs[n]&&srs[n].m)c++;
-  return Object.assign({},b,{c,paid:paidBlocks(kd).includes(b.from+'-'+b.to)})}
-function allBlocks(kd){const out=[];let n=1;while(n<=kd.words.length){const b=blockOf(kd,n);out.push(blockStat(kd,b));n=b.to+1}return out}
-function blockProgress(kd){ // khối nên hiện: khối chưa thưởng có nhiều từ thuộc chắc nhất (ưu tiên khối đầu nếu bằng nhau)
-  const open=allBlocks(kd).filter(b=>!b.paid);if(!open.length)return null;
-  return open.reduce((a,b)=>b.c/b.size>a.c/a.size?b:a,open[0])}
-function payBlock(kd,b){const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});s.paidB=[...(s.paidB||[]),b.from+'-'+b.to];store.set('vocab_stars_v1',a);
-  addStars(kd,b.stars,`🏆 Thuộc chắc đủ ${b.size} từ (từ ${b.from}–${b.to})`)}
+/* (đổi 22/11/2026, bố mẹ chốt) thưởng theo TỔNG số từ thuộc chắc, không cần cùng khối: cứ đủ thêm 50 từ là thưởng một mốc.
+   Mốc thứ k (k×50 từ): k×50 ≤ BLOCK_SPLIT → STAR.blockLow sao, sau đó STAR.blockStars sao. Số mốc đã thưởng lưu ở sổ sao (paidM). */
+const mastCount=kd=>Object.values(srsOf(kd)).filter(x=>x&&x.m).length;
+const mileStars=(kd,k)=>k*50<=(BLOCK_SPLIT[kd.id]||0)?STAR.blockLow:STAR.blockStars;
+function paidMiles(kd){const o=ownStars(kd);return Math.max(+o.paidM||0,(o.paidB||[]).length)}
+function mastProgress(kd){const M=mastCount(kd),p=paidMiles(kd),next=(p+1)*50;return {M,paid:p,next,left:Math.max(0,next-M),stars:mileStars(kd,p+1)}}
+function payMilestones(kd){let p=paidMiles(kd);const due=Math.floor(mastCount(kd)/50);
+  while(p<due){p++;const a=store.get('vocab_stars_v1',{});const o=a[kd.id]||(a[kd.id]={bal:0,led:[]});o.paidM=p;store.set('vocab_stars_v1',a);
+    addStars(kd,mileStars(kd,p),`🏆 Thuộc chắc ${p*50} từ`)}}
 function masteryReward(kd,w){
-  const b=blockStat(kd,blockOf(kd,w.n));
-  if(!b.paid){if(b.c<b.size){S.blockNote=S.blockNote||{};S.blockNote[b.from]=`khối ${b.from}–${b.to}: ${b.c}/${b.size}`}else payBlock(kd,b)}
-  // khối 50 từ đã đủ từ trước khi đổi quy tắc (19/11) thì thưởng nốt ở lần thuộc chắc kế tiếp
-  allBlocks(kd).forEach(x=>{if(!x.paid&&x.c>=x.size&&x.from!==b.from)payBlock(kd,x)});
+  payMilestones(kd);const g=mastProgress(kd);
+  S.blockNote={m:`còn ${g.left} từ nữa đến mốc ${g.next} từ (+${g.stars} ⭐)`};
 }
 
 // ================= LUYỆN NGHE & NÓI =================

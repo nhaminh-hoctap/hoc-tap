@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 22/11 | 0047 | Sao thuộc chắc Từ vựng (bố mẹ chốt): **cứ đủ thêm 50 từ thuộc chắc là thưởng**, không cần đủ cả một khối 1–50, 51–100…; mức sao giữ nguyên (50 sao/mốc đến 400 từ với Anh Phong, 600 từ với Thanh Nghị; sau đó 150 sao/mốc). Mở Từ vựng là tự trả các mốc đã đủ (Anh Phong 74 từ → +50 sao). |
 | 22/11 | 0046 | Từ vựng · Ôn tập: hết từ đến hạn vẫn có nút **🔁 Ôn thêm 20 từ cho chắc** (làm bao nhiêu lần cũng được): chọn từ chưa thuộc chắc, hay sai, sắp đến hạn; trả lời đúng được tính lên mức nhớ / thuộc chắc như Luyện thêm (chỉ khi đã đủ thời gian giãn cách), sai thì ôn lại hôm sau; không cộng sao. |
 | 22/11 | 0045 | Từ vựng: bé đã ôn hết từ đến hạn qua Luyện thêm / Nghe & nói (nút Ôn tập báo "Không có từ cần ôn") thì nay vẫn được tính **xong Ôn tập** hôm nay cho Nhiệm vụ, rương báu và chuỗi ngày (trước đây không được nhận nên rương không mở, chuỗi có thể đứt); không cộng thêm sao ôn tập. |
 | 22/11 | 0044 | Hình đồng xu 🪙 bị lỗi (ô vuông) trên Windows 10 và iPad đời cũ: mọi chữ 🪙 trên trang tự thay bằng hình đồng xu 3D (`img/fe/1fa99.webp`). |
@@ -55,7 +56,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 - Mỗi bé học **5 từ mới/ngày**; mục tiêu 3.000 từ phổ thông mỗi bé, từ dễ đến khó; giữ thứ tự 1–700 của danh sách Thanh Nghị.
 - Anh Phong (lớp 2) chỉ cần các dạng bài cơ bản: nghe → chọn nghĩa, đọc → chọn nghĩa, nghĩa → chọn từ. Ôn tập và Luyện thêm không có bài nói (chốt 21/11); luyện nói chỉ ở phần Luyện nghe & nói.
 - Sao tính cho cả Toán, Tiếng Việt / Ngữ văn; Sao thưởng là mục riêng dùng chung cho mọi ứng dụng.
-- Thưởng thuộc chắc (chốt 19/11): từ 1–400 (Anh Phong) / 1–600 (Thanh Nghị) mỗi 50 từ = 50 sao; từ 401 / 601 trở đi mỗi 50 từ = 150 sao.
+- Thưởng thuộc chắc (chốt 19/11, đổi 22/11): tính theo **tổng số từ thuộc chắc** (không cần cùng khối), cứ đủ thêm 50 từ là thưởng; đến 400 từ (Anh Phong) / 600 từ (Thanh Nghị) mỗi 50 từ = 50 sao, sau đó mỗi 50 từ = 150 sao.
 - Từ vựng (chốt 19/11): mỗi ngày học đúng 5 từ, không có "Học thêm"; bỏ "Kiểm tra từ cũ" và Phonics.
 - Thi đua: danh hiệu / khung tên theo huy hiệu; đấu trường tuần (cúp +30 sao); rương báu mỗi ngày khi học đủ tiếng Anh (5 từ mới, ôn, 2 lần luyện thêm, 1 lần nghe nói → 5–10 sao); linh vật lớn lên; khiên giữ chuỗi chỉ thưởng khi bé hoàn thành tốt cả tuần; bé thua nhưng làm tốt cũng được +15 sao.
 - Lớp 6: bỏ gia sư AI; bài giảng chi tiết nhưng dễ hiểu. Lớp 2: tiến độ theo Giữa kì 1, Học kì 1, Giữa kì 2, Học kì 2; có luyện cộng trừ nhanh và bảng cửu chương.
