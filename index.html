@@ -133,9 +133,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=54"></script>
-<script src="bank.js?v=54"></script>
-<script src="thidua.js?v=54"></script>
+<script src="claude-shim.js?v=55"></script>
+<script src="bank.js?v=55"></script>
+<script src="thidua.js?v=55"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -312,6 +312,10 @@ var BAR_CSS='html.pmount body>*:not(#pbar){visibility:hidden!important}html.pmou
   '#pbar .pb-sync{flex:none;width:12px;height:12px;border-radius:50%;background:#22C55E}#pbar .pb-sync.wait{background:#F59E0B}'+
   '#pbar .pb-sync.err{width:auto;height:auto;background:#FEF2F2;color:#B91C1C;border-radius:99px;padding:5px 10px;font-size:13px;font-weight:700}'+
   '@media (max-width:700px){#pbar .pb-home span{display:none}#pbar .pb-title{font-size:16px}}@media (max-width:520px){#pbar{gap:8px;padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}#pbar .pb-title{display:none}#pbar .pb-who{max-width:none;flex:1;min-width:0;overflow:hidden}#pbar .pb-sync.err .t{display:none}#pbar .pb-sync.err{padding:4px 7px}}'+
+  /* điện thoại hẹp (bản sửa 0053): nút Quay lại chỉ còn mũi tên, sao/xu gọn lại để thanh không tràn màn hình */
+  '@media (max-width:760px){#pbar .pb-sync.err .t{display:none}#pbar .pb-sync.err{padding:4px 7px}}'+
+  '@media (max-width:430px){#pbar{gap:6px}#pbar .pb-back{padding:0 14px;font-size:24px}#pbar .pb-back span{display:none}#pbar .pb-home{padding:0 9px;font-size:22px}#pbar .pb-star{font-size:14px;padding:3px 7px}}'+
+  '@media (max-height:500px) and (orientation:landscape){#pbar{min-height:54px;padding-top:calc(4px + env(safe-area-inset-top));padding-bottom:4px}#pbar .pb-back,#pbar .pb-home{height:42px}}'+
   /* ẩn phần trùng lặp trong từng ứng dụng */
   'html.pbar #portalHome,html.pbar #appTitle,html.pbar body:not(.parent) #kidChip{display:none!important}'+
   'html.pbar #syncBadge.ok,html.pbar #syncBadge.saving,html.pbar #syncBadge.loading{display:none!important}'+

@@ -263,6 +263,35 @@ img.pic{width:1em;height:1em;object-fit:contain;display:inline-block;vertical-al
 .nt-fhd{grid-column:1/-1;font-weight:900;font-size:18px;margin:6px 2px 0}.nt-fhd small{font-weight:700;color:var(--mut);font-size:13px;margin-left:6px}
 .nt-foe.fr{border-color:var(--fc);box-shadow:0 4px 0 var(--fc);background:linear-gradient(180deg,#fff,#F8FAFC)}.nt-foe.fr .im{font-size:80px}
 .nt-xtlock{position:fixed;inset:0;z-index:9000;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#0F172A;background:rgba(15,23,42,.6);display:grid;place-items:center;padding:20px}.nt-xtlock .bx{background:#fff;border-radius:26px;max-width:440px;width:100%;padding:26px 22px;text-align:center;font-size:18px;border:3px solid #A78BFA}.nt-xtlock b{font-size:23px;display:block;margin:6px 0}.nt-xtlock p{color:#475569;margin:8px 0 16px}.nt-xtlock .nt-btn{min-height:54px;font-size:19px;padding:0 26px;margin:0 auto;background:#22C55E;color:#fff;border-color:#16A34A;box-shadow:0 4px 0 #16A34A;font-family:inherit}
+/* ---------- điện thoại (bản sửa 0053): bảng hỏi tuyệt chiêu, rương, hộp thoại không tràn màn hình; điện thoại xoay ngang ---------- */
+.nt-dlg,.nt-dlg *{box-sizing:border-box}
+.nt-dlg{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.nt-dlg>div{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.nt-dlg>div>.nt-btn{margin:14px auto 0;min-width:180px}
+@media (max-width:520px){
+  .nt-dlg>div{padding:16px 14px;border-radius:20px}
+  .nt-q{font-size:17px}.nt-q .w{font-size:28px;margin:2px 0}.nt-q #ntQSay{min-height:44px;padding:4px 16px;font-size:16px;margin:0 auto}
+  .nt-q .opts{grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.nt-q .opts .nt-btn{min-height:54px;font-size:16px;padding:6px 8px}
+  .nt-chest .cimg{width:150px;height:150px;margin:6px auto}.nt-chest .cimg img{width:128px;height:128px}
+  .nt-hd{flex-wrap:wrap}.nt-hd>div:first-child{flex:1 1 100%}
+  .nt-bar{grid-template-columns:118px 1fr 40px;font-size:14px}.nt-bar>span:first-child{white-space:nowrap}
+  .nt-acts button{flex-direction:column;gap:0;font-size:15px;padding:8px 6px;line-height:1.2;text-align:center}
+  .nt-stats>div{font-size:14px;padding:6px 2px}.nt-stats>div small{font-size:11px}
+  #ntDecoList .nt-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#ntDecoList .nt-row button{width:auto}#ntDecoList .nt-row button img.pic.dc{width:120px;height:84px}
+}
+@media (max-height:500px) and (orientation:landscape){
+  .nt-dlg>div{padding:12px 16px;max-width:560px}
+  .nt-q{font-size:16px}.nt-q .w{font-size:24px;margin:0}.nt-q #ntQSay{min-height:40px;padding:2px 14px;font-size:15px}.nt-q .mu{margin-top:2px!important}
+  .nt-q .opts{grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.nt-q .opts .nt-btn{min-height:46px;font-size:16px;padding:4px 8px}
+  .nt-chest .cimg{width:110px;height:110px;margin:4px auto}.nt-chest .cimg img{width:96px;height:96px}
+  /* trận đấu khi xoay ngang: sân đấu bên trái, lời nhắn và 3 nút bên phải để không phải cuộn */
+  #ntBattle:not(.hide){display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:12px}
+  #ntBattle .nt-ghead{grid-column:1/-1;margin-bottom:6px}
+  #ntBattle .nt-ar{grid-column:1;grid-row:2/4;height:calc(100vh - 140px);height:calc(100dvh - 140px);min-height:200px}.nt-ar .ft{font-size:min(22vh,90px)}
+  #ntBattle .nt-blog{grid-column:2;grid-row:2;margin:0 0 8px;min-height:0;padding:8px 10px;font-size:15px}
+  #ntBattle .nt-bacts{grid-column:2;grid-row:3;grid-template-columns:1fr;gap:8px;align-content:start}
+  #ntBattle .nt-bacts .nt-btn{min-height:50px;font-size:16px;flex-direction:row;gap:8px}
+}
 </style>
 </head>
 <body>
@@ -279,7 +308,7 @@ img.pic{width:1em;height:1em;object-fit:contain;display:inline-block;vertical-al
     <div class="nt-top">
       <div class="nt-scene" id="ntScene"></div>
       <div class="card nt-info" style="margin-top:0">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><div class="nt-name" id="ntName"></div><div class="nt-lv" id="ntLv"></div></div><div style="display:flex;gap:8px;align-items:center"><button class="nt-mute" id="ntMute" title="Bật/tắt âm thanh">🔊</button><div class="nt-xu">🪙 <b id="ntXu">0</b><small>xu</small></div></div></div>
+        <div class="nt-hd" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><div class="nt-name" id="ntName"></div><div class="nt-lv" id="ntLv"></div></div><div style="display:flex;gap:8px;align-items:center"><button class="nt-mute" id="ntMute" title="Bật/tắt âm thanh">🔊</button><div class="nt-xu">🪙 <b id="ntXu">0</b><small>xu</small></div></div></div>
         <div class="nt-bar"><span>⚡ Năng lượng</span><span class="tr"><i id="ntFull" style="background:#F59E0B"></i></span><span id="ntFullN"></span></div>
         <div class="nt-bar"><span>💖 Vui vẻ</span><span class="tr"><i id="ntHap" style="background:#EC4899"></i></span><span id="ntHapN"></span></div>
         <div class="nt-stats" id="ntStats"></div>
