@@ -78,7 +78,8 @@ Ba tệp `claude-shim.js`, `bank.js`, `thidua.js` được nạp kèm `?v=N`; `s
 | `league/<thứ Hai yyyy-mm-dd>` | `thidua.js` | Kết quả tuần `{wk, s:{bé: điểm}, win, good, sh, at}`; tự chốt khi mở trang vào tuần sau. |
 | `data/users/gia-dinh/sync` | Lớp 2 | Tiến độ Lớp 2 (các lượt luyện, bài kiểm tra, luyện nhanh, cài đặt), lưu dạng `{json: "<chuỗi JSON>", t}` vì Firestore không nhận mảng lồng mảng. `…/progress` là bản cũ. |
 | `tien-do/hoc-sinh` | Lớp 6 | Tiến độ Lớp 6. `data/users/gia-dinh/tien-do` là vị trí cũ, chỉ đọc. |
-| `thu-cung/<bé>` | `nuoithu.html` | Nuôi thú `{json: "<chuỗi>", t}`: loài `sp`, tên `name`, cấp đã xem `seen`, điểm lớn `base`+`grow`, xu đã tiêu `xuSpent` (mốc `xu0`), túi thức ăn `inv`, no bụng / vui vẻ, lượt mua bằng sao, lượt chơi, phông nền. `thidua.js` đọc để vẽ linh vật. |
+| `thu-cung/<bé>` | `nuoithu.html` | Nuôi thú `{json: "<chuỗi>", t}`: loài `sp`, tên `name`, cấp đã xem `seen`, điểm lớn `base`+`grow`, xu đã tiêu `xuSpent` (mốc `xu0`), túi thức ăn `inv`, no bụng / vui vẻ, lượt mua bằng sao, lượt chơi, phông nền. `thidua.js` đọc để vẽ linh vật. Thêm (bản 0054): lực chiến `lc`, nhật ký nhặt đồ `dlog` `[lúc, món, nguồn, trùng]`, buff đã dùng `bu`. |
+| `thu-cung/_admin` | `index.html` (Góc bố mẹ → ⚔️ Quản lý đấu thú) | Cài đặt đấu thú của bố mẹ `{json, t}`: mở/đóng, năng lượng, giờ, `kids` (cho đấu, ⚡ thêm), `buff[bé]` = cân bằng đồ bí mật `{id, n, gift, minR, g, l, fresh}`. `nuoithu.html` đọc khi mở. |
 
 Các khóa Từ vựng quan trọng: `vocab_progress_v1` (đã học đến từ số mấy), `vocab_srs_v1` (lịch ôn, **khóa theo số thứ tự từ**), `vocab_daily_v1` (nhật ký từng ngày), `vocab_practice_log_v1` (các bài luyện thêm, nghe nói), `vocab_stars_v1` (sổ sao Từ vựng + sao bố mẹ chấm + `paidB` các khối đã thưởng), `vocab_badges_v1`, `vocab_title_v1` (danh hiệu, khung tên), `vocab_shield_v1` (khiên đã dùng), `vocab_pin` (mã bố mẹ).
 
