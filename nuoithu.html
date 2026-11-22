@@ -343,7 +343,7 @@ img.pic{width:1em;height:1em;object-fit:contain;display:inline-block;vertical-al
     <div class="card"><h2>🛡️ Đang đeo</h2><div class="nt-eqs" id="ntGearSlots"></div>
       <div class="nt-sets" id="ntGearSet"></div></div>
     <div class="card"><div class="nt-gxu" id="ntGearXu"></div><div class="nt-gtabs" id="ntGearTabs"></div><div class="nt-items" id="ntGearList"></div>
-      <p class="mu" style="margin:12px 0 0">🎁 Làm bài tốt (được sao) có cơ hội nhận rương: mỗi bài 8%, tối đa 2 rương/ngày; 10 bài tốt liền chưa có rương thì bài thứ 10 chắc chắn có. Cúp vô địch tuần tặng rương từ Hiếm trở lên. Rơi trùng món thì đổi thành 🔩 mảnh rèn.</p></div>
+      <p class="mu" style="margin:12px 0 0">🎁 Làm bài tốt (được sao) có cơ hội nhận rương: mỗi bài 8%, tối đa 2 rương/ngày; 10 bài tốt liền chưa có rương thì bài thứ 10 chắc chắn có. Hạng 1 đấu trường tuần (cả 6 bạn) được rương đồ từ Hiếm trở lên, hạng 2 được rương đồ Thường. Rơi trùng món thì đổi thành 🔩 mảnh rèn.</p></div>
   </section>
   <!-- chọn đối thủ -->
   <section id="ntArena" class="hide">
@@ -861,7 +861,7 @@ function lvOf(g){return Math.min(FIGHT.lvMax,1+Math.floor((+g||0)/FIGHT.lvStep))
 function stageOf(sp,g){var L=T.SPECIES[sp]?T.SPECIES[sp].L:null,i=0;if(!L)return 0;for(var j=0;j<L.length;j++)if(g>=L[j][0])i=j;return i}
 /* ---------- TRANG BỊ: 80 món = 4 nhóm × 5 lối mạnh × 4 độ hiếm (hình bố mẹ vẽ bằng Gemini, img/do/<nhóm>_<lối>_<bậc>.webp) ----------
    Đồ không bán: chỉ rơi khi con học tốt (mỗi dòng sao nhận được từ việc học = 1 "bài tốt").
-   Rơi 8% mỗi bài tốt, tối đa 2 món/ngày; 10 bài tốt liền chưa rơi thì bài thứ 10 chắc chắn rơi; cúp vô địch tuần tặng 1 rương từ Hiếm trở lên.
+   Rơi 8% mỗi bài tốt, tối đa 2 món/ngày; 10 bài tốt liền chưa rơi thì bài thứ 10 chắc chắn rơi; hạng 1 đấu trường tuần (cả 6 bạn) tặng 1 rương từ Hiếm trở lên, hạng 2 tặng 1 rương Thường (bố mẹ chốt 22/11/2026; cúp hai anh em từ tuần 16/11 không còn tặng rương riêng).
    Rơi trùng món đã có → đổi thành mảnh rèn. Rèn +1…+5 bằng xu (+3 trở lên cần thêm mảnh). Đeo đủ 4 món cùng lối → hiệu ứng bộ. */
 var DROP={rate:.08,perDay:2,pity:10,rar:[60,28,10,2],cupMin:2,dupShard:[1,2,4,8]};
 var GRP=[{k:'vk',n:'Vũ khí',e:'⚔️',p:{a:3}},{k:'gi',n:'Áo giáp',e:'🛡️',p:{d:2,h:12}},{k:'gy',n:'Giày',e:'👟',p:{s:2}},{k:'bu',n:'Bùa',e:'🔮',p:{c:2}}];
@@ -914,13 +914,18 @@ function lvLine(){var g=growth(),lv=lvOf(g);return '<span class="nt-lvb">Lv '+lv
 function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}h^=h>>>13;h=Math.imul(h,1274126177);h^=h>>>16;return (h>>>0)/4294967296}
 function learnEvents(){var E=[];
   try{B.vocabLed(KID).forEach(function(e){if(e&&e.v>0&&(!e.k||e.k==='auto')&&!/^📌/.test(String(e.r)))E.push({key:'v'+e.t+String(e.r).slice(0,20),t:+e.t})})}catch(e){}
-  try{B.extList(KID).forEach(function(e){if(!e||!(e.v>0))return;if(e.k==='cup'&&/^🏆/.test(String(e.r)))E.push({key:'x'+e.id,t:+e.t,cup:1});
+  try{B.extList(KID).forEach(function(e){if(!e||!(e.v>0))return;if(e.k==='cup'&&/^🏆/.test(String(e.r))){if(!(String(e.id).replace('cup-','')>=RK_FROM()))E.push({key:'x'+e.id,t:+e.t,cup:1})}   // từ tuần RK_FROM rương cúp thay bằng rương theo hạng (rankDrops)
     else if(/^(toan|tv|van)$/.test(e.src)&&e.k!=='cup')E.push({key:'x'+e.id,t:+e.t})})}catch(e){}
   return E.sort(function(a,b){return a.t-b.t||(a.key<b.key?-1:1)})}
-function rollItem(seed,minR){var u=hash(seed+'r')*100,acc=0,r=1;for(var i=0;i<4;i++){acc+=DROP.rar[i];if(u<acc){r=i+1;break}}if(minR&&r<minR)r=minR;
+function rollItem(seed,minR,maxR){var u=hash(seed+'r')*100,acc=0,r=1;for(var i=0;i<4;i++){acc+=DROP.rar[i];if(u<acc){r=i+1;break}}if(minR&&r<minR)r=minR;if(maxR&&r>maxR)r=maxR;
   return itId(GRP[Math.floor(hash(seed+'g')*4)].k,LOI[Math.floor(hash(seed+'l')*5)].k,r)}
+function RK_FROM(){return (T&&T.RULE&&T.RULE.RK_FROM)||'2026-11-16'}
+/* rương theo hạng đấu trường tuần (cả 6 bạn): hạng 1 → 1 món từ Hiếm trở lên, hạng 2 → 1 món Thường; mỗi tuần một lần (S.rkGot) */
+function rankDrops(){var got=[];try{var L=T&&T.rankChests?T.rankChests(KID):[],rg=S.rkGot||(S.rkGot={});
+  L.forEach(function(x){if(rg[x.wk])return;rg[x.wk]=x.r;var seed=KID+'|rk'+x.wk;got.push(giveItem(x.r===1?rollItem(seed,2):rollItem(seed,1,1),x.r===1?'r1':'r2'))});
+  if(got.length)save()}catch(e){}return got}
 function checkDrops(){bagOf(S);if(!S.sp)return[];var E=learnEvents();
-  if(S.dropT==null){S.dropT=E.length?E[E.length-1].t:Date.now();S.dropK=E.filter(function(e){return e.t===S.dropT}).map(function(e){return e.key});S.pity=0;S.dropDay={};save();return[]}   // lần đầu mở: chỉ tính các bài từ nay về sau
+  if(S.dropT==null){S.dropT=E.length?E[E.length-1].t:Date.now();S.dropK=E.filter(function(e){return e.t===S.dropT}).map(function(e){return e.key});S.pity=0;S.dropDay={};save();return rankDrops()}   // lần đầu mở: chỉ tính các bài từ nay về sau
   var got=[],dd=S.dropDay||(S.dropDay={});
   var dk=S.dropK||(S.dropK=[]),ch=false;
   E.forEach(function(e){if(e.t<S.dropT||(e.t===S.dropT&&dk.indexOf(e.key)>=0))return;if(e.t>S.dropT){S.dropT=e.t;dk.length=0}dk.push(e.key);ch=true;var seed=KID+'|'+e.key,id=null;
@@ -929,14 +934,14 @@ function checkDrops(){bagOf(S);if(!S.sp)return[];var E=learnEvents();
       if(hash(seed)<DROP.rate||S.pity>=DROP.pity){id=rollItem(seed);dd[day]=(dd[day]||0)+1;S.pity=0}}
     if(id)got.push(giveItem(id,e.cup))});
   Object.keys(dd).sort().slice(0,-14).forEach(function(k){delete dd[k]});
-  if(ch)save();return got}
+  if(ch)save();return rankDrops().concat(got)}
 function giveItem(id,cup){var o=bagOf(S),dup=o.bag[id]!=null,r=itParse(id).r;o.col[id]=1;
   if(dup)o.shard+=DROP.dupShard[r-1];else{o.bag[id]=0;var g=itParse(id).g;if(!o.eqp[g])o.eqp[g]=id}
-  return{id:id,dup:dup,cup:!!cup,sh:dup?DROP.dupShard[r-1]:0}}
+  return{id:id,dup:dup,cup:cup||0,sh:dup?DROP.dupShard[r-1]:0}}
 /* mở rương: lần lượt từng món */
 function showChests(list,done){if(!list.length){done&&done();return}var x=list.shift(),r=itParse(x.id).r,st=itStats(x.id,0);
   var w=document.createElement('div');w.className='nt-dlg';
-  w.innerHTML='<div class="nt-chest r'+r+'"><div class="cbox">'+(x.cup?'🏆 Quà cúp vô địch tuần!':'🎁 Con học tốt nên nhận được rương!')+'</div><div class="cimg">'+itImg(x.id)+'</div>'+
+  w.innerHTML='<div class="nt-chest r'+r+'"><div class="cbox">'+(x.cup==='r1'?'🏆 Quà vô địch đấu trường tuần!':x.cup==='r2'?'🥈 Quà hạng nhì đấu trường tuần!':x.cup?'🏆 Quà cúp vô địch tuần!':'🎁 Con học tốt nên nhận được rương!')+'</div><div class="cimg">'+itImg(x.id)+'</div>'+
     '<div class="crar" style="color:'+RCOL[r-1]+'">'+RAR[r-1]+'</div><div class="cnm">'+esc(itName(x.id))+'</div><div class="mu">'+stTxt(st)+'</div>'+
     (x.dup?'<div class="cdup">Con đã có món này rồi → đổi thành <b>'+x.sh+' 🔩 mảnh rèn</b></div>':'')+
     '<button class="nt-btn ok">'+(list.length?'Mở rương tiếp ('+list.length+')':'Tuyệt vời!')+'</button></div>';

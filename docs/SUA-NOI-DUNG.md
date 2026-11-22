@@ -102,6 +102,7 @@ Hằng số ở đầu tệp:
 | `CUP` | 30 | Sao cho bé vô địch tuần (cần từ `WIN_MIN` = 50 điểm; hoà thì cả hai cùng nhận) |
 | `GOOD`, `GOOD_MIN` | 15, 60 | Bé không vô địch nhưng đạt từ 60 điểm được +15 sao |
 | `SHIELD_MIN`, `SHIELD_MAX` | 75, 2 | Tuần đạt từ 75 điểm được 1 khiên (nhận thứ Hai tuần sau, giữ tối đa 2); khiên giữ chuỗi khi lỡ một ngày |
+| `RK_FROM`, `rankChests` | 2026-11-16 | Rương đồ theo hạng đấu trường tuần của cả 6 bạn (từ 50 điểm, bằng điểm cùng hạng): hạng 1 → 1 món từ Hiếm trở lên, hạng 2 → 1 món Thường; Nuôi thú trao qua `rankDrops` (`nuoithu.html`), đã nhận lưu `S.rkGot[tuần]` |
 | `NEWW` | 5 | Rương báu: học xong 5 từ mới (cả bước kiểm tra từ mới) + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn → ngẫu nhiên 5–10 sao |
 | `SPECIES`, `PNAMES` | 9 cấp | Linh vật = thú trong 🐾 Nuôi thú. Học được **xu** (= năng lượng cũ: ngày xong tiếng Anh +10, đạt mục tiêu môn lớp +5, rương báu +3, mỗi cúp +20; `THIDUA.xu`). Thú lớn theo **điểm lớn** từ việc cho ăn (`base`+`grow` trong `thu-cung/<bé>`), mốc 0, 40, 100, 200, 350, 550, 800, 1100, 1500. |
 

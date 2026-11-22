@@ -6,6 +6,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 
 | Ngày | Bản sửa | Nội dung |
 |---|---|---|
+| 22/11 | 0052 | **Rương đồ theo hạng đấu trường tuần (cả 6 bạn)** (bố mẹ chốt): hạng 1 được 1 món từ Hiếm trở lên, hạng 2 được 1 món Thường; bằng điểm thì cùng hạng; cần từ 50 điểm; tính từ tuần 16/11–22/11. Mở trong 🐾 Nuôi thú (`THIDUA.rankChests`, `rankDrops`, đã nhận lưu ở `S.rkGot`). Cúp hai anh em từ tuần 16/11 không còn tặng rương riêng (tránh nhận hai lần); cúp các tuần trước vẫn như cũ. |
 | 22/11 | 0051 | Bố mẹ chỉnh lại sau 0050: **Luyện thêm giữ như cũ** (4 lượt nhận sao/ngày, +1 / +3 / +5) và **rương báu giữ 5–10 sao**. Vẫn giữ: Nghe & nói 30 câu, +2 / +4; kiểm tra lớp 2, lớp 6 chỉ 1 lần/ngày có sao. Mỗi bé tối đa khoảng 57–58 sao/ngày từ bài tập. |
 | 22/11 | 0050 | **Nghe & nói 30 câu** (Dễ 15 từ × 2, Vừa 10 từ × 3, Khó 10 từ × 3). **Giảm sao** (bố mẹ chốt, mỗi bé tối đa khoảng 38–39 sao/ngày, không đặt trần): Luyện thêm 2 bài/ngày, 45–46 +1 · 47–48 +2 · 49–50 +3; Nghe & nói +2 / +4; kiểm tra lớp 2 và lớp 6 chỉ 1 lần/ngày có sao; rương báu 3–5 sao (xu rương giữ 5–10). Xu và các thưởng một lần giữ nguyên. |
 | 22/11 | 0049 | Góc bố mẹ → Thưởng · Phạt · Tiêu sao: chỉ còn Anh Phong và Thanh Nghị (các bạn học cùng không có sao); phạt "trừ cả hai" chỉ trừ hai anh em. **Bỏ giới hạn 60 phút game/TV mỗi ngày**; **được tiêu sao cả khi chưa đủ / đang âm** (ghi nợ, trả dần bằng sao kiếm sau), màn đổi sao báo trước số sao sẽ nợ. Bảng sao trên cùng cập nhật ngay sau khi chấm. |
@@ -69,6 +70,7 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
 - **Xu (chốt 21/11)**: xong tiếng Anh +15, đạt mục tiêu môn +10, rương 5–10, bài làm tốt +2 (tối đa 3 tiếng Anh + 2 môn khác/ngày), lần đầu làm tốt một bài +2, chuỗi 7 ngày +20; xếp hạng tuần (từ 50 điểm) +50/+40/+30/+20/+20/+20 (bỏ +10 khi từ 60 điểm); tiến bộ nhất tuần (tăng từ 10 điểm) +30; cả nhóm từ 400 điểm mỗi bạn +10; thắng thú của bạn +2 (thú cấp cao hơn +3), thắng quái +1; tổng 5 trận/ngày (⚡ năng lượng). · **thuộc chắc (chốt 22/11)**: mỗi mốc 50 từ +150 xu (bạn học cùng mọi mốc; Anh Phong từ 401 từ, Thanh Nghị từ 601 từ trở đi)
 - **Nuôi thú (chốt 21/11)**: bỏ no bụng; hết năng lượng và hết 5 lượt trò chơi chỉ ở thêm 15 phút (bố mẹ chỉnh trong Quản lý đấu thú); hiệu ứng đủ bộ theo món kém hiếm nhất; phông nền vẫn cần đủ cả số huy hiệu và cấp danh hiệu.
 - Thiết kế ưu tiên iPad (cả dọc và ngang), dùng được trên iPhone; tiến độ đồng bộ giữa các máy.
+- **Rương đồ theo hạng tuần (chốt 22/11, bản 0052)**: đấu trường tuần cả 6 bạn, hạng 1 → 1 món từ Hiếm trở lên, hạng 2 → 1 món Thường.
 - **Sao mỗi ngày (chốt 22/11, bản 0051)**: Nghe & nói 30 câu, +2 / +4; kiểm tra lớp 2, lớp 6 chỉ 1 lần/ngày có sao; Luyện thêm giữ 4 lượt +1/+3/+5; rương 5–10 sao; không đặt trần cứng (mỗi bé tối đa khoảng 57–58 sao/ngày từ bài tập).
 
 ## Việc có thể làm tiếp

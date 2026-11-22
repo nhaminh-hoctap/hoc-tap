@@ -255,6 +255,18 @@
   function goodN(g) { return g ? Math.min(XU.goodEn, g.en) + Math.min(XU.goodSub, g.sub) : 0; }
   function chestXu(kid, d) { var h = 2166136261, s = 'ruong|' + kid + '|' + d; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return XU.chest[0] + ((h >>> 0) % (XU.chest[1] - XU.chest[0] + 1)); }
   function ymdOf(t) { var d = new Date(+t); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  /* 🎁 rương đồ theo hạng tuần của cả 6 bạn (bố mẹ chốt 22/11/2026): hạng 1 → 1 món từ Hiếm trở lên, hạng 2 → 1 món Thường.
+     Tính như xu xếp hạng (từ WIN_MIN điểm, bằng điểm thì cùng hạng), chỉ các tuần đã chốt từ tuần RK_FROM. Nuôi thú đọc để trao rương. */
+  var RK_FROM = '2026-11-16';
+  function rankChests(kid) {
+    if (!D) return []; var out = [];
+    Object.keys(D.lg).sort().forEach(function (w) {
+      var L = D.lg[w]; if (!L || !L.s || w < RK_FROM) return; var sc = L.s, me = +sc[kid] || 0; if (me < WIN_MIN) return;
+      var better = {}; KIDS.forEach(function (k) { var v = +sc[k] || 0; if (v > me) better[v] = 1; }); var r = Object.keys(better).length + 1;
+      if (r <= 2) out.push({ wk: w, r: r, s: me });
+    });
+    return out;
+  }
   function xpParts(kid) {
     var o = { en: 0, sub: 0, chest: 0, good: 0, streak: 0, week: 0 }, vd = D.vd[kid], sj = D.sj[kid];
     o.chestXu = 0; Object.keys(vd).forEach(function (k) { if (vd[k] && vd[k].chest) { o.chest++; o.chestXu += chestXu(kid, k); } });
@@ -378,7 +390,7 @@
       pg = bst >= XU.progMin ? '🌱 Tiến bộ nhất (so với tuần trước): <b>' + who.map(function (k) { return (BANK.kid(k) || {}).name || k; }).join(', ') + '</b> +' + bst + ' điểm → <b>+' + XU.prog + ' 🪙</b>' : '🌱 Tiến bộ nhất tuần: bạn nào tăng nhiều điểm nhất so với tuần trước (từ ' + XU.progMin + ' điểm) được <b>+' + XU.prog + ' 🪙</b>'; }
     var extra = '<div class="lg-x"><div>🤝 Cả nhóm: <b>' + sum + '/' + XU.teamMin + '</b> điểm' + (sum >= XU.teamMin ? ' ✅ mỗi bạn <b>+' + XU.team + ' 🪙</b>' : ' · đạt thì mỗi bạn <b>+' + XU.team + ' 🪙</b>') + '<span class="lg-tb"><i style="width:' + Math.min(100, sum / XU.teamMin * 100) + '%"></i></span></div>' + (pg ? '<div>' + pg + '</div>' : '') + '</div>';
     var head = '<h3>🏆 Đấu trường tuần <small>' + dm(wk) + ' – ' + dm(addD(wk, 6)) + '</small></h3><div class="lg-rows">' + rows + '</div>' + extra;
-    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Hạng 1–6 (từ ' + WIN_MIN + ' điểm): <b>+' + XU.rank.join('/+') + ' 🪙</b>' + (focus && famOf(focus) ? ' · Con nhất nhà: <b>+' + CUP + ' ⭐</b>' : '') + ' · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️</b></div>';
+    var meta = '<div class="lg-meta">' + (left > 0 ? 'Còn <b>' + left + ' ngày</b> nữa (tính cả hôm nay là ' + (left + 1) + ')' : '<b>Hôm nay là ngày cuối!</b>') + ' · Hạng 1–6 (từ ' + WIN_MIN + ' điểm): <b>+' + XU.rank.join('/+') + ' 🪙</b> · Hạng 1: <b>🎁 rương đồ từ Hiếm</b>, hạng 2: <b>🎁 rương đồ Thường</b>' + (focus && famOf(focus) ? ' · Con nhất nhà: <b>+' + CUP + ' ⭐</b>' : '') + ' · Từ ' + SHIELD_MIN + ' điểm: <b>+1 🛡️</b></div>';
     if (mode === 'mini') return '<div class="td-card lg-mini">' + head + meta + '</div>';
     var h;
     if (mode === 'compact') {
@@ -417,7 +429,7 @@
     h += '<details><summary>📜 Luật đấu trường</summary><ul>' +
       '<li>Mỗi bạn được chấm theo <b>mục tiêu riêng của mình</b>, nên bạn lớn hay bạn nhỏ đều có cơ hội như nhau.</li>' +
       '<li>Mỗi ngày tối đa <b>15 điểm</b>: 📘 học đủ bài tiếng Anh +5 · 🧮 đạt mục tiêu môn chính (Toán/Tiếng Việt hoặc Toán/Ngữ văn ' + D.goal.anhphong + ' câu; bạn chưa có bài Toán/Tiếng Việt thì làm đủ 4 việc tiếng Anh) +4 · 🎯 đúng từ 90% (từ 80%: +1) +2 · 🎁 đủ điều kiện rương báu +2 · 💪 làm gấp đôi mục tiêu (hoặc 4 bài luyện thêm tiếng Anh) +2.</li>' +
-      '<li>Tuần chốt hết Chủ nhật. Bạn đạt từ ' + WIN_MIN + ' điểm: hạng 1 đến 6 lần lượt <b>+' + XU.rank.join(' / +') + ' xu</b>. Bạn tăng điểm nhiều nhất so với tuần trước (từ ' + XU.progMin + ' điểm) được <b>+' + XU.prog + ' xu</b>. Cả nhóm cộng lại từ ' + XU.teamMin + ' điểm: mỗi bạn <b>+' + XU.team + ' xu</b>.</li>' +
+      '<li>Tuần chốt hết Chủ nhật. Bạn đạt từ ' + WIN_MIN + ' điểm: hạng 1 đến 6 lần lượt <b>+' + XU.rank.join(' / +') + ' xu</b>; hạng 1 được thêm <b>🎁 1 rương đồ từ Hiếm trở lên</b>, hạng 2 được <b>🎁 1 rương đồ Thường</b> (mở trong 🐾 Nuôi thú). Bạn tăng điểm nhiều nhất so với tuần trước (từ ' + XU.progMin + ' điểm) được <b>+' + XU.prog + ' xu</b>. Cả nhóm cộng lại từ ' + XU.teamMin + ' điểm: mỗi bạn <b>+' + XU.team + ' xu</b>.</li>' +
       (focus && famOf(focus) ? '<li>Riêng trong nhà: con nhiều điểm hơn (từ ' + WIN_MIN + ' điểm) nhận <b>cúp +' + CUP + ' sao</b>; không vô địch nhưng từ ' + GOOD_MIN + ' điểm được <b>+' + GOOD + ' sao</b>.</li>' : '') +
       '<li>Tuần nào đạt từ <b>' + SHIELD_MIN + ' điểm</b> được thưởng <b>1 khiên 🛡️</b> (giữ tối đa ' + SHIELD_MAX + '). Lỡ nghỉ một ngày, khiên tự giữ chuỗi ngày học 🔥.</li></ul></details>' + (mode === 'compact' ? '</details>' : '</div>');
     return h;
@@ -679,9 +691,9 @@
 
   window.THIDUA = {
     load: load, onUpdate: function (f) { subs.push(f); }, data: function () { return D; },
-    chestXu: chestXu, pet: pet, xu: function (k) { return D ? xpParts(k).xp : 0; }, picOf: picOf, SPECIES: SPECIES, spOf: spOf, tcOf: tcOf, tasks: function (k) { return D ? tasks(k) : []; }, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
+    chestXu: chestXu, rankChests: rankChests, pet: pet, xu: function (k) { return D ? xpParts(k).xp : 0; }, picOf: picOf, SPECIES: SPECIES, spOf: spOf, tcOf: tcOf, tasks: function (k) { return D ? tasks(k) : []; }, petHtml: petHtml, petScene: petScene, petLine: petLine, missionHtml: missionHtml, missionSpeech: missionSpeech, say: say, alertsHtml: alertsHtml, leagueHtml: leagueHtml, celebrate: celebrate, shieldHave: function (k) { return D ? shieldHave(k) : 0; },
     weekPts: function (k) { return D ? weekPts(k, monday(today())) : 0; }, chestCheck: chestCheck,
     streak: streak, leadTxt: leadTxt, howHtml: howHtml, howSpeech: howSpeech, weekReportHtml: weekReportHtml, monday: function () { return monday(today()); },
-    RULE: { START: START, CUP: CUP, WIN_MIN: WIN_MIN, SHIELD_MIN: SHIELD_MIN, SHIELD_MAX: SHIELD_MAX, NEWW: NEWW }
+    RULE: { RK_FROM: RK_FROM, START: START, CUP: CUP, WIN_MIN: WIN_MIN, SHIELD_MIN: SHIELD_MIN, SHIELD_MAX: SHIELD_MAX, NEWW: NEWW }
   };
 })();
