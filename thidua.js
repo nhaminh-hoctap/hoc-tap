@@ -304,15 +304,21 @@
   function balXu(kid) { var tc = tcOf(kid) || {}; if (famOf(kid) && !tc.rs1121) return 0; var xp = xpParts(kid).xp; if (tc.xu0 == null) return xp; return Math.max(0, xp - tc.xu0 - (+tc.xuSpent || 0) + (+tc.xuWin || 0)); }
   function snapOf(kid) {
     var vd = D.vd[kid] || {}, pl = D.pl[kid] || [], sj = D.sj[kid] || {}, tc = tcOf(kid) || {}, o = {};
+    /* sửa 0062: tách xu kiếm được / xu đã tiêu, sao cộng / sao trừ — tiêu xu mua thức ăn, bố mẹ cho đổi sao là bình thường, không báo tụt */
     o.xu = balXu(kid);
-    if (famOf(kid) && window.BANK && BANK.total && BANK.vocabBal(kid) != null) o.sao = BANK.total(kid);   // sao Từ vựng chưa tải xong thì bỏ qua, tránh ghi nhầm
+    if (tc.xu0 != null) { o.xuk = xpParts(kid).xp + (+tc.xuWin || 0); o.xut = +tc.xuSpent || 0; }
+    if (famOf(kid) && window.BANK && BANK.total && BANK.vocabBal(kid) != null) {
+      o.sao = BANK.total(kid);
+      var led = (BANK.vocabLed ? BANK.vocabLed(kid) : []).concat(BANK.extList ? BANK.extList(kid) : []);
+      o.saoc = led.reduce(function (a, e) { return a + (+e.v > 0 ? +e.v : 0); }, 0); o.saot = led.reduce(function (a, e) { return a + (+e.v < 0 ? -e.v : 0); }, 0);
+    }   // sao Từ vựng chưa tải xong thì bỏ qua, tránh ghi nhầm
     o.en = Object.keys(vd).filter(function (d) { return dayDone(vd[d]); }).length;
     o.lt = pl.filter(function (e) { return e && e.total > 0 && e.done >= e.total; }).length;
     o.cau = Object.keys(sj).reduce(function (a, d) { return a + (+sj[d].q || 0); }, 0);
     if (tc.sp) o.g = (+tc.base || 0) + (+tc.grow || 0);
     return o;
   }
-  var SNAP_F = { xu: ['🪙', 'Xu', 30], sao: ['⭐', 'Tổng sao', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
+  var SNAP_F = { xu: ['🪙', 'Xu còn lại', 1e9], xuk: ['🪙', 'Xu đã kiếm được', 30], xut: ['🛒', 'Xu đã tiêu', 0], sao: ['⭐', 'Tổng sao', 1e9], saoc: ['⭐', 'Sao đã cộng', 60], saot: ['➖', 'Sao đã trừ / đã đổi', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
   async function snapLog() {
     var db = BANK.db; if (!db || !D || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();
     var day = today();

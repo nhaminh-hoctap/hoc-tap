@@ -478,7 +478,9 @@ function save(){S.t=Date.now();var lc=myLc();if(lc)S.lc=lc;var a=lsGet('thu_cung
 async function push(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
   try{var sn=await ref.get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
     if(r&&prog(r)>prog(S)){nk('chan','⛔ Chặn lưu đè: bản trên máy này ('+pdesc(S)+') cũ hơn bản trên mạng ('+pdesc(r)+') → lấy bản trên mạng');adopt(r);try{render()}catch(e){}return}}}catch(e){return}
-  ref.set({json:JSON.stringify(S),t:S.t}).catch(function(){})}
+  try{await ref.set({json:JSON.stringify(S),t:S.t})}catch(e){}}
+/* sửa 0062: bấm về trang chính thì gửi nốt bản thú lên mạng rồi mới tải lại trang (trước đây lần lưu cuối có thể chưa kịp gửi, máy khác thấy thú bị lùi) */
+window.__beforeHome=function(){clearTimeout(saveT);if(!REM||!B||!B.db)return Promise.resolve();return push()};
 async function loadRemote(){
   if(!B)return;await B.ready;if(!B.db)return;
   try{var sa=await B.db.doc('thu-cung/_admin').get();if(sa.exists){var xa=sa.data()||{};ADM=typeof xa.json==='string'?JSON.parse(xa.json):{};lsSet('thu_admin_v1',ADM)}}catch(e){}
@@ -593,12 +595,10 @@ function pat(){var d=today(),c=S.pat[d]||0;jump();fx('💖',2);snd('pat');
   say(['Hihi, nhột quá!','Tớ thương con lắm!','Vuốt nữa đi!','😊 Dễ chịu ghê!'][Math.floor(Math.random()*4)])}
 function refreshBars(){var e=energy(),c=fightCap(),h=hapNow();$('ntFull').style.width=(c?Math.round(e/c*100):0)+'%';$('ntFullN').textContent=e+'/'+c;$('ntHap').style.width=h+'%';$('ntHapN').textContent=h}
 function eat(kind){var have=S.inv[kind]||0;if(have<=0)return;
-  var before=pet().i;
+  var before=pet().i;S.inv[kind]=have-1;var lv0=lvOf(growth());S.grow+=CFG.growN;setHap(hapNow()+CFG.hapN);nk('an','Cho ăn +'+CFG.growN+' điểm lớn'+(lvOf(growth())>lv0?' → lên Lv '+lvOf(growth()):''));save();   // sửa 0062: tính ngay khi bấm (trước đây trừ sau 0,7 giây nên bấm nhanh được ăn quá số phần đã mua)
   var sc=$('ntScene'),e=document.createElement('span');e.className='nt-fly';e.textContent=kind==='s'?'🍰':'🍖';e.style.left='8%';e.style.top='82%';sc.appendChild(e);
   var pp=petPos();requestAnimationFrame(function(){e.style.left=(pp[0]-4)+'%';e.style.top=pp[1]+'%';e.style.transform='scale(.4)';e.style.opacity='.2'});
-  setTimeout(function(){e.remove();S.inv[kind]--;
-    {var lv0=lvOf(growth());S.grow+=CFG.growN;setHap(hapNow()+CFG.hapN);fx('🌱',2);say('Măm măm, ngon quá! +'+CFG.growN+' 🌱');nk('an','Cho ăn +'+CFG.growN+' điểm lớn'+(lvOf(growth())>lv0?' → lên Lv '+lvOf(growth()):''))}
-    save();jump();snd('eat');render()},720)}
+  setTimeout(function(){e.remove();fx('🌱',2);say('Măm măm, ngon quá! +'+CFG.growN+' 🌱');jump();snd('eat');render()},720)}
 function buyXu(k){k='n';var price=CFG.priceN;
   if(xuNow()<price){dlg('Con chưa đủ xu. Học bài để có thêm xu nhé! 💪',[['Đồng ý',null,'ok']]);return}
   S.xuSpent+=price;S.inv[k]=(S.inv[k]||0)+1;nk('mua','Mua 1 phần ăn (−'+price+' 🪙)');save();snd('buy');render();say('Có thêm 1 phần ăn rồi! Cho tớ ăn nhé 🥰')}
@@ -1172,7 +1172,7 @@ function finish(w,timeUp){if(!BT||BT.over)return;BT.over=true;BT.busy=true;bars(
   if(gain)S.xuWin=(+S.xuWin||0)+gain;setHap(hapNow()+(win?15:8));nk('dau','⚔️ '+(win?'Thắng':'Thua')+' '+(BT.kind==='sib'?'thú của '+((B&&B.kid&&B.kid(BT.fo.wid)||{}).name||BT.fo.wid||'bạn'):BT.fo.name)+' (Lv '+BT.me.st.lv+' đấu Lv '+BT.fo.st.lv+')'+(gain?' +'+gain+' 🪙':''));save();
   var loser=$('bFt'+(win?'fo':'me')),winner=$('bFt'+(win?'me':'fo'));if(loser)loser.classList.add('ko');if(winner)winner.classList.add('winp');
   snd(win?'win':'bad');banner(win?'🏆 CHIẾN THẮNG!':'💪 Cố lên lần sau!');
-  setTimeout(function(){if(!document.getElementById('ntAr'))return;var m=document.createElement('div');m.className='nt-msg';
+  var bt=BT;setTimeout(function(){if(!document.getElementById('ntAr')||BT!==bt)return;var m=document.createElement('div');m.className='nt-msg';
     m.innerHTML=(win?'<div style="font-size:60px">🏆</div><b>'+esc(BT.me.name)+'</b> thắng rồi!'+(timeUp?'<br><span class="mu">(hết '+FIGHT.maxRound+' hiệp, còn nhiều máu hơn)</span>':'')+(gain?'<br>Con được <b>+'+gain+' 🪙</b>':''):
       '<div style="font-size:60px">💪</div>Lần này <b>'+esc(BT.fo.name)+'</b> thắng.'+(timeUp?'<br><span class="mu">(hết '+FIGHT.maxRound+' hiệp)</span>':'')+'<br><span class="mu">Cho thú ăn, rèn trang bị rồi đấu lại nhé! Thua không mất gì đâu.</span>')+
       '<br><span class="mu">Thú vui thêm 💖</span><br><button class="nt-btn ok" style="background:#22C55E;color:#fff;border-color:#16A34A">Về đấu trường</button>';

@@ -1590,7 +1590,9 @@ const KID_KEY_SET=new Set(['vocab_enrich_v1','vocab_progress_v1','vocab_srs_v1',
    gửi bản gần trống của Anh Phong, Thanh Nghị lên, làm mất nhật ký ngày, nhật ký luyện thêm, sổ sao Từ vựng).
    Các dữ liệu "sổ ghi" dưới đây chỉ được gộp: mỗi lần gửi lên đều đọc bản trên kho rồi gộp với bản trên máy; nhận từ kho cũng gộp.
    Muốn xóa thật (bố mẹ bấm Xóa dữ liệu học) thì đặt SYNC.replace = true trong lần gửi đó. */
-const MERGE_KEYS=new Set(['vocab_daily_v1','vocab_practice_log_v1','vocab_stars_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1']);
+const canonJ=v=>JSON.stringify(v,(k,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,kk)=>(o[kk]=x[kk],o),{}):x);   // so sánh không phụ thuộc thứ tự khóa
+const MERGE_KEYS=new Set(['vocab_daily_v1','vocab_practice_log_v1','vocab_stars_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1',
+  'vocab_srs_v1','vocab_progress_v1','vocab_pstat_v1','vocab_speak_v1']);   // sửa 0062 (kiểm thử 4 tuần): lịch ôn, số từ đã học, thống kê luyện/nói cũng gộp, hai máy học cùng ngày không đè nhau
 function mRec(o,n){ // gộp một bản ghi: số lấy lớn hơn, đúng/sai lấy "có", mảng lấy dài hơn, đối tượng gộp sâu
   if(o==null)return n;if(n==null)return o;
   if(Array.isArray(o)||Array.isArray(n))return (Array.isArray(n)?n:[]).length>=(Array.isArray(o)?o:[]).length?n:o;
@@ -1601,6 +1603,7 @@ function mRec(o,n){ // gộp một bản ghi: số lấy lớn hơn, đúng/sai 
 const ONE_LINE=/^(📌 Số sao chuyển|🏆 Thuộc chắc \d+ từ|🎁 Rương báu ngày|📌 Bố mẹ điều chỉnh số sao)/;
 function ledKey(e){return ONE_LINE.test(String(e.r))?'r|'+String(e.r).replace(/\s*\(.*$/,''):e.t+'|'+e.r+'|'+e.v}
 function mergeKidVal(k,o,n){ // o: bản cũ hơn, n: bản mới hơn (cùng một bé)
+  if(k==='vocab_progress_v1'&&o!=null&&n!=null)return Math.max(+o||0,+n||0);   // số từ đã học: lấy số lớn hơn
   if(o==null||typeof o!=='object')return n;if(n==null||typeof n!=='object')return o;
   if(k==='vocab_daily_v1'){const r=Object.assign({},o,n);r.days=Object.assign({},o.days||{});Object.keys(n.days||{}).forEach(d=>{r.days[d]=mRec((o.days||{})[d],n.days[d])});return r}
   if(k==='vocab_practice_log_v1'&&Array.isArray(o)&&Array.isArray(n)){const m=new Map();[...o,...n].forEach(e=>{if(e&&e.t!=null)m.set(e.t+'|'+(e.type||'')+'|'+(e.src||''),e)});return [...m.values()].sort((a,b)=>b.t-a.t).slice(0,400)}
@@ -1608,6 +1611,10 @@ function mergeKidVal(k,o,n){ // o: bản cũ hơn, n: bản mới hơn (cùng m�
     [...(o.led||[])].concat(n.led||[]).forEach(e=>{if(!e)return;const key=ledKey(e);if(del.has(e.t+'|'+e.r+'|'+e.v))return;const p=m.get(key);if(!p||(ONE_LINE.test(String(e.r))?e.t<p.t:true))m.set(key,e)});
     const led=[...m.values()].sort((a,b)=>b.t-a.t).slice(0,500),sum=a=>(a||[]).reduce((x,e)=>x+(+e.v||0),0),off=(+n.bal||0)-sum(n.led);
     const r=Object.assign({},o,n,{led,bal:sum(led)+((n.led||[]).length>=500?off:0)});if(del.size)r.del=[...del].slice(-300);['paidM','paidB'].forEach(f=>{if(o[f]!=null||n[f]!=null)r[f]=Math.max(+o[f]||0,+n[f]||0)});return r}
+  if(k==='vocab_srs_v1'){ // lịch ôn: từng từ lấy bản đã trả lời nhiều lần hơn (x), bằng nhau thì lấy bản ôn gần hơn; giữ dấu đã thưởng thuộc chắc
+    const r=Object.assign({},o);Object.keys(n).forEach(w=>{const a=o[w],b=n[w];if(!a||typeof a!=='object'){r[w]=b;return}if(!b||typeof b!=='object')return;
+      const xa=+a.x||0,xb=+b.x||0,c=Object.assign({},xb>xa?b:xa>xb?a:(String(b.r||'')+String(b.d||''))>=(String(a.r||'')+String(a.d||''))?b:a);
+      if(a.m||b.m){c.m=1;c.ma=[a.ma,b.ma].filter(Boolean).sort()[0]||c.ma}r[w]=c});return r}
   return mRec(o,n)}
 const CHUNK=60000; // ký tự mỗi phần (kho giới hạn 256 KiB/tài liệu)
 async function writeDoc(id,str){
@@ -1653,6 +1660,7 @@ async function syncFlush(){
       const docs=docsFor(k);
       for(const [id,str0] of Object.entries(docs)){
         if(SYNC.last[id]===str0)continue;
+        if(!SYNC.replace&&lh[id]&&strHash(str0)===lh[id])continue;   // sửa 0062: phần này (thường là của bé khác) không đổi trên máy này từ lần đồng bộ trước -> không gửi, tránh bản cũ đè bản mới
         setSyncBadge('saving');
         jobs.push((async()=>{let str=str0;
         try{if(MERGE_KEYS.has(k)&&!SYNC.replace)str=await mergeWithCloud(k,id,str0);
@@ -1679,7 +1687,8 @@ function applyCloudDocs(docs){ // docs: [{id, v}]
   docs.forEach(({id,v})=>{const dot=id.indexOf('.');const k=dot>0&&KID_IDS.includes(id.slice(dot+1))?id.slice(0,dot):id;const kid=k===id?null:id.slice(dot+1);
     let val;try{val=JSON.parse(v)}catch(e){return}
     const loc=(localDocs[k]=localDocs[k]||docsFor(k))[id];
-    if(SYNC.dirty.has(k)&&!(id in SYNC.last&&SYNC.last[id]===(loc||null)))return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
+    const modLoc=loc!=null&&(lh[id]?strHash(loc)!==lh[id]:!(id in SYNC.last&&SYNC.last[id]===loc));   // sửa 0062: xét từng bé, không xét cả loại dữ liệu
+    if(SYNC.dirty.has(k)&&modLoc)return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
     if(LH_ON&&loc&&loc!==v&&lh[id]&&strHash(loc)!==lh[id]){SYNC.dirty.add(k);keptLocal=true;return} // thay đổi từ lần trước chưa gửi được
     SYNC.last[id]=v;SYNC.known.add(id);setLH(id,v);
     if(kid){(byKey[k]=byKey[k]&&typeof byKey[k]==='object'?byKey[k]:{})[kid]=val}else byKey[k]=val});
@@ -1688,7 +1697,7 @@ function applyCloudDocs(docs){ // docs: [{id, v}]
     let cur=null;try{cur=JSON.parse(LS.getItem(k))}catch(e){}
     // dữ liệu tách theo bé: ghép từng bé, giữ phần của bé chưa có trên kho
     if(KID_KEY_SET.has(k)&&cur&&typeof cur==='object'&&!Array.isArray(cur)&&val&&typeof val==='object'){
-      if(MERGE_KEYS.has(k)){const nv={};Object.keys(val).forEach(kid=>{nv[kid]=mergeKidVal(k,cur[kid],val[kid]);if(cur[kid]!=null&&JSON.stringify(nv[kid])!==JSON.stringify(val[kid]))regain.add(k)});val=nv}   // máy này có phần kho chưa có -> gộp và gửi bù lên
+      if(MERGE_KEYS.has(k)){const nv={};Object.keys(val).forEach(kid=>{nv[kid]=mergeKidVal(k,cur[kid],val[kid]);if(cur[kid]!=null&&canonJ(nv[kid])!==canonJ(val[kid]))regain.add(k)});val=nv}   // máy này có phần kho chưa có -> gộp và gửi bù lên
       val=Object.assign({},cur,val)}
     try{LS.setItem(k,JSON.stringify(val))}catch(e){}
   });
