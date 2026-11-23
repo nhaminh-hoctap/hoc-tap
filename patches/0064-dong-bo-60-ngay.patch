@@ -1,0 +1,401 @@
+diff --git a/bank.js b/bank.js
+index f47fbe6..ec5c82a 100644
+--- a/bank.js
++++ b/bank.js
+@@ -62,5 +62,5 @@
+      Mỗi thay đổi (sao, xu, lượt học, thú, đồ, đồng bộ, bố mẹ chỉnh) là MỘT tài liệu riêng: nhatky/<bé>/e/<mã>,
+      chỉ thêm, không sửa, nên nhiều máy cùng ghi không đè nhau. Mã (vd. NK-MWQ3ZK8A1B2C) dùng để tra cứu, khôi phục sau này. */
+-  var NKP_KEY = 'nhatky_pending_v1', nkp = {};
++  var NKP_KEY = 'nhatky_pending_v1', nkp = {}, nkSent = {}, bkSent = {};   // nkSent/bkSent: dòng đang gửi dở (sửa 0064)
+   try { nkp = JSON.parse(localStorage.getItem(NKP_KEY) || '{}') || {}; } catch (e) { nkp = {}; }
+   function saveNkp() { try { localStorage.setItem(NKP_KEY, JSON.stringify(nkp)); } catch (e) { } }
+@@ -132,5 +132,7 @@
+       Object.keys(nkp).forEach(function (p) {
+         var e = nkp[p], kid = p.split('/')[0];
+-        B.db.doc('nhatky/' + kid + '/e/' + e.id).set(e).then(function () { if (nkp[p] === e) { delete nkp[p]; saveNkp(); } }).catch(function () { setTimeout(B._flushLog, 20000); });
++        if (nkSent[p] === e) return;   // sửa 0064: dòng này đang gửi (mất mạng thì lời gửi chờ đến khi có mạng) — không gửi lại lần nữa
++        nkSent[p] = e;
++        B.db.doc('nhatky/' + kid + '/e/' + e.id).set(e).then(function () { if (nkSent[p] === e) delete nkSent[p]; if (nkp[p] === e) { delete nkp[p]; saveNkp(); } }).catch(function () { if (nkSent[p] === e) delete nkSent[p]; setTimeout(B._flushLog, 20000); });
+       });
+     },
+@@ -139,5 +141,7 @@
+       Object.keys(pending).forEach(function (p) {
+         var e = pending[p], kid = p.split('/')[0];
+-        B.db.doc('bankx/' + kid + '/e/' + e.id).set(e).then(function () { if (pending[p] === e) delete pending[p]; }).catch(function () { setTimeout(B._flush, 15000); });
++        if (bkSent[p] === e) return;   // sửa 0064: đang gửi thì không gửi lại
++        bkSent[p] = e;
++        B.db.doc('bankx/' + kid + '/e/' + e.id).set(e).then(function () { if (bkSent[p] === e) delete bkSent[p]; if (pending[p] === e) delete pending[p]; }).catch(function () { if (bkSent[p] === e) delete bkSent[p]; setTimeout(B._flush, 15000); });
+       });
+     }
+diff --git a/docs/KIEN-TRUC.md b/docs/KIEN-TRUC.md
+index d023b68..6b22f0e 100644
+--- a/docs/KIEN-TRUC.md
++++ b/docs/KIEN-TRUC.md
+@@ -88,5 +88,16 @@ Các khóa Từ vựng quan trọng: `vocab_progress_v1` (đã học đến từ
+ ## Dữ liệu trên từng máy (localStorage)
+ 
+-`hoc_family_code` (mã gia đình) · `portal_nav_v1`, `portal_last_kid`, `portal_backup_at` · `bank_ext_cache_v1` (bản sao kho sao) · `title_show_v1` · `lesson_titles_v1` (tên bài để hiện báo cáo) · `vocab_*` (Từ vựng; riêng `vocab_prac_resume_v1` = bài Luyện thêm làm dở, chỉ trên máy đó, không đồng bộ) · `vovui-lop2-sync-v4` (Lớp 2) · `vo-on-luyen-lop6-v1` (Lớp 6). `sessionStorage.portal_pin` nhớ mã bố mẹ trong phiên.
++`hoc_family_code` (mã gia đình) · `portal_nav_v1`, `portal_last_kid`, `portal_backup_at` · `bank_ext_cache_v1` (bản sao kho sao) · `thu_cung_v1` / `thu_base_v1` (Nuôi thú: bản trên máy / mốc gộp ba bên) · `title_show_v1` · `lesson_titles_v1` (tên bài để hiện báo cáo) · `vocab_*` (Từ vựng; riêng `vocab_prac_resume_v1` = bài Luyện thêm làm dở, chỉ trên máy đó, không đồng bộ) · `vovui-lop2-sync-v4` (Lớp 2) · `vo-on-luyen-lop6-v1` (Lớp 6). `sessionStorage.portal_pin` nhớ mã bố mẹ trong phiên.
++
++## Quy tắc đồng bộ (bản 0064, sau kiểm thử giả lập 60 ngày)
++
++Firestore bật bộ nhớ đệm trên máy (`enablePersistence`): khi mất mạng hoặc mạng chập chờn, `get()` có thể trả **bản cũ trong máy** (`snap.metadata.fromCache = true`); lệnh ghi xếp hàng trong máy và tự gửi khi có mạng (kể cả sau khi đóng trang).
++
++- Mọi chỗ **đọc → gộp → ghi** chỉ ghi khi đọc được bản trên mạng; đọc ra bản cũ thì để lần sau: Từ vựng (`notStale` trong `mergeWithCloud` / `guardShrink`, phần chia nhỏ đọc kiểu `strict` — phần cũ hay khác lần ghi với tài liệu đầu coi như chưa đọc được), môn lớp 1/2/3/5/7 (`flush`), Lớp 6 (`push` đọc, gộp rồi mới ghi), Nuôi thú (`push1`).
++- **Nuôi thú gộp ba bên** (`merge3`): mốc `thu_base_v1` (bản trên mạng ở lần đồng bộ trước của máy này) + bản trên máy + bản trên mạng. Số đếm (điểm lớn, xu đã tiêu/thắng, trận, thức ăn, mảnh rèn, cấp rèn, lượt chơi) cộng phần thay đổi của hai bên; thời điểm lấy mới nhất; tên, phông, đồ đang đeo lấy bên vừa đổi; danh sách gộp không trùng. Mỗi lúc chỉ một lần gửi (`PUSHING`).
++- `vocab_daily_v1.<bé>.per` kèm `perAt` (lúc bố mẹ đổi): khi gộp lấy bản có `perAt` mới hơn.
++- `thidua.js`: `D.partial` (có tài liệu đọc lỗi hoặc chỉ có bản cũ) → tự tải lại tối đa 3 lần, không báo tụt, không chốt tuần / trao cúp; `D.ahead` (máy này còn phần học chưa gửi lên) → không ghi mốc nhật ký toàn diện.
++- `bank.js`: dòng sao (`bkSent`) và dòng nhật ký (`nkSent`) đang gửi dở thì không gửi lại (trước đây mất mạng lâu làm hàng chờ phình to).
++- Sao lưu và bản chụp tự động: có phần chỉ đọc được bản cũ → không tạo bản thiếu, báo bố mẹ thử lại.
+ 
+ ## Sao lưu
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index fe45e8d..7109568 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 23/11 | 0064 | **Kiểm thử giả lập 60 ngày** (6 bạn, 13 máy; bộ giả lập giống Firestore thật: mỗi máy có bộ nhớ đệm, mất mạng, đóng ngang trang, máy cũ mở lại, máy mới, lệch giờ, mạng chập chờn trả bản cũ). Sửa đồng bộ: (1) **Môn lớp 1/2/3/5/7** (`flush`): mạng chập chờn thì Firestore trả bản cũ trong máy, trước đây gộp với bản cũ rồi gửi làm **mất lượt học máy khác vừa gửi** (thử: mất 2/6 lượt) → nay chỉ gửi khi đọc được bản trên mạng. (2) **Từ vựng**: gộp trước khi gửi cũng chờ bản trên mạng (`notStale`, đọc phần chia nhỏ kiểu `strict`); lỗi đọc thì để lần sau (trước đây gửi luôn bản chưa gộp, đè mất bản kho). Số từ mới mỗi ngày lấy theo lần bố mẹ đổi gần nhất (`perAt`) — trước đây máy bé đang học dở gửi lên đè mất số bố mẹ vừa đổi. (3) **Lớp 6** (`push`): đọc bản trên mạng, gộp rồi mới gửi. (4) **Nuôi thú**: gộp ba bên (`merge3`, mốc `thu_base_v1`) — iPad để mở sẵn hoặc học lúc mất mạng nay cộng đủ phần của cả hai máy (trước đây mất phần một máy, xu bị trả lại); mỗi lúc chỉ gửi một lần; không gửi khi chỉ đọc được bản cũ. (5) **Thi đua, nhật ký**: lần tải thiếu thì tự tải lại, không báo tụt, không chốt tuần (tránh báo tụt nhầm, chốt sai người thắng); máy còn phần chưa gửi thì không ghi mốc. (6) **Sổ sao, nhật ký**: không gửi lại dòng đang gửi (mất mạng lâu từng làm hàng chờ phình to). (7) **Sao lưu, bản chụp**: mạng chập chờn thì báo thử lại, không tạo bản thiếu. Quy tắc chi tiết: `docs/KIEN-TRUC.md` → Quy tắc đồng bộ. |
+ | 23/11 | 0063 | Bố mẹ chốt sau kiểm thử: (1) **Số từ mới mỗi ngày chỉ bố mẹ đổi** — màn Từ vựng của bé chỉ hiện số từ, bố mẹ đổi ở Góc bố mẹ → Học từ vựng → Cài đặt (`renderSetPer`, từng bạn 3/4/5); đặt lại một lần 5 từ (Hưng 3) cho mọi bạn (cờ `vocab_cfg_20261123`, đồng bộ). Nhiệm vụ "Học N từ mới" và rương báu tính theo **số từ được giao hôm nay** (học xong bài từ mới là xong; `chestState`, `chestCheck`) — trước đây bé chọn 4 (Anh Phong) / 3 (Pi) thì nhiệm vụ, rương, Nuôi thú bị khóa cả ngày. (2) **Thưởng thuộc chắc**: Anh Phong đến 400 từ, Thanh Nghị đến 600 từ không thưởng sao (`STAR.blockLow = 0`; các mốc đã thưởng giữ nguyên); từ đó mỗi 50 từ = 150 sao + 150 xu; các bạn học cùng mỗi 50 từ = 150 xu (giữ nguyên). Màn sao báo mốc có thưởng kế tiếp (`nextRewardMile`). |
+ | 23/11 | 0062 | **Sửa lỗi tìm ra khi kiểm thử 4 tuần giả lập (6 bạn, 9 máy)**: (1) **Từ vựng đồng bộ** — máy có thay đổi chưa gửi của một bé từng đánh dấu cả loại dữ liệu của mọi bé, nên khi có mạng lại / mở máy cũ thì gửi bản cũ của bé khác đè lên (giả lập: lịch ôn Thanh Nghị 222→210, số từ đã học 699→667, Mun 65→60). Nay chỉ gửi phần thật sự đổi trên máy đó (so với dấu lần đồng bộ trước `lh`), khi nhận từ kho xét từng bé (`modLoc`); lịch ôn, số từ đã học, thống kê luyện/nói cũng **gộp** (`MERGE_KEYS` thêm `vocab_srs_v1`, `vocab_progress_v1`, `vocab_pstat_v1`, `vocab_speak_v1`; lịch ôn từng từ lấy bản trả lời nhiều lần hơn, giữ dấu đã thưởng thuộc chắc; so sánh không phụ thuộc thứ tự khóa `canonJ`). (2) **Nuôi thú** — thêm `__beforeHome` gửi bản thú lên mạng xong mới về trang chính (trước đây lần lưu cuối có thể chưa kịp gửi, máy khác thấy thú lùi); `push` chờ ghi xong; cho ăn trừ phần ăn và cộng điểm lớn ngay khi bấm (trước đây trừ sau 0,7 giây nên bấm nhanh được ăn quá số phần đã mua); rời trận lúc đang hiện kết quả không báo lỗi. (3) **Báo động tụt** — tách xu kiếm được / xu đã tiêu, sao đã cộng / sao đã trừ (`xuk`, `xut`, `saoc`, `saot`); tiêu xu mua thức ăn, bố mẹ cho đổi sao không còn bị báo đỏ. |
+diff --git a/index.html b/index.html
+index 7817a7b..b60957b 100644
+--- a/index.html
++++ b/index.html
+@@ -143,7 +143,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=65"></script>
+-<script src="bank.js?v=65"></script>
+-<script src="thidua.js?v=65"></script>
++<script src="claude-shim.js?v=66"></script>
++<script src="bank.js?v=66"></script>
++<script src="thidua.js?v=66"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+@@ -689,7 +689,7 @@ async function gatherAll(db,withLog){
+   var cols=['sync','league','thu-cung'].concat(BANK.KIDS.map(function(k){return 'bankx/'+k.id+'/e'}));
+   if(withLog)cols=cols.concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id+'/e'}));
+-  for(var i=0;i<cols.length;i++){try{var sn=await db.collection(cols[i]).get();sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}catch(e){}}
++  for(var i=0;i<cols.length;i++){try{var sn=await db.collection(cols[i]).get();if(sn.metadata&&sn.metadata.fromCache)out.cached=(out.cached||0)+1;sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}catch(e){out.cached=(out.cached||0)+1}}   // sửa 0064: đếm phần chỉ đọc được bản cũ trong máy (mất mạng / mạng chập chờn)
+   var docs=['data/users/gia-dinh/sync','data/users/gia-dinh/progress','tien-do/hoc-sinh','data/users/gia-dinh/lop1','data/users/gia-dinh/lop3','data/users/gia-dinh/lop5','data/users/gia-dinh/lop7'].concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id}));
+-  for(var j=0;j<docs.length;j++){try{var s1=await db.doc(docs[j]).get();if(s1.exists)put(docs[j],s1.data())}catch(e){}}
++  for(var j=0;j<docs.length;j++){try{var s1=await db.doc(docs[j]).get();if(s1.metadata&&s1.metadata.fromCache)out.cached=(out.cached||0)+1;if(s1.exists)put(docs[j],s1.data())}catch(e){out.cached=(out.cached||0)+1}}
+   if(!n)throw new Error('Không đọc được dữ liệu nào');
+   out.count=n;return out}
+@@ -699,5 +699,6 @@ async function autoSnap(){try{await BANK.ready;var db=BANK.db;if(!db)return;var
+   var h=await db.doc('chup/'+day).get();if(h.exists&&(h.data()||{}).c){lsSet('chup_day',day);return}
+   await db.doc('chup/'+day).set({busy:BANK.dev,t:Date.now()});   // giữ chỗ, máy khác thấy thì thôi
+-  var out=await gatherAll(db,false),txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v}),c=Math.ceil(txt.length/SNAP_CHUNK);
++  var out=await gatherAll(db,false);if(out.cached)return;   // sửa 0064: mạng chập chờn, dữ liệu đọc được có thể thiếu → không lưu bản chụp hôm nay trên máy này (máy khác / lần mở sau sẽ chụp)
++  var txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v}),c=Math.ceil(txt.length/SNAP_CHUNK);
+   for(var i=0;i<c;i++)await db.doc('chup/'+day+'~'+i).set({p:txt.slice(i*SNAP_CHUNK,(i+1)*SNAP_CHUNK)});
+   await db.doc('chup/'+day).set({c:c,t:Date.now(),dev:BANK.dev,n:out.count,size:txt.length});lsSet('chup_day',day);
+@@ -713,4 +714,5 @@ async function doBackup(){var btn=$('pBkBtn');if(!btn||btn.disabled)return;btn.d
+   try{await BANK.ready;var db=BANK.db;if(!db)throw new Error('Chưa kết nối được dữ liệu');
+     var out=await gatherAll(db,true),n=out.count;
++    if(out.cached){btn.textContent='⚠️ Mạng đang chập chờn nên chưa lấy đủ dữ liệu. Bố mẹ thử lại khi mạng ổn định nhé.';setTimeout(function(){btn.textContent=old},6000);btn.disabled=false;return}   // sửa 0064: không tạo bản sao lưu thiếu
+     var txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v});
+     var d=new Date(),name='sao-luu-hoc-tap-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.json';
+diff --git a/lop1.html b/lop1.html
+index 32664aa..2c62468 100644
+--- a/lop1.html
++++ b/lop1.html
+@@ -1917,5 +1917,5 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
+     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
+     if(!retry){
+-      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
++      const snap=await sync.ref.get();if(snap.metadata&&snap.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='unavailable';throw e;}let R=snap.exists?clone(decDoc(snap.data())):null;   /* sửa 0064 (kiểm thử 60 ngày): mạng chập chờn thì bản đọc được có thể là bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ xóa mất lượt máy khác vừa gửi, nên chờ đọc được bản trên mạng rồi mới gửi */if(!R||R.v!==4)R=await migrateBase();
+       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
+       await sync.ref.set(encDoc(N));
+diff --git a/lop2.html b/lop2.html
+index 64faf4e..753a499 100644
+--- a/lop2.html
++++ b/lop2.html
+@@ -2039,5 +2039,5 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
+     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
+     if(!retry){
+-      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
++      const snap=await sync.ref.get();if(snap.metadata&&snap.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='unavailable';throw e;}let R=snap.exists?clone(decDoc(snap.data())):null;   /* sửa 0064 (kiểm thử 60 ngày): mạng chập chờn thì bản đọc được có thể là bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ xóa mất lượt máy khác vừa gửi, nên chờ đọc được bản trên mạng rồi mới gửi */if(!R||R.v!==4)R=await migrateBase();
+       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
+       await sync.ref.set(encDoc(N));
+diff --git a/lop3.html b/lop3.html
+index f2c6ae1..a92c1de 100644
+--- a/lop3.html
++++ b/lop3.html
+@@ -2345,5 +2345,5 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
+     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
+     if(!retry){
+-      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
++      const snap=await sync.ref.get();if(snap.metadata&&snap.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='unavailable';throw e;}let R=snap.exists?clone(decDoc(snap.data())):null;   /* sửa 0064 (kiểm thử 60 ngày): mạng chập chờn thì bản đọc được có thể là bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ xóa mất lượt máy khác vừa gửi, nên chờ đọc được bản trên mạng rồi mới gửi */if(!R||R.v!==4)R=await migrateBase();
+       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
+       await sync.ref.set(encDoc(N));
+diff --git a/lop5.html b/lop5.html
+index 769c373..c0bc96b 100644
+--- a/lop5.html
++++ b/lop5.html
+@@ -1959,5 +1959,5 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
+     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
+     if(!retry){
+-      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
++      const snap=await sync.ref.get();if(snap.metadata&&snap.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='unavailable';throw e;}let R=snap.exists?clone(decDoc(snap.data())):null;   /* sửa 0064 (kiểm thử 60 ngày): mạng chập chờn thì bản đọc được có thể là bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ xóa mất lượt máy khác vừa gửi, nên chờ đọc được bản trên mạng rồi mới gửi */if(!R||R.v!==4)R=await migrateBase();
+       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
+       await sync.ref.set(encDoc(N));
+diff --git a/lop6.html b/lop6.html
+index 8a8b387..0a37a6a 100644
+--- a/lop6.html
++++ b/lop6.html
+@@ -4062,7 +4062,16 @@ function push() {
+   if (json.length > 200000) { S.mistakes = S.mistakes.slice(-40); S.tests = S.tests.slice(-300); saveLocal(); json = JSON.stringify(S); s = sig(S); }
+   sync.busy = true; setSync('saving');
+-  var body = { json: json, at: Date.now(), by: DEV };
+-  sync.myAt = body.at;
+-  Promise.resolve().then(function () { return sync.ref.set(body); })
++  /* sửa 0064 (kiểm thử 60 ngày): đọc bản trên mạng, gộp rồi mới gửi. Trước đây gửi thẳng bản trên máy: máy mất mạng / mạng chập chờn
++     (chỉ có bản cũ trong bộ nhớ máy) gửi lên sẽ đè mất phần máy khác vừa gửi (vd. bài viết bố mẹ vừa chấm trên máy khác). */
++  Promise.resolve().then(function () { return sync.ref.get(); })
++    .then(function (snap) {
++      if (snap && snap.metadata && snap.metadata.fromCache) { var e = new Error('chỉ có bản cũ trong bộ nhớ máy'); e.code = 'unavailable'; throw e; }
++      var d = snap && snap.exists ? snap.data() : null;
++      if (d && d.json && !(d.by === DEV && d.at === sync.myAt)) { try { var M = merge(S, fixState(JSON.parse(d.json))); if (sig(M) !== sig(S)) { S = M; saveLocal(); softRender(); } } catch (e2) { } }
++      json = JSON.stringify(S); s = sig(S);
++      var body = { json: json, at: Date.now(), by: DEV };
++      sync.myAt = body.at;
++      return sync.ref.set(body);
++    })
+     .then(function () { sync.lastSig = s; sync.at = Date.now(); sync.retried = false; setSync('ok'); })
+     .catch(function (e) {
+diff --git a/lop7.html b/lop7.html
+index 029413a..f4ad72e 100644
+--- a/lop7.html
++++ b/lop7.html
+@@ -1917,5 +1917,5 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
+     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
+     if(!retry){
+-      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
++      const snap=await sync.ref.get();if(snap.metadata&&snap.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='unavailable';throw e;}let R=snap.exists?clone(decDoc(snap.data())):null;   /* sửa 0064 (kiểm thử 60 ngày): mạng chập chờn thì bản đọc được có thể là bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ xóa mất lượt máy khác vừa gửi, nên chờ đọc được bản trên mạng rồi mới gửi */if(!R||R.v!==4)R=await migrateBase();
+       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
+       await sync.ref.set(encDoc(N));
+diff --git a/nuoithu.html b/nuoithu.html
+index 523f020..4e9c20a 100644
+--- a/nuoithu.html
++++ b/nuoithu.html
+@@ -476,8 +476,34 @@ function adopt(r){S=Object.assign(blank(),r);fixFood();var a=lsGet('thu_cung_v1'
+ function save(){S.t=Date.now();var lc=myLc();if(lc)S.lc=lc;var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a);if(window.PORTAL&&PORTAL.bar)PORTAL.bar();
+   clearTimeout(saveT);saveT=setTimeout(push,600)}
+-async function push(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
+-  try{var sn=await ref.get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
+-    if(r&&prog(r)>prog(S)){nk('chan','⛔ Chặn lưu đè: bản trên máy này ('+pdesc(S)+') cũ hơn bản trên mạng ('+pdesc(r)+') → lấy bản trên mạng');adopt(r);try{render()}catch(e){}return}}}catch(e){return}
+-  try{await ref.set({json:JSON.stringify(S),t:S.t})}catch(e){}}
++var PUSHING=null,PUSH_AGAIN=false;
++function push(){if(PUSHING){PUSH_AGAIN=true;return PUSHING}   // sửa 0064: mỗi lúc chỉ gửi một lần (gửi chồng nhau thì phần gộp bị tính hai lần)
++  PUSHING=push1().catch(function(){}).then(function(){PUSHING=null;if(PUSH_AGAIN){PUSH_AGAIN=false;return push()}});return PUSHING}
++async function push1(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
++  try{var sn=await ref.get();
++    if(sn.metadata&&sn.metadata.fromCache){clearTimeout(saveT);saveT=setTimeout(push,20000);return}   // sửa 0064: chỉ đọc được bản cũ trong bộ nhớ máy (mất mạng, mạng chập chờn) → chưa gửi, thử lại sau
++    if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null,bs=baseGet();
++    if(r&&bs&&!same(r,bs)){   // sửa 0064: máy khác đã gửi bản mới từ lần đồng bộ trước của máy này → cộng phần thay đổi của cả hai (trước đây một bên bị bỏ)
++      var M=merge3(bs,S,r);nk('gop','🔀 Gộp với bản máy khác vừa gửi: trên mạng '+pdesc(r)+' · máy này '+pdesc(S)+' → '+pdesc(M));adopt(M);baseSet(r);try{render()}catch(e){}}
++    else if(r&&!bs&&prog(r)>prog(S)){nk('chan','⛔ Chặn lưu đè: bản trên máy này ('+pdesc(S)+') cũ hơn bản trên mạng ('+pdesc(r)+') → lấy bản trên mạng');adopt(r);baseSet(r);try{render()}catch(e){}return}}}catch(e){return}
++  try{var js=JSON.stringify(S);await ref.set({json:js,t:S.t});baseSet(JSON.parse(js))}catch(e){}}
++/* ---------- gộp ba bên (sửa 0064, kiểm thử 60 ngày): bs = bản trên mạng lần đồng bộ trước của máy này, m = bản trên máy, t = bản trên mạng bây giờ.
++   Số đếm (điểm lớn, xu đã tiêu, xu thắng, trận, thức ăn, mảnh rèn, cấp rèn, lượt chơi…) cộng phần tăng/giảm của cả hai bên;
++   thời điểm lấy mới nhất; tên, phông, đồ đang đeo… bên nào đổi thì lấy bên đó; danh sách gộp không trùng. ---------- */
++var MG_MAX={t:1,fAt:1,hAt:1,dropT:1,seen:1,hap:1,full:1},MG_MINE={lc:1,pity:1,xu0:1,sp:1,name:1,rs1121:1},MG_POS={n:1,s:1,shard:1};
++function same(a,b){return JSON.stringify(a)===JSON.stringify(b)}
++function isO(x){return !!x&&typeof x==='object'&&!Array.isArray(x)}
++function merge3(b,m,t){if(same(m,b))return t;if(same(t,b))return m;
++  if(!isO(m)||!isO(t))return m;b=isO(b)?b:{};var o={},ks={};[b,m,t].forEach(function(z){Object.keys(z).forEach(function(k){ks[k]=1})});
++  Object.keys(ks).forEach(function(k){var bv=b[k],mv=m[k],tv=t[k];
++    if(same(mv,bv)){if(tv!==undefined)o[k]=tv;return}
++    if(same(tv,bv)){if(mv!==undefined)o[k]=mv;return}
++    if(typeof mv==='number'&&typeof tv==='number'){if(MG_MAX[k])o[k]=Math.max(mv,tv);else if(MG_MINE[k])o[k]=mv;else{var v=tv+mv-(typeof bv==='number'?bv:0);o[k]=MG_POS[k]?Math.max(0,v):v}return}
++    if(Array.isArray(mv)&&Array.isArray(tv)){var seen={},u=[];tv.concat(mv).forEach(function(x){var j=JSON.stringify(x);if(!seen[j]){seen[j]=1;u.push(x)}});
++      if(u.length&&Array.isArray(u[0])&&typeof u[0][0]==='number')u.sort(function(p,q){return p[0]-q[0]});o[k]=u.slice(-240);return}
++    if(isO(mv)&&isO(tv)){o[k]=merge3(bv,mv,tv);return}
++    if(mv!==undefined)o[k]=mv;else if(tv!==undefined&&!MG_MINE[k])o[k]=tv});
++  return o}
++function baseGet(){var a=lsGet('thu_base_v1',{});return a&&a[KID]||null}
++function baseSet(r){var a=lsGet('thu_base_v1',{})||{};a[KID]=r;lsSet('thu_base_v1',a)}
+ /* sửa 0062: bấm về trang chính thì gửi nốt bản thú lên mạng rồi mới tải lại trang (trước đây lần lưu cuối có thể chưa kịp gửi, máy khác thấy thú bị lùi) */
+ window.__beforeHome=function(){clearTimeout(saveT);if(!REM||!B||!B.db)return Promise.resolve();return push()};
+@@ -486,9 +512,11 @@ async function loadRemote(){
+   try{var sa=await B.db.doc('thu-cung/_admin').get();if(sa.exists){var xa=sa.data()||{};ADM=typeof xa.json==='string'?JSON.parse(xa.json):{};lsSet('thu_admin_v1',ADM)}}catch(e){}
+   try{var sn=await B.db.doc('thu-cung/'+KID).get();var r=null;if(sn.exists){var x=sn.data()||{};r=typeof x.json==='string'?JSON.parse(x.json):null}
+-    var pr=prog(r),pl=prog(S);REM=true;
++    var pr=prog(r),pl=prog(S),stale=!!(sn.metadata&&sn.metadata.fromCache),bs=baseGet();REM=true;
+     var loc='bản trên máy: '+(S.sp?pdesc(S):'chưa có')+' · bản trên mạng: '+(r?pdesc(r):'chưa có');
+-    if(r&&(pr>pl||(pr===pl&&(+r.t||0)>(+S.t||0)))){adopt(r);nk('mo','Mở Nuôi thú, dùng bản trên mạng ('+loc+')')}
+-    else if(S.sp&&(!r||pl>pr)){nk(r?'gui':'mo',(r?'⚠️ Máy này giữ bản tiến độ cao hơn, gửi bản trên máy lên (':'Mở Nuôi thú (')+loc+')');save()}
+-    else nk('mo','Mở Nuôi thú ('+loc+')')}catch(e){nk('loi','Không tải được bản trên mạng (mạng yếu?), chỉ dùng bản trên máy')}   // bản trên máy tiến độ cao hơn (máy này giữ bản đúng) thì gửi lên
++    if(r&&bs&&S.sp&&!stale&&!same(S,bs)&&!same(r,bs)){   // sửa 0064: máy này có phần chưa kịp gửi, máy khác cũng đã gửi bản mới → cộng phần thay đổi của cả hai
++      var M=merge3(bs,S,r);adopt(M);baseSet(r);nk('gop','🔀 Mở Nuôi thú: gộp phần trên máy này chưa kịp gửi với bản trên mạng ('+loc+') → '+pdesc(M));save()}
++    else if(r&&(pr>pl||(pr===pl&&(+r.t||0)>(+S.t||0)))){adopt(r);if(!stale)baseSet(r);nk('mo','Mở Nuôi thú, dùng bản trên mạng ('+loc+')')}
++    else if(S.sp&&(!r||pl>pr)){nk(r?'gui':'mo',(r?'⚠️ Máy này giữ bản tiến độ cao hơn, gửi bản trên máy lên (':'Mở Nuôi thú (')+loc+')');if(r&&!stale&&!bs)baseSet(r);save()}
++    else{if(r&&!stale)baseSet(r);nk('mo','Mở Nuôi thú ('+loc+')')}}catch(e){nk('loi','Không tải được bản trên mạng (mạng yếu?), chỉ dùng bản trên máy')}   // bản trên máy tiến độ cao hơn (máy này giữ bản đúng) thì gửi lên
+   try{var sb=await B.db.doc('sync/vocab_badges_v1.'+KID).get();if(sb.exists){var y=sb.data()||{},s=typeof y.v==='string'?y.v:null;
+     if(!s&&y.c){s='';for(var i=0;i<y.c;i++){var p=await B.db.doc('sync/vocab_badges_v1.'+KID+'~'+i).get();s+=(p.exists?(p.data()||{}).p:'')||''}}
+diff --git a/sw.js b/sw.js
+index 9d58395..847caea 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v65';
++const V = 'hoc-tap-v66';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=65', 'bank.js?v=65', 'thidua.js?v=65', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=66', 'bank.js?v=66', 'thidua.js?v=66', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/thidua.js b/thidua.js
+index b540c12..0d86e83 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -47,13 +47,13 @@
+ 
+   /* ---------- đọc dữ liệu ---------- */
+-  var D = null, AT = 0, LOADING = null, subs = [], WORDS = null;
++  var D = null, AT = 0, LOADING = null, subs = [], WORDS = null, RD_BAD = 0, RETRY_N = 0;   // RD_BAD: số lần đọc lỗi hoặc chỉ có bản cũ trong bộ nhớ máy (sửa 0064)
+   async function readDoc(db, path) {
+     try {
+-      var sn = await db.doc(path).get(); if (!sn.exists) return null; var x = sn.data() || {};
++      var sn = await db.doc(path).get(); if (sn.metadata && sn.metadata.fromCache) RD_BAD++; if (!sn.exists) return null; var x = sn.data() || {};
+       if (typeof x.json === 'string') return JSON.parse(x.json);
+       if (typeof x.v === 'string') return JSON.parse(x.v);
+       if (x.c) { var s = ''; for (var i = 0; i < x.c; i++) { var p = await db.doc(path + '~' + i).get(); s += (p.exists ? (p.data() || {}).p : '') || ''; } return JSON.parse(s); }
+       return x;
+-    } catch (e) { return null; }
++    } catch (e) { RD_BAD++; return null; }
+   }
+   async function load(force) {
+@@ -61,5 +61,5 @@
+     if (LOADING) return LOADING;
+     LOADING = (async function () {
+-      await BANK.ready; var db = BANK.db;
++      await BANK.ready; var db = BANK.db; var bad0 = RD_BAD;
+       var per = ['sync/vocab_daily_v1.', 'sync/vocab_practice_log_v1.', 'sync/vocab_shield_v1.', 'thu-cung/'], jobs = [];
+       if (db) {
+@@ -75,10 +75,12 @@
+       var lg = {}, n = { vd: {}, pl: {}, sh: {}, tc: {}, l2: null, l6: null, lx: {}, lg: lg };
+       KIDS.forEach(function (k, i) { var o = i * 4; n.vd[k] = (db && R[o] && R[o].days) || {}; n.pl[k] = (db && R[o + 1]) || []; n.sh[k] = (db && R[o + 2]) || {}; n.tc[k] = (db && R[o + 3]) || null; });
+-      if (db) { var z = KIDS.length * 4; n.l2 = R[z]; n.l6 = R[z + 1]; if (R[z + 2]) R[z + 2].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
++      if (db) { var z = KIDS.length * 4; n.l2 = R[z]; n.l6 = R[z + 1]; if (!R[z + 2] || (R[z + 2].metadata && R[z + 2].metadata.fromCache)) RD_BAD++; if (R[z + 2]) R[z + 2].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
+         Object.keys(L2F).filter(function (a) { return a !== 'lop2'; }).forEach(function (a, i) { n.lx[a] = R[z + 3 + i] || null; }); }
+       try { mergeLocal(n); } catch (e) { console.error(e); }
+       n.sj = {}; n.goal = {};
+       KIDS.forEach(function (k) { n.sj[k] = subjDays(k, n); n.goal[k] = k === 'thanhnghi' ? ((n.l6 && n.l6.cfg && +n.l6.cfg.goal) || 20) : 20; });
++      n.partial = RD_BAD > bad0;   // có tài liệu đọc lỗi / chỉ có bản cũ: số liệu có thể thiếu → không dùng để báo tụt
+       D = n; AT = Date.now(); LOADING = null;
++      if (n.partial && db && RETRY_N < 3) { RETRY_N++; setTimeout(function () { load(true).catch(function () { }); }, 4000 * RETRY_N); } else if (!n.partial) RETRY_N = 0;   // sửa 0064: tải thiếu thì tự tải lại (số sao, xu hiện đúng như máy khác)
+       try { await finalize(); } catch (e) { console.error(e); }
+       if (db) setTimeout(function () { snapLog().catch(function (e) { console.error(e); }); }, 1500);
+@@ -95,5 +97,5 @@
+     KIDS.forEach(function (k) {
+       var ld = vd && vd[k] && vd[k].days || {}, cd = n.vd[k];
+-      Object.keys(ld).forEach(function (d) { if (dayScore(ld[d]) > dayScore(cd[d])) cd[d] = ld[d]; });
++      Object.keys(ld).forEach(function (d) { if (dayScore(ld[d]) > dayScore(cd[d])) { cd[d] = ld[d]; n.ahead = true; } });
+       var lp = pl && Array.isArray(pl[k]) ? pl[k] : [];
+       if (lp.length) {
+@@ -101,4 +103,5 @@
+         n.pl[k].concat(lp).forEach(function (e) { if (!e || !e.t) return; var id = e.t + '|' + e.type, o = seen[id];
+           if (o === undefined) { seen[id] = all.length; all.push(e); } else if ((+e.done || 0) > (+all[o].done || 0)) all[o] = e; });
++        if (all.length > n.pl[k].length) n.ahead = true;
+         n.pl[k] = all.sort(function (a, b) { return b.t - a.t; });
+       }
+@@ -115,4 +118,5 @@
+           if (!Array.isArray(r)) return; var id = r[0] + '|' + r[1]; if (seen[id]) return; seen[id] = 1; out[f].push(r); });
+       });
++      if (out.rounds.length > (c2.rounds || []).length || out.tests.length > (c2.tests || []).length) n.ahead = true;
+       n.lx[a] = Object.assign({}, c2, out);
+     });
+@@ -124,5 +128,5 @@
+       Object.keys(s6.days).forEach(function (d) {
+         var L = s6.days[d] || {}, C = c6.days[d] = c6.days[d] || {};
+-        Object.keys(L).forEach(function (sb) { var a = L[sb], b = C[sb]; if (a && typeof a === 'object' && (!b || (+a.q || 0) > (+b.q || 0))) C[sb] = a; });
++        Object.keys(L).forEach(function (sb) { var a = L[sb], b = C[sb]; if (a && typeof a === 'object' && (!b || (+a.q || 0) > (+b.q || 0))) { C[sb] = a; n.ahead = true; } });
+       });
+       if (!c6.cfg && s6.cfg) c6.cfg = s6.cfg;
+@@ -159,5 +163,5 @@
+   }
+   async function finalize() {
+-    var db = BANK.db; if (!db) return; var cur = monday(today()), ext = null;
++    var db = BANK.db; if (!db || D.partial) return; var cur = monday(today()), ext = null;   // sửa 0064: dữ liệu tải thiếu / bản cũ trong máy thì chưa chốt tuần, chưa trao cúp (tránh chốt sai người thắng)
+     for (var wk = START; addD(wk, 7) <= cur; wk = addD(wk, 7)) {
+       var doc = D.lg[wk];
+@@ -323,9 +327,9 @@
+   var SNAP_F = { xu: ['🪙', 'Xu còn lại', 1e9], xuk: ['🪙', 'Xu đã kiếm được', 30], xut: ['🛒', 'Xu đã tiêu', 0], sao: ['⭐', 'Tổng sao', 1e9], saoc: ['⭐', 'Sao đã cộng', 60], saot: ['➖', 'Sao đã trừ / đã đổi', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
+   async function snapLog() {
+-    var db = BANK.db; if (!db || !D || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();
++    var db = BANK.db; if (!db || !D || D.partial || D.ahead || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();   // sửa 0064: lần tải thiếu/cũ, hoặc máy này còn phần học chưa gửi lên kho (ahead) thì không so — tránh máy khác thấy "tụt" nhầm
+     var day = today();
+     for (var i = 0; i < KIDS.length; i++) {
+       var kid = KIDS[i], ref = db.doc('nhatky/' + kid), head = {};
+-      try { var sn = await ref.get(); if (sn.exists) head = sn.data() || {}; } catch (e) { continue; }
++      try { var sn = await ref.get(); if (sn.metadata && sn.metadata.fromCache) continue; if (sn.exists) head = sn.data() || {}; } catch (e) { continue; }
+       var cur = snapOf(kid), last = head.last || null, pend = head.pend || {}, ch = false;
+       if (!last) { await ref.set({ last: cur, pend: {}, t: Date.now() }).catch(function () { }); continue; }   // lần đầu: chỉ ghi mốc
+diff --git a/tuvung.html b/tuvung.html
+index 4ba6b1a..89d1b75 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -1554,5 +1554,5 @@ $('setClose').onclick=()=>{renderHome();show('home')};
+ function renderSetPer(){const box=$('setPer');if(!box)return;
+   box.innerHTML=KIDS.map(k=>{const p=logOf(k).per;return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b style="min-width:120px">${esc(k.name)}</b>`+[3,4,5].map(n=>`<button class="btn ${n===p?'':'ghost'}" style="min-width:56px;min-height:48px" data-k="${k.id}" data-n="${n}">${n} từ</button>`).join('')+'</div>'}).join('');
+-  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=KIDS.find(x=>x.id===b.dataset.k);if(!k)return;const l=logOf(k);l.per=+b.dataset.n;logSave(k,l);renderSetPer();toast(`${k.name}: ${l.per} từ mới mỗi ngày`)})}
++  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=KIDS.find(x=>x.id===b.dataset.k);if(!k)return;const l=logOf(k);l.per=+b.dataset.n;l.perAt=Date.now();logSave(k,l);renderSetPer();toast(`${k.name}: ${l.per} từ mới mỗi ngày`)})}
+ $('setSave').onclick=()=>{setLearned(kid(),$('setLearned').value);toast(`Đã lưu: ${kid().name} học đến từ số ${learned(kid())}`)};
+ $('voiceSrc').onchange=e=>{V.src=e.target.value;renderVoiceSrc();saveSettings()};
+@@ -1617,5 +1617,6 @@ function mergeKidVal(k,o,n){ // o: bản cũ hơn, n: bản mới hơn (cùng m
+   if(k==='vocab_progress_v1'&&o!=null&&n!=null)return Math.max(+o||0,+n||0);   // số từ đã học: lấy số lớn hơn
+   if(o==null||typeof o!=='object')return n;if(n==null||typeof n!=='object')return o;
+-  if(k==='vocab_daily_v1'){const r=Object.assign({},o,n);r.days=Object.assign({},o.days||{});Object.keys(n.days||{}).forEach(d=>{r.days[d]=mRec((o.days||{})[d],n.days[d])});return r}
++  if(k==='vocab_daily_v1'){const r=Object.assign({},o,n);if((+o.perAt||0)>(+n.perAt||0)){r.per=o.per;r.perAt=o.perAt}   // sửa 0064: số từ mới mỗi ngày lấy theo lần bố mẹ đổi gần nhất (trước đây máy bé đang học dở gửi lên đè mất số bố mẹ vừa đổi)
++    r.days=Object.assign({},o.days||{});Object.keys(n.days||{}).forEach(d=>{r.days[d]=mRec((o.days||{})[d],n.days[d])});return r}
+   if(k==='vocab_practice_log_v1'&&Array.isArray(o)&&Array.isArray(n)){const m=new Map();[...o,...n].forEach(e=>{if(e&&e.t!=null)m.set(e.t+'|'+(e.type||'')+'|'+(e.src||''),e)});return [...m.values()].sort((a,b)=>b.t-a.t).slice(0,400)}
+   if(k==='vocab_stars_v1'){const del=new Set([...(o.del||[]),...(n.del||[])]),m=new Map();
+@@ -1637,15 +1638,19 @@ async function writeDoc(id,str){
+   await SYNC.db.doc('sync/'+id).set({c:n,t,d}); // tài liệu đầu ghi sau cùng, báo đã đủ các phần
+ }
+-async function readDoc(id,data,partsMap){ // ghép lại nội dung (kể cả khi bị chia phần)
++async function readDoc(id,data,partsMap,strict){ // ghép lại nội dung (kể cả khi bị chia phần)
+   if(typeof data.v==='string')return data.v;
+   if(!data.c)return null;let s='';
+   for(let i=0;i<data.c;i++){let part=partsMap&&partsMap[id+'~'+i];
+-    if(part==null){try{const sn=await SYNC.db.doc('sync/'+id+'~'+i).get();part=sn.exists?(sn.data()||{}).p:null}catch(e){part=null}}
++    if(part==null){try{const sn=await SYNC.db.doc('sync/'+id+'~'+i).get();const x=sn.exists?(sn.data()||{}):{};
++      part=(strict&&((sn.metadata&&sn.metadata.fromCache)||(data.t&&x.t&&x.t!==data.t)))?null:x.p}catch(e){part=null}}   // strict (sửa 0064): phần cũ trong bộ nhớ máy hoặc khác lần ghi với tài liệu đầu thì coi như chưa đọc được
+     if(typeof part!=='string')return null;s+=part}
+   return s;
+ }
++function notStale(sn){if(sn&&sn.metadata&&sn.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='stale';throw e}return sn}   // sửa 0064: mạng chập chờn thì Firestore trả bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ đè mất phần máy khác vừa gửi
+ async function mergeWithCloud(k,id,str){ // đọc bản trên kho, gộp với bản trên máy (bản máy mới hơn), cập nhật lại máy
+-  const sn=await SYNC.db.doc('sync/'+id).get();if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null);if(typeof cv!=='string'||cv===str)return str;
+-  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){return str}
++  const sn=notStale(await SYNC.db.doc('sync/'+id).get());if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
++  if(typeof cv!=='string')notStale({metadata:{fromCache:true}});   // sửa 0064: có tài liệu trên kho mà chưa ghép đọc được → chưa gửi (trước đây gửi bản máy, đè mất bản kho)
++  if(cv===str)return str;
++  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){notStale({metadata:{fromCache:true}})}
+   const out=JSON.stringify(mergeKidVal(k,a,b));if(out!==str){const kid=id.slice(id.indexOf('.')+1);try{const cur=JSON.parse(LS.getItem(k)||'{}')||{};cur[kid]=JSON.parse(out);LS.setItem(k,JSON.stringify(cur))}catch(e){}}
+   return out}
+@@ -1654,6 +1659,7 @@ async function mergeWithCloud(k,id,str){ // đọc bản trên kho, gộp với
+ function sizeOf(v){return typeof v==='number'?v:Array.isArray(v)?v.length:v&&typeof v==='object'?Object.keys(v).length:0}
+ async function guardShrink(k,id,str){
+-  const sn=await SYNC.db.doc('sync/'+id).get();if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null);if(typeof cv!=='string'||cv===str)return str;
+-  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){return str}
++  const sn=notStale(await SYNC.db.doc('sync/'+id).get());if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
++  if(typeof cv!=='string')notStale({metadata:{fromCache:true}});if(cv===str)return str;
++  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){notStale({metadata:{fromCache:true}})}
+   const ca=sizeOf(a),cb=sizeOf(b);if(!(ca>=10&&cb<ca*0.8))return str;
+   const kid=id.slice(id.indexOf('.')+1);try{const cur=JSON.parse(LS.getItem(k)||'{}')||{};cur[kid]=a;LS.setItem(k,JSON.stringify(cur))}catch(e){}
+@@ -1676,5 +1682,7 @@ async function syncFlush(){
+         jobs.push((async()=>{let str=str0;
+         try{if(MERGE_KEYS.has(k)&&!SYNC.replace)str=await mergeWithCloud(k,id,str0);
+-          else if(KID_KEY_SET.has(k)&&!SYNC.replace){str=await guardShrink(k,id,str0);if(str==null)return}
++          else if(KID_KEY_SET.has(k)&&!SYNC.replace){str=await guardShrink(k,id,str0);if(str==null)return}}
++        catch(e){err=e;SYNC.dirty.add(k);return}   // sửa 0064: chưa đọc được bản mới nhất trên kho (mất mạng, mạng chập chờn) → chưa gửi, để lần sau gộp đúng rồi gửi (trước đây gửi luôn bản chưa gộp, đè mất phần máy khác)
++        try{
+           await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);setLH(id,str)}
+         catch(e){err=e;if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*800));
