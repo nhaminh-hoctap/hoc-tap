@@ -87,7 +87,18 @@ Các khóa Từ vựng quan trọng: `vocab_progress_v1` (đã học đến từ
 
 ## Dữ liệu trên từng máy (localStorage)
 
-`hoc_family_code` (mã gia đình) · `portal_nav_v1`, `portal_last_kid`, `portal_backup_at` · `bank_ext_cache_v1` (bản sao kho sao) · `title_show_v1` · `lesson_titles_v1` (tên bài để hiện báo cáo) · `vocab_*` (Từ vựng; riêng `vocab_prac_resume_v1` = bài Luyện thêm làm dở, chỉ trên máy đó, không đồng bộ) · `vovui-lop2-sync-v4` (Lớp 2) · `vo-on-luyen-lop6-v1` (Lớp 6). `sessionStorage.portal_pin` nhớ mã bố mẹ trong phiên.
+`hoc_family_code` (mã gia đình) · `portal_nav_v1`, `portal_last_kid`, `portal_backup_at` · `bank_ext_cache_v1` (bản sao kho sao) · `thu_cung_v1` / `thu_base_v1` (Nuôi thú: bản trên máy / mốc gộp ba bên) · `title_show_v1` · `lesson_titles_v1` (tên bài để hiện báo cáo) · `vocab_*` (Từ vựng; riêng `vocab_prac_resume_v1` = bài Luyện thêm làm dở, chỉ trên máy đó, không đồng bộ) · `vovui-lop2-sync-v4` (Lớp 2) · `vo-on-luyen-lop6-v1` (Lớp 6). `sessionStorage.portal_pin` nhớ mã bố mẹ trong phiên.
+
+## Quy tắc đồng bộ (bản 0064, sau kiểm thử giả lập 60 ngày)
+
+Firestore bật bộ nhớ đệm trên máy (`enablePersistence`): khi mất mạng hoặc mạng chập chờn, `get()` có thể trả **bản cũ trong máy** (`snap.metadata.fromCache = true`); lệnh ghi xếp hàng trong máy và tự gửi khi có mạng (kể cả sau khi đóng trang).
+
+- Mọi chỗ **đọc → gộp → ghi** chỉ ghi khi đọc được bản trên mạng; đọc ra bản cũ thì để lần sau: Từ vựng (`notStale` trong `mergeWithCloud` / `guardShrink`, phần chia nhỏ đọc kiểu `strict` — phần cũ hay khác lần ghi với tài liệu đầu coi như chưa đọc được), môn lớp 1/2/3/5/7 (`flush`), Lớp 6 (`push` đọc, gộp rồi mới ghi), Nuôi thú (`push1`).
+- **Nuôi thú gộp ba bên** (`merge3`): mốc `thu_base_v1` (bản trên mạng ở lần đồng bộ trước của máy này) + bản trên máy + bản trên mạng. Số đếm (điểm lớn, xu đã tiêu/thắng, trận, thức ăn, mảnh rèn, cấp rèn, lượt chơi) cộng phần thay đổi của hai bên; thời điểm lấy mới nhất; tên, phông, đồ đang đeo lấy bên vừa đổi; danh sách gộp không trùng. Mỗi lúc chỉ một lần gửi (`PUSHING`).
+- `vocab_daily_v1.<bé>.per` kèm `perAt` (lúc bố mẹ đổi): khi gộp lấy bản có `perAt` mới hơn.
+- `thidua.js`: `D.partial` (có tài liệu đọc lỗi hoặc chỉ có bản cũ) → tự tải lại tối đa 3 lần, không báo tụt, không chốt tuần / trao cúp; `D.ahead` (máy này còn phần học chưa gửi lên) → không ghi mốc nhật ký toàn diện.
+- `bank.js`: dòng sao (`bkSent`) và dòng nhật ký (`nkSent`) đang gửi dở thì không gửi lại (trước đây mất mạng lâu làm hàng chờ phình to).
+- Sao lưu và bản chụp tự động: có phần chỉ đọc được bản cũ → không tạo bản thiếu, báo bố mẹ thử lại.
 
 ## Sao lưu
 

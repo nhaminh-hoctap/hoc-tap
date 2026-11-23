@@ -475,21 +475,49 @@ var REM=false;
 function adopt(r){S=Object.assign(blank(),r);fixFood();var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a)}
 function save(){S.t=Date.now();var lc=myLc();if(lc)S.lc=lc;var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a);if(window.PORTAL&&PORTAL.bar)PORTAL.bar();
   clearTimeout(saveT);saveT=setTimeout(push,600)}
-async function push(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
-  try{var sn=await ref.get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
-    if(r&&prog(r)>prog(S)){nk('chan','⛔ Chặn lưu đè: bản trên máy này ('+pdesc(S)+') cũ hơn bản trên mạng ('+pdesc(r)+') → lấy bản trên mạng');adopt(r);try{render()}catch(e){}return}}}catch(e){return}
-  try{await ref.set({json:JSON.stringify(S),t:S.t})}catch(e){}}
+var PUSHING=null,PUSH_AGAIN=false;
+function push(){if(PUSHING){PUSH_AGAIN=true;return PUSHING}   // sửa 0064: mỗi lúc chỉ gửi một lần (gửi chồng nhau thì phần gộp bị tính hai lần)
+  PUSHING=push1().catch(function(){}).then(function(){PUSHING=null;if(PUSH_AGAIN){PUSH_AGAIN=false;return push()}});return PUSHING}
+async function push1(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
+  try{var sn=await ref.get();
+    if(sn.metadata&&sn.metadata.fromCache){clearTimeout(saveT);saveT=setTimeout(push,20000);return}   // sửa 0064: chỉ đọc được bản cũ trong bộ nhớ máy (mất mạng, mạng chập chờn) → chưa gửi, thử lại sau
+    if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null,bs=baseGet();
+    if(r&&bs&&!same(r,bs)){   // sửa 0064: máy khác đã gửi bản mới từ lần đồng bộ trước của máy này → cộng phần thay đổi của cả hai (trước đây một bên bị bỏ)
+      var M=merge3(bs,S,r);nk('gop','🔀 Gộp với bản máy khác vừa gửi: trên mạng '+pdesc(r)+' · máy này '+pdesc(S)+' → '+pdesc(M));adopt(M);baseSet(r);try{render()}catch(e){}}
+    else if(r&&!bs&&prog(r)>prog(S)){nk('chan','⛔ Chặn lưu đè: bản trên máy này ('+pdesc(S)+') cũ hơn bản trên mạng ('+pdesc(r)+') → lấy bản trên mạng');adopt(r);baseSet(r);try{render()}catch(e){}return}}}catch(e){return}
+  try{var js=JSON.stringify(S);await ref.set({json:js,t:S.t});baseSet(JSON.parse(js))}catch(e){}}
+/* ---------- gộp ba bên (sửa 0064, kiểm thử 60 ngày): bs = bản trên mạng lần đồng bộ trước của máy này, m = bản trên máy, t = bản trên mạng bây giờ.
+   Số đếm (điểm lớn, xu đã tiêu, xu thắng, trận, thức ăn, mảnh rèn, cấp rèn, lượt chơi…) cộng phần tăng/giảm của cả hai bên;
+   thời điểm lấy mới nhất; tên, phông, đồ đang đeo… bên nào đổi thì lấy bên đó; danh sách gộp không trùng. ---------- */
+var MG_MAX={t:1,fAt:1,hAt:1,dropT:1,seen:1,hap:1,full:1},MG_MINE={lc:1,pity:1,xu0:1,sp:1,name:1,rs1121:1},MG_POS={n:1,s:1,shard:1};
+function same(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+function isO(x){return !!x&&typeof x==='object'&&!Array.isArray(x)}
+function merge3(b,m,t){if(same(m,b))return t;if(same(t,b))return m;
+  if(!isO(m)||!isO(t))return m;b=isO(b)?b:{};var o={},ks={};[b,m,t].forEach(function(z){Object.keys(z).forEach(function(k){ks[k]=1})});
+  Object.keys(ks).forEach(function(k){var bv=b[k],mv=m[k],tv=t[k];
+    if(same(mv,bv)){if(tv!==undefined)o[k]=tv;return}
+    if(same(tv,bv)){if(mv!==undefined)o[k]=mv;return}
+    if(typeof mv==='number'&&typeof tv==='number'){if(MG_MAX[k])o[k]=Math.max(mv,tv);else if(MG_MINE[k])o[k]=mv;else{var v=tv+mv-(typeof bv==='number'?bv:0);o[k]=MG_POS[k]?Math.max(0,v):v}return}
+    if(Array.isArray(mv)&&Array.isArray(tv)){var seen={},u=[];tv.concat(mv).forEach(function(x){var j=JSON.stringify(x);if(!seen[j]){seen[j]=1;u.push(x)}});
+      if(u.length&&Array.isArray(u[0])&&typeof u[0][0]==='number')u.sort(function(p,q){return p[0]-q[0]});o[k]=u.slice(-240);return}
+    if(isO(mv)&&isO(tv)){o[k]=merge3(bv,mv,tv);return}
+    if(mv!==undefined)o[k]=mv;else if(tv!==undefined&&!MG_MINE[k])o[k]=tv});
+  return o}
+function baseGet(){var a=lsGet('thu_base_v1',{});return a&&a[KID]||null}
+function baseSet(r){var a=lsGet('thu_base_v1',{})||{};a[KID]=r;lsSet('thu_base_v1',a)}
 /* sửa 0062: bấm về trang chính thì gửi nốt bản thú lên mạng rồi mới tải lại trang (trước đây lần lưu cuối có thể chưa kịp gửi, máy khác thấy thú bị lùi) */
 window.__beforeHome=function(){clearTimeout(saveT);if(!REM||!B||!B.db)return Promise.resolve();return push()};
 async function loadRemote(){
   if(!B)return;await B.ready;if(!B.db)return;
   try{var sa=await B.db.doc('thu-cung/_admin').get();if(sa.exists){var xa=sa.data()||{};ADM=typeof xa.json==='string'?JSON.parse(xa.json):{};lsSet('thu_admin_v1',ADM)}}catch(e){}
   try{var sn=await B.db.doc('thu-cung/'+KID).get();var r=null;if(sn.exists){var x=sn.data()||{};r=typeof x.json==='string'?JSON.parse(x.json):null}
-    var pr=prog(r),pl=prog(S);REM=true;
+    var pr=prog(r),pl=prog(S),stale=!!(sn.metadata&&sn.metadata.fromCache),bs=baseGet();REM=true;
     var loc='bản trên máy: '+(S.sp?pdesc(S):'chưa có')+' · bản trên mạng: '+(r?pdesc(r):'chưa có');
-    if(r&&(pr>pl||(pr===pl&&(+r.t||0)>(+S.t||0)))){adopt(r);nk('mo','Mở Nuôi thú, dùng bản trên mạng ('+loc+')')}
-    else if(S.sp&&(!r||pl>pr)){nk(r?'gui':'mo',(r?'⚠️ Máy này giữ bản tiến độ cao hơn, gửi bản trên máy lên (':'Mở Nuôi thú (')+loc+')');save()}
-    else nk('mo','Mở Nuôi thú ('+loc+')')}catch(e){nk('loi','Không tải được bản trên mạng (mạng yếu?), chỉ dùng bản trên máy')}   // bản trên máy tiến độ cao hơn (máy này giữ bản đúng) thì gửi lên
+    if(r&&bs&&S.sp&&!stale&&!same(S,bs)&&!same(r,bs)){   // sửa 0064: máy này có phần chưa kịp gửi, máy khác cũng đã gửi bản mới → cộng phần thay đổi của cả hai
+      var M=merge3(bs,S,r);adopt(M);baseSet(r);nk('gop','🔀 Mở Nuôi thú: gộp phần trên máy này chưa kịp gửi với bản trên mạng ('+loc+') → '+pdesc(M));save()}
+    else if(r&&(pr>pl||(pr===pl&&(+r.t||0)>(+S.t||0)))){adopt(r);if(!stale)baseSet(r);nk('mo','Mở Nuôi thú, dùng bản trên mạng ('+loc+')')}
+    else if(S.sp&&(!r||pl>pr)){nk(r?'gui':'mo',(r?'⚠️ Máy này giữ bản tiến độ cao hơn, gửi bản trên máy lên (':'Mở Nuôi thú (')+loc+')');if(r&&!stale&&!bs)baseSet(r);save()}
+    else{if(r&&!stale)baseSet(r);nk('mo','Mở Nuôi thú ('+loc+')')}}catch(e){nk('loi','Không tải được bản trên mạng (mạng yếu?), chỉ dùng bản trên máy')}   // bản trên máy tiến độ cao hơn (máy này giữ bản đúng) thì gửi lên
   try{var sb=await B.db.doc('sync/vocab_badges_v1.'+KID).get();if(sb.exists){var y=sb.data()||{},s=typeof y.v==='string'?y.v:null;
     if(!s&&y.c){s='';for(var i=0;i<y.c;i++){var p=await B.db.doc('sync/vocab_badges_v1.'+KID+'~'+i).get();s+=(p.exists?(p.data()||{}).p:'')||''}}
     if(s)BADGES=JSON.parse(s)}}catch(e){}

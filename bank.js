@@ -61,7 +61,7 @@
   /* ---------- 📋 NHẬT KÝ TOÀN DIỆN (bố mẹ yêu cầu 23/11/2026) ----------
      Mỗi thay đổi (sao, xu, lượt học, thú, đồ, đồng bộ, bố mẹ chỉnh) là MỘT tài liệu riêng: nhatky/<bé>/e/<mã>,
      chỉ thêm, không sửa, nên nhiều máy cùng ghi không đè nhau. Mã (vd. NK-MWQ3ZK8A1B2C) dùng để tra cứu, khôi phục sau này. */
-  var NKP_KEY = 'nhatky_pending_v1', nkp = {};
+  var NKP_KEY = 'nhatky_pending_v1', nkp = {}, nkSent = {}, bkSent = {};   // nkSent/bkSent: dòng đang gửi dở (sửa 0064)
   try { nkp = JSON.parse(localStorage.getItem(NKP_KEY) || '{}') || {}; } catch (e) { nkp = {}; }
   function saveNkp() { try { localStorage.setItem(NKP_KEY, JSON.stringify(nkp)); } catch (e) { } }
   var DEV = (function () {   // tên máy: iPad / iPhone / máy tính… kèm 4 ký tự riêng (dùng chung với Nuôi thú)
@@ -131,14 +131,18 @@
       if (!B.db) return;
       Object.keys(nkp).forEach(function (p) {
         var e = nkp[p], kid = p.split('/')[0];
-        B.db.doc('nhatky/' + kid + '/e/' + e.id).set(e).then(function () { if (nkp[p] === e) { delete nkp[p]; saveNkp(); } }).catch(function () { setTimeout(B._flushLog, 20000); });
+        if (nkSent[p] === e) return;   // sửa 0064: dòng này đang gửi (mất mạng thì lời gửi chờ đến khi có mạng) — không gửi lại lần nữa
+        nkSent[p] = e;
+        B.db.doc('nhatky/' + kid + '/e/' + e.id).set(e).then(function () { if (nkSent[p] === e) delete nkSent[p]; if (nkp[p] === e) { delete nkp[p]; saveNkp(); } }).catch(function () { if (nkSent[p] === e) delete nkSent[p]; setTimeout(B._flushLog, 20000); });
       });
     },
     _flush: function () {
       if (!B.db) return;
       Object.keys(pending).forEach(function (p) {
         var e = pending[p], kid = p.split('/')[0];
-        B.db.doc('bankx/' + kid + '/e/' + e.id).set(e).then(function () { if (pending[p] === e) delete pending[p]; }).catch(function () { setTimeout(B._flush, 15000); });
+        if (bkSent[p] === e) return;   // sửa 0064: đang gửi thì không gửi lại
+        bkSent[p] = e;
+        B.db.doc('bankx/' + kid + '/e/' + e.id).set(e).then(function () { if (bkSent[p] === e) delete bkSent[p]; if (pending[p] === e) delete pending[p]; }).catch(function () { if (bkSent[p] === e) delete bkSent[p]; setTimeout(B._flush, 15000); });
       });
     }
   };

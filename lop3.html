@@ -2344,7 +2344,7 @@ async function flush(){if(!sync.ref||sync.busy||!hasPending())return;
     try{const a=await sync.ref.acquire({holder:S.dev,ttlMs:6000});if(a&&a.acquired!==false)leased=true;if(a&&a.acquired===false){retry=a.expiresAt?Math.max(400,Date.parse(a.expiresAt)-Date.now()):1500;}}
     catch(e){if(e&&(e.code==='unavailable'||e.code==='resource_exhausted'||e.code==='revoked'))throw e;}
     if(!retry){
-      const snap=await sync.ref.get();let R=snap.exists?clone(decDoc(snap.data())):null;if(!R||R.v!==4)R=await migrateBase();
+      const snap=await sync.ref.get();if(snap.metadata&&snap.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='unavailable';throw e;}let R=snap.exists?clone(decDoc(snap.data())):null;   /* sửa 0064 (kiểm thử 60 ngày): mạng chập chờn thì bản đọc được có thể là bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ xóa mất lượt máy khác vừa gửi, nên chờ đọc được bản trên mạng rồi mới gửi */if(!R||R.v!==4)R=await migrateBase();
       const N=mergeDoc(R,sent,(LS_OK||sent.rounds.length||sent.tests.length||(sent.drills||[]).length)?{id:S.dev,label:devLabel(),seen:Date.now()}:null);
       await sync.ref.set(encDoc(N));
       if(leased)sync.ref.acquire({holder:S.dev,ttlMs:1000}).catch(()=>{});

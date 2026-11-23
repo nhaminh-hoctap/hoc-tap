@@ -142,9 +142,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=65"></script>
-<script src="bank.js?v=65"></script>
-<script src="thidua.js?v=65"></script>
+<script src="claude-shim.js?v=66"></script>
+<script src="bank.js?v=66"></script>
+<script src="thidua.js?v=66"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -688,9 +688,9 @@ async function gatherAll(db,withLog){
   function put(path,data){out.docs[path]=data;n++}
   var cols=['sync','league','thu-cung'].concat(BANK.KIDS.map(function(k){return 'bankx/'+k.id+'/e'}));
   if(withLog)cols=cols.concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id+'/e'}));
-  for(var i=0;i<cols.length;i++){try{var sn=await db.collection(cols[i]).get();sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}catch(e){}}
+  for(var i=0;i<cols.length;i++){try{var sn=await db.collection(cols[i]).get();if(sn.metadata&&sn.metadata.fromCache)out.cached=(out.cached||0)+1;sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}catch(e){out.cached=(out.cached||0)+1}}   // sửa 0064: đếm phần chỉ đọc được bản cũ trong máy (mất mạng / mạng chập chờn)
   var docs=['data/users/gia-dinh/sync','data/users/gia-dinh/progress','tien-do/hoc-sinh','data/users/gia-dinh/lop1','data/users/gia-dinh/lop3','data/users/gia-dinh/lop5','data/users/gia-dinh/lop7'].concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id}));
-  for(var j=0;j<docs.length;j++){try{var s1=await db.doc(docs[j]).get();if(s1.exists)put(docs[j],s1.data())}catch(e){}}
+  for(var j=0;j<docs.length;j++){try{var s1=await db.doc(docs[j]).get();if(s1.metadata&&s1.metadata.fromCache)out.cached=(out.cached||0)+1;if(s1.exists)put(docs[j],s1.data())}catch(e){out.cached=(out.cached||0)+1}}
   if(!n)throw new Error('Không đọc được dữ liệu nào');
   out.count=n;return out}
 /* 📸 Bản chụp tự động (bố mẹ chốt 23/11/2026): mỗi ngày, máy đầu tiên mở trang sẽ chụp toàn bộ dữ liệu lên chup/<ngày> (chia phần), giữ 14 ngày */
@@ -698,7 +698,8 @@ var SNAP_CHUNK=600000;
 async function autoSnap(){try{await BANK.ready;var db=BANK.db;if(!db)return;var day=ymdL(new Date());if(lsGet('chup_day')===day)return;
   var h=await db.doc('chup/'+day).get();if(h.exists&&(h.data()||{}).c){lsSet('chup_day',day);return}
   await db.doc('chup/'+day).set({busy:BANK.dev,t:Date.now()});   // giữ chỗ, máy khác thấy thì thôi
-  var out=await gatherAll(db,false),txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v}),c=Math.ceil(txt.length/SNAP_CHUNK);
+  var out=await gatherAll(db,false);if(out.cached)return;   // sửa 0064: mạng chập chờn, dữ liệu đọc được có thể thiếu → không lưu bản chụp hôm nay trên máy này (máy khác / lần mở sau sẽ chụp)
+  var txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v}),c=Math.ceil(txt.length/SNAP_CHUNK);
   for(var i=0;i<c;i++)await db.doc('chup/'+day+'~'+i).set({p:txt.slice(i*SNAP_CHUNK,(i+1)*SNAP_CHUNK)});
   await db.doc('chup/'+day).set({c:c,t:Date.now(),dev:BANK.dev,n:out.count,size:txt.length});lsSet('chup_day',day);
   var old=new Date();old.setDate(old.getDate()-15);var od=ymdL(old);   // xóa bản cũ hơn 14 ngày
@@ -712,6 +713,7 @@ setTimeout(autoSnap,20000);
 async function doBackup(){var btn=$('pBkBtn');if(!btn||btn.disabled)return;btn.disabled=true;var old=btn.textContent;btn.textContent='⏳ Đang gom dữ liệu…';
   try{await BANK.ready;var db=BANK.db;if(!db)throw new Error('Chưa kết nối được dữ liệu');
     var out=await gatherAll(db,true),n=out.count;
+    if(out.cached){btn.textContent='⚠️ Mạng đang chập chờn nên chưa lấy đủ dữ liệu. Bố mẹ thử lại khi mạng ổn định nhé.';setTimeout(function(){btn.textContent=old},6000);btn.disabled=false;return}   // sửa 0064: không tạo bản sao lưu thiếu
     var txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v});
     var d=new Date(),name='sao-luu-hoc-tap-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.json';
     var file=null;try{file=new File([txt],name,{type:'application/json'})}catch(e){}

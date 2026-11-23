@@ -46,21 +46,21 @@
   }
 
   /* ---------- đọc dữ liệu ---------- */
-  var D = null, AT = 0, LOADING = null, subs = [], WORDS = null;
+  var D = null, AT = 0, LOADING = null, subs = [], WORDS = null, RD_BAD = 0, RETRY_N = 0;   // RD_BAD: số lần đọc lỗi hoặc chỉ có bản cũ trong bộ nhớ máy (sửa 0064)
   async function readDoc(db, path) {
     try {
-      var sn = await db.doc(path).get(); if (!sn.exists) return null; var x = sn.data() || {};
+      var sn = await db.doc(path).get(); if (sn.metadata && sn.metadata.fromCache) RD_BAD++; if (!sn.exists) return null; var x = sn.data() || {};
       if (typeof x.json === 'string') return JSON.parse(x.json);
       if (typeof x.v === 'string') return JSON.parse(x.v);
       if (x.c) { var s = ''; for (var i = 0; i < x.c; i++) { var p = await db.doc(path + '~' + i).get(); s += (p.exists ? (p.data() || {}).p : '') || ''; } return JSON.parse(s); }
       return x;
-    } catch (e) { return null; }
+    } catch (e) { RD_BAD++; return null; }
   }
   async function load(force) {
     if (D && !force && Date.now() - AT < 20000) return D;
     if (LOADING) return LOADING;
     LOADING = (async function () {
-      await BANK.ready; var db = BANK.db;
+      await BANK.ready; var db = BANK.db; var bad0 = RD_BAD;
       var per = ['sync/vocab_daily_v1.', 'sync/vocab_practice_log_v1.', 'sync/vocab_shield_v1.', 'thu-cung/'], jobs = [];
       if (db) {
         KIDS.forEach(function (k) { per.forEach(function (p) { jobs.push(readDoc(db, p + k)); }); });
@@ -74,12 +74,14 @@
       if (W) WORDS = W;
       var lg = {}, n = { vd: {}, pl: {}, sh: {}, tc: {}, l2: null, l6: null, lx: {}, lg: lg };
       KIDS.forEach(function (k, i) { var o = i * 4; n.vd[k] = (db && R[o] && R[o].days) || {}; n.pl[k] = (db && R[o + 1]) || []; n.sh[k] = (db && R[o + 2]) || {}; n.tc[k] = (db && R[o + 3]) || null; });
-      if (db) { var z = KIDS.length * 4; n.l2 = R[z]; n.l6 = R[z + 1]; if (R[z + 2]) R[z + 2].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
+      if (db) { var z = KIDS.length * 4; n.l2 = R[z]; n.l6 = R[z + 1]; if (!R[z + 2] || (R[z + 2].metadata && R[z + 2].metadata.fromCache)) RD_BAD++; if (R[z + 2]) R[z + 2].docs.forEach(function (d) { var x = d.data(); if (x && x.wk) lg[x.wk] = x; });
         Object.keys(L2F).filter(function (a) { return a !== 'lop2'; }).forEach(function (a, i) { n.lx[a] = R[z + 3 + i] || null; }); }
       try { mergeLocal(n); } catch (e) { console.error(e); }
       n.sj = {}; n.goal = {};
       KIDS.forEach(function (k) { n.sj[k] = subjDays(k, n); n.goal[k] = k === 'thanhnghi' ? ((n.l6 && n.l6.cfg && +n.l6.cfg.goal) || 20) : 20; });
+      n.partial = RD_BAD > bad0;   // có tài liệu đọc lỗi / chỉ có bản cũ: số liệu có thể thiếu → không dùng để báo tụt
       D = n; AT = Date.now(); LOADING = null;
+      if (n.partial && db && RETRY_N < 3) { RETRY_N++; setTimeout(function () { load(true).catch(function () { }); }, 4000 * RETRY_N); } else if (!n.partial) RETRY_N = 0;   // sửa 0064: tải thiếu thì tự tải lại (số sao, xu hiện đúng như máy khác)
       try { await finalize(); } catch (e) { console.error(e); }
       if (db) setTimeout(function () { snapLog().catch(function (e) { console.error(e); }); }, 1500);
       subs.forEach(function (f) { try { f(); } catch (e) { console.error(e); } });
@@ -94,12 +96,13 @@
     var vd = lsGet('vocab_daily_v1', {}), pl = lsGet('vocab_practice_log_v1', {});
     KIDS.forEach(function (k) {
       var ld = vd && vd[k] && vd[k].days || {}, cd = n.vd[k];
-      Object.keys(ld).forEach(function (d) { if (dayScore(ld[d]) > dayScore(cd[d])) cd[d] = ld[d]; });
+      Object.keys(ld).forEach(function (d) { if (dayScore(ld[d]) > dayScore(cd[d])) { cd[d] = ld[d]; n.ahead = true; } });
       var lp = pl && Array.isArray(pl[k]) ? pl[k] : [];
       if (lp.length) {
         var seen = {}, all = [];
         n.pl[k].concat(lp).forEach(function (e) { if (!e || !e.t) return; var id = e.t + '|' + e.type, o = seen[id];
           if (o === undefined) { seen[id] = all.length; all.push(e); } else if ((+e.done || 0) > (+all[o].done || 0)) all[o] = e; });
+        if (all.length > n.pl[k].length) n.ahead = true;
         n.pl[k] = all.sort(function (a, b) { return b.t - a.t; });
       }
     });
@@ -114,6 +117,7 @@
         [].concat(c2[f] || [], (s2.D && s2.D[f]) || [], (s2.L && s2.L[f]) || []).forEach(function (r) {
           if (!Array.isArray(r)) return; var id = r[0] + '|' + r[1]; if (seen[id]) return; seen[id] = 1; out[f].push(r); });
       });
+      if (out.rounds.length > (c2.rounds || []).length || out.tests.length > (c2.tests || []).length) n.ahead = true;
       n.lx[a] = Object.assign({}, c2, out);
     });
     n.l2 = n.lx.lop2;
@@ -123,7 +127,7 @@
       var c6 = n.l6 = n.l6 || { days: {} }; c6.days = c6.days || {};
       Object.keys(s6.days).forEach(function (d) {
         var L = s6.days[d] || {}, C = c6.days[d] = c6.days[d] || {};
-        Object.keys(L).forEach(function (sb) { var a = L[sb], b = C[sb]; if (a && typeof a === 'object' && (!b || (+a.q || 0) > (+b.q || 0))) C[sb] = a; });
+        Object.keys(L).forEach(function (sb) { var a = L[sb], b = C[sb]; if (a && typeof a === 'object' && (!b || (+a.q || 0) > (+b.q || 0))) { C[sb] = a; n.ahead = true; } });
       });
       if (!c6.cfg && s6.cfg) c6.cfg = s6.cfg;
     }
@@ -158,7 +162,7 @@
     return s;
   }
   async function finalize() {
-    var db = BANK.db; if (!db) return; var cur = monday(today()), ext = null;
+    var db = BANK.db; if (!db || D.partial) return; var cur = monday(today()), ext = null;   // sửa 0064: dữ liệu tải thiếu / bản cũ trong máy thì chưa chốt tuần, chưa trao cúp (tránh chốt sai người thắng)
     for (var wk = START; addD(wk, 7) <= cur; wk = addD(wk, 7)) {
       var doc = D.lg[wk];
       if (!doc) {
@@ -322,11 +326,11 @@
   }
   var SNAP_F = { xu: ['🪙', 'Xu còn lại', 1e9], xuk: ['🪙', 'Xu đã kiếm được', 30], xut: ['🛒', 'Xu đã tiêu', 0], sao: ['⭐', 'Tổng sao', 1e9], saoc: ['⭐', 'Sao đã cộng', 60], saot: ['➖', 'Sao đã trừ / đã đổi', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
   async function snapLog() {
-    var db = BANK.db; if (!db || !D || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();
+    var db = BANK.db; if (!db || !D || D.partial || D.ahead || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();   // sửa 0064: lần tải thiếu/cũ, hoặc máy này còn phần học chưa gửi lên kho (ahead) thì không so — tránh máy khác thấy "tụt" nhầm
     var day = today();
     for (var i = 0; i < KIDS.length; i++) {
       var kid = KIDS[i], ref = db.doc('nhatky/' + kid), head = {};
-      try { var sn = await ref.get(); if (sn.exists) head = sn.data() || {}; } catch (e) { continue; }
+      try { var sn = await ref.get(); if (sn.metadata && sn.metadata.fromCache) continue; if (sn.exists) head = sn.data() || {}; } catch (e) { continue; }
       var cur = snapOf(kid), last = head.last || null, pend = head.pend || {}, ch = false;
       if (!last) { await ref.set({ last: cur, pend: {}, t: Date.now() }).catch(function () { }); continue; }   // lần đầu: chỉ ghi mốc
       Object.keys(SNAP_F).forEach(function (f) {

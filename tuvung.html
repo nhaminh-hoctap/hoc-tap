@@ -1553,7 +1553,7 @@ $('setClose').onclick=()=>{renderHome();show('home')};
 /* bố mẹ chốt 23/11/2026: số từ mới mỗi ngày của từng bạn chỉ đổi ở đây (và màn Từ vựng khi mở từ Góc bố mẹ) */
 function renderSetPer(){const box=$('setPer');if(!box)return;
   box.innerHTML=KIDS.map(k=>{const p=logOf(k).per;return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b style="min-width:120px">${esc(k.name)}</b>`+[3,4,5].map(n=>`<button class="btn ${n===p?'':'ghost'}" style="min-width:56px;min-height:48px" data-k="${k.id}" data-n="${n}">${n} từ</button>`).join('')+'</div>'}).join('');
-  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=KIDS.find(x=>x.id===b.dataset.k);if(!k)return;const l=logOf(k);l.per=+b.dataset.n;logSave(k,l);renderSetPer();toast(`${k.name}: ${l.per} từ mới mỗi ngày`)})}
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=KIDS.find(x=>x.id===b.dataset.k);if(!k)return;const l=logOf(k);l.per=+b.dataset.n;l.perAt=Date.now();logSave(k,l);renderSetPer();toast(`${k.name}: ${l.per} từ mới mỗi ngày`)})}
 $('setSave').onclick=()=>{setLearned(kid(),$('setLearned').value);toast(`Đã lưu: ${kid().name} học đến từ số ${learned(kid())}`)};
 $('voiceSrc').onchange=e=>{V.src=e.target.value;renderVoiceSrc();saveSettings()};
 $('voicePick').onchange=e=>{V.voiceName=e.target.value;saveSettings();speak('Hello')};
@@ -1616,7 +1616,8 @@ function ledKey(e){return ONE_LINE.test(String(e.r))?'r|'+String(e.r).replace(/\
 function mergeKidVal(k,o,n){ // o: bản cũ hơn, n: bản mới hơn (cùng một bé)
   if(k==='vocab_progress_v1'&&o!=null&&n!=null)return Math.max(+o||0,+n||0);   // số từ đã học: lấy số lớn hơn
   if(o==null||typeof o!=='object')return n;if(n==null||typeof n!=='object')return o;
-  if(k==='vocab_daily_v1'){const r=Object.assign({},o,n);r.days=Object.assign({},o.days||{});Object.keys(n.days||{}).forEach(d=>{r.days[d]=mRec((o.days||{})[d],n.days[d])});return r}
+  if(k==='vocab_daily_v1'){const r=Object.assign({},o,n);if((+o.perAt||0)>(+n.perAt||0)){r.per=o.per;r.perAt=o.perAt}   // sửa 0064: số từ mới mỗi ngày lấy theo lần bố mẹ đổi gần nhất (trước đây máy bé đang học dở gửi lên đè mất số bố mẹ vừa đổi)
+    r.days=Object.assign({},o.days||{});Object.keys(n.days||{}).forEach(d=>{r.days[d]=mRec((o.days||{})[d],n.days[d])});return r}
   if(k==='vocab_practice_log_v1'&&Array.isArray(o)&&Array.isArray(n)){const m=new Map();[...o,...n].forEach(e=>{if(e&&e.t!=null)m.set(e.t+'|'+(e.type||'')+'|'+(e.src||''),e)});return [...m.values()].sort((a,b)=>b.t-a.t).slice(0,400)}
   if(k==='vocab_stars_v1'){const del=new Set([...(o.del||[]),...(n.del||[])]),m=new Map();
     [...(o.led||[])].concat(n.led||[]).forEach(e=>{if(!e)return;const key=ledKey(e);if(del.has(e.t+'|'+e.r+'|'+e.v))return;const p=m.get(key);if(!p||(ONE_LINE.test(String(e.r))?e.t<p.t:true))m.set(key,e)});
@@ -1636,25 +1637,30 @@ async function writeDoc(id,str){
   for(let i=0;i<n;i++)await SYNC.db.doc('sync/'+id+'~'+i).set({p:str.slice(i*CHUNK,(i+1)*CHUNK),t,d});
   await SYNC.db.doc('sync/'+id).set({c:n,t,d}); // tài liệu đầu ghi sau cùng, báo đã đủ các phần
 }
-async function readDoc(id,data,partsMap){ // ghép lại nội dung (kể cả khi bị chia phần)
+async function readDoc(id,data,partsMap,strict){ // ghép lại nội dung (kể cả khi bị chia phần)
   if(typeof data.v==='string')return data.v;
   if(!data.c)return null;let s='';
   for(let i=0;i<data.c;i++){let part=partsMap&&partsMap[id+'~'+i];
-    if(part==null){try{const sn=await SYNC.db.doc('sync/'+id+'~'+i).get();part=sn.exists?(sn.data()||{}).p:null}catch(e){part=null}}
+    if(part==null){try{const sn=await SYNC.db.doc('sync/'+id+'~'+i).get();const x=sn.exists?(sn.data()||{}):{};
+      part=(strict&&((sn.metadata&&sn.metadata.fromCache)||(data.t&&x.t&&x.t!==data.t)))?null:x.p}catch(e){part=null}}   // strict (sửa 0064): phần cũ trong bộ nhớ máy hoặc khác lần ghi với tài liệu đầu thì coi như chưa đọc được
     if(typeof part!=='string')return null;s+=part}
   return s;
 }
+function notStale(sn){if(sn&&sn.metadata&&sn.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='stale';throw e}return sn}   // sửa 0064: mạng chập chờn thì Firestore trả bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ đè mất phần máy khác vừa gửi
 async function mergeWithCloud(k,id,str){ // đọc bản trên kho, gộp với bản trên máy (bản máy mới hơn), cập nhật lại máy
-  const sn=await SYNC.db.doc('sync/'+id).get();if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null);if(typeof cv!=='string'||cv===str)return str;
-  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){return str}
+  const sn=notStale(await SYNC.db.doc('sync/'+id).get());if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
+  if(typeof cv!=='string')notStale({metadata:{fromCache:true}});   // sửa 0064: có tài liệu trên kho mà chưa ghép đọc được → chưa gửi (trước đây gửi bản máy, đè mất bản kho)
+  if(cv===str)return str;
+  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){notStale({metadata:{fromCache:true}})}
   const out=JSON.stringify(mergeKidVal(k,a,b));if(out!==str){const kid=id.slice(id.indexOf('.')+1);try{const cur=JSON.parse(LS.getItem(k)||'{}')||{};cur[kid]=JSON.parse(out);LS.setItem(k,JSON.stringify(cur))}catch(e){}}
   return out}
 /* Chặn dữ liệu tụt (bố mẹ yêu cầu 23/11/2026): với tiến độ học (số từ đã học, lịch ôn, thống kê…), nếu bản trên máy sắp gửi
    nhỏ hơn hẳn bản trên kho (dưới 80%) thì KHÔNG gửi, lấy bản kho về máy và ghi dòng đỏ vào Nhật ký toàn diện. */
 function sizeOf(v){return typeof v==='number'?v:Array.isArray(v)?v.length:v&&typeof v==='object'?Object.keys(v).length:0}
 async function guardShrink(k,id,str){
-  const sn=await SYNC.db.doc('sync/'+id).get();if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null);if(typeof cv!=='string'||cv===str)return str;
-  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){return str}
+  const sn=notStale(await SYNC.db.doc('sync/'+id).get());if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
+  if(typeof cv!=='string')notStale({metadata:{fromCache:true}});if(cv===str)return str;
+  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){notStale({metadata:{fromCache:true}})}
   const ca=sizeOf(a),cb=sizeOf(b);if(!(ca>=10&&cb<ca*0.8))return str;
   const kid=id.slice(id.indexOf('.')+1);try{const cur=JSON.parse(LS.getItem(k)||'{}')||{};cur[kid]=a;LS.setItem(k,JSON.stringify(cur))}catch(e){}
   SYNC.last[id]=cv;
@@ -1675,7 +1681,9 @@ async function syncFlush(){
         setSyncBadge('saving');
         jobs.push((async()=>{let str=str0;
         try{if(MERGE_KEYS.has(k)&&!SYNC.replace)str=await mergeWithCloud(k,id,str0);
-          else if(KID_KEY_SET.has(k)&&!SYNC.replace){str=await guardShrink(k,id,str0);if(str==null)return}
+          else if(KID_KEY_SET.has(k)&&!SYNC.replace){str=await guardShrink(k,id,str0);if(str==null)return}}
+        catch(e){err=e;SYNC.dirty.add(k);return}   // sửa 0064: chưa đọc được bản mới nhất trên kho (mất mạng, mạng chập chờn) → chưa gửi, để lần sau gộp đúng rồi gửi (trước đây gửi luôn bản chưa gộp, đè mất phần máy khác)
+        try{
           await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);setLH(id,str)}
         catch(e){err=e;if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*800));
           try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);setLH(id,str);err=null}catch(e2){err=e2;SYNC.dirty.add(k)}}else SYNC.dirty.add(k)}
