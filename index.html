@@ -142,9 +142,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=67"></script>
-<script src="bank.js?v=67"></script>
-<script src="thidua.js?v=67"></script>
+<script src="claude-shim.js?v=68"></script>
+<script src="bank.js?v=68"></script>
+<script src="thidua.js?v=68"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -688,9 +688,10 @@ async function gatherAll(db,withLog){
   function put(path,data){out.docs[path]=data;n++}
   var cols=['sync','league','thu-cung'].concat(BANK.KIDS.map(function(k){return 'bankx/'+k.id+'/e'}));
   if(withLog)cols=cols.concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id+'/e'}));
-  for(var i=0;i<cols.length;i++){try{var sn=await db.collection(cols[i]).get();if(sn.metadata&&sn.metadata.fromCache)out.cached=(out.cached||0)+1;sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}catch(e){out.cached=(out.cached||0)+1}}   // sửa 0064: đếm phần chỉ đọc được bản cũ trong máy (mất mạng / mạng chập chờn)
+  async function fresh(r){var x=await r.get();if(x&&x.metadata&&x.metadata.fromCache){try{x=await r.get({source:'server'})}catch(e){}}return x}   // sửa 0066: đọc ra bản cũ trong máy thì đọc lại thẳng từ mạng một lần
+  for(var i=0;i<cols.length;i++){try{var sn=await fresh(db.collection(cols[i]));if(sn.metadata&&sn.metadata.fromCache)out.cached=(out.cached||0)+1;sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}catch(e){out.cached=(out.cached||0)+1}}   // sửa 0064: đếm phần chỉ đọc được bản cũ trong máy (mất mạng / mạng chập chờn)
   var docs=['data/users/gia-dinh/sync','data/users/gia-dinh/progress','tien-do/hoc-sinh','data/users/gia-dinh/lop1','data/users/gia-dinh/lop3','data/users/gia-dinh/lop5','data/users/gia-dinh/lop7'].concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id}));
-  for(var j=0;j<docs.length;j++){try{var s1=await db.doc(docs[j]).get();if(s1.metadata&&s1.metadata.fromCache)out.cached=(out.cached||0)+1;if(s1.exists)put(docs[j],s1.data())}catch(e){out.cached=(out.cached||0)+1}}
+  for(var j=0;j<docs.length;j++){try{var s1=await fresh(db.doc(docs[j]));if(s1.metadata&&s1.metadata.fromCache)out.cached=(out.cached||0)+1;if(s1.exists)put(docs[j],s1.data())}catch(e){out.cached=(out.cached||0)+1}}
   if(!n)throw new Error('Không đọc được dữ liệu nào');
   out.count=n;return out}
 /* 📸 Bản chụp tự động (bố mẹ chốt 23/11/2026): mỗi ngày, máy đầu tiên mở trang sẽ chụp toàn bộ dữ liệu lên chup/<ngày> (chia phần), giữ 14 ngày */

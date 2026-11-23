@@ -93,7 +93,7 @@ Các khóa Từ vựng quan trọng: `vocab_progress_v1` (đã học đến từ
 
 Firestore bật bộ nhớ đệm trên máy (`enablePersistence`): khi mất mạng hoặc mạng chập chờn, `get()` có thể trả **bản cũ trong máy** (`snap.metadata.fromCache = true`); lệnh ghi xếp hàng trong máy và tự gửi khi có mạng (kể cả sau khi đóng trang).
 
-- Mọi chỗ **đọc → gộp → ghi** chỉ ghi khi đọc được bản trên mạng; đọc ra bản cũ thì để lần sau: Từ vựng (`notStale` trong `mergeWithCloud` / `guardShrink`, phần chia nhỏ đọc kiểu `strict` — phần cũ hay khác lần ghi với tài liệu đầu coi như chưa đọc được), môn lớp 1/2/3/5/7 (`flush`), Lớp 6 (`push` đọc, gộp rồi mới ghi), Nuôi thú (`push1`).
+- Mọi chỗ **đọc → gộp → ghi** chỉ ghi khi đọc được bản trên mạng; đọc ra bản cũ thì đọc lại thẳng từ mạng một lần (`get({source:'server'})`, bản 0066), vẫn không được thì để lần sau: Từ vựng (`notStale` trong `mergeWithCloud` / `guardShrink`, phần chia nhỏ đọc kiểu `strict` — phần cũ hay khác lần ghi với tài liệu đầu coi như chưa đọc được), môn lớp 1/2/3/5/7 (`flush`), Lớp 6 (`push` đọc, gộp rồi mới ghi), Nuôi thú (`push1`).
 - **Nuôi thú gộp ba bên** (`merge3`): mốc `thu_base_v1` (bản trên mạng ở lần đồng bộ trước của máy này) + bản trên máy + bản trên mạng. Số đếm (điểm lớn, xu đã tiêu/thắng, trận, thức ăn, mảnh rèn, cấp rèn, lượt chơi) cộng phần thay đổi của hai bên; thời điểm lấy mới nhất; tên, phông, đồ đang đeo lấy bên vừa đổi; danh sách gộp không trùng. Mỗi lúc chỉ một lần gửi (`PUSHING`).
 - `vocab_daily_v1.<bé>.per` kèm `perAt` (lúc bố mẹ đổi): khi gộp lấy bản có `perAt` mới hơn.
 - `thidua.js`: `D.partial` (có tài liệu đọc lỗi hoặc chỉ có bản cũ) → tự tải lại tối đa 3 lần, không báo tụt, không chốt tuần / trao cúp; `D.ahead` (máy này còn phần học chưa gửi lên) → không ghi mốc nhật ký toàn diện.

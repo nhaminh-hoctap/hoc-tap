@@ -1641,14 +1641,15 @@ async function readDoc(id,data,partsMap,strict){ // ghép lại nội dung (kể
   if(typeof data.v==='string')return data.v;
   if(!data.c)return null;let s='';
   for(let i=0;i<data.c;i++){let part=partsMap&&partsMap[id+'~'+i];
-    if(part==null){try{const sn=await SYNC.db.doc('sync/'+id+'~'+i).get();const x=sn.exists?(sn.data()||{}):{};
+    if(part==null){try{const sn=strict?await freshGet(SYNC.db.doc('sync/'+id+'~'+i)):await SYNC.db.doc('sync/'+id+'~'+i).get();const x=sn.exists?(sn.data()||{}):{};
       part=(strict&&((sn.metadata&&sn.metadata.fromCache)||(data.t&&x.t&&x.t!==data.t)))?null:x.p}catch(e){part=null}}   // strict (sửa 0064): phần cũ trong bộ nhớ máy hoặc khác lần ghi với tài liệu đầu thì coi như chưa đọc được
     if(typeof part!=='string')return null;s+=part}
   return s;
 }
+async function freshGet(r){let x=await r.get();if(x&&x.metadata&&x.metadata.fromCache){try{x=await r.get({source:'server'})}catch(e){}}return x}   // sửa 0066: đọc ra bản cũ trong máy thì đọc lại thẳng từ mạng một lần
 function notStale(sn){if(sn&&sn.metadata&&sn.metadata.fromCache){const e=new Error('chỉ có bản cũ trong bộ nhớ máy');e.code='stale';throw e}return sn}   // sửa 0064: mạng chập chờn thì Firestore trả bản cũ trong bộ nhớ máy — gộp với bản cũ rồi gửi sẽ đè mất phần máy khác vừa gửi
 async function mergeWithCloud(k,id,str){ // đọc bản trên kho, gộp với bản trên máy (bản máy mới hơn), cập nhật lại máy
-  const sn=notStale(await SYNC.db.doc('sync/'+id).get());if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
+  const sn=notStale(await freshGet(SYNC.db.doc('sync/'+id)));if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
   if(typeof cv!=='string')notStale({metadata:{fromCache:true}});   // sửa 0064: có tài liệu trên kho mà chưa ghép đọc được → chưa gửi (trước đây gửi bản máy, đè mất bản kho)
   if(cv===str)return str;
   let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){notStale({metadata:{fromCache:true}})}
@@ -1658,7 +1659,7 @@ async function mergeWithCloud(k,id,str){ // đọc bản trên kho, gộp với 
    nhỏ hơn hẳn bản trên kho (dưới 80%) thì KHÔNG gửi, lấy bản kho về máy và ghi dòng đỏ vào Nhật ký toàn diện. */
 function sizeOf(v){return typeof v==='number'?v:Array.isArray(v)?v.length:v&&typeof v==='object'?Object.keys(v).length:0}
 async function guardShrink(k,id,str){
-  const sn=notStale(await SYNC.db.doc('sync/'+id).get());if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
+  const sn=notStale(await freshGet(SYNC.db.doc('sync/'+id)));if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null,true);
   if(typeof cv!=='string')notStale({metadata:{fromCache:true}});if(cv===str)return str;
   let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){notStale({metadata:{fromCache:true}})}
   const ca=sizeOf(a),cb=sizeOf(b);if(!(ca>=10&&cb<ca*0.8))return str;

@@ -479,7 +479,7 @@ var PUSHING=null,PUSH_AGAIN=false;
 function push(){if(PUSHING){PUSH_AGAIN=true;return PUSHING}   // sửa 0064: mỗi lúc chỉ gửi một lần (gửi chồng nhau thì phần gộp bị tính hai lần)
   PUSHING=push1().catch(function(){}).then(function(){PUSHING=null;if(PUSH_AGAIN){PUSH_AGAIN=false;return push()}});return PUSHING}
 async function push1(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
-  try{var sn=await ref.get();
+  try{var sn=await ref.get();if(sn.metadata&&sn.metadata.fromCache){try{sn=await ref.get({source:'server'})}catch(e){}}   // sửa 0066: đọc lại thẳng từ mạng một lần
     if(sn.metadata&&sn.metadata.fromCache){clearTimeout(saveT);saveT=setTimeout(push,20000);return}   // sửa 0064: chỉ đọc được bản cũ trong bộ nhớ máy (mất mạng, mạng chập chờn) → chưa gửi, thử lại sau
     if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null,bs=baseGet();
     if(r&&bs&&!same(r,bs)){   // sửa 0064: máy khác đã gửi bản mới từ lần đồng bộ trước của máy này → cộng phần thay đổi của cả hai (trước đây một bên bị bỏ)

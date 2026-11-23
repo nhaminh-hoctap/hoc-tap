@@ -4076,6 +4076,7 @@ function push() {
   /* sửa 0064 (kiểm thử 60 ngày): đọc bản trên mạng, gộp rồi mới gửi. Trước đây gửi thẳng bản trên máy: máy mất mạng / mạng chập chờn
      (chỉ có bản cũ trong bộ nhớ máy) gửi lên sẽ đè mất phần máy khác vừa gửi (vd. bài viết bố mẹ vừa chấm trên máy khác). */
   Promise.resolve().then(function () { return sync.ref.get(); })
+    .then(function (snap) { return snap && snap.metadata && snap.metadata.fromCache ? sync.ref.get({ source: 'server' }).catch(function () { return snap; }) : snap; })   // sửa 0066: đọc lại thẳng từ mạng một lần
     .then(function (snap) {
       if (snap && snap.metadata && snap.metadata.fromCache) { var e = new Error('chỉ có bản cũ trong bộ nhớ máy'); e.code = 'unavailable'; throw e; }
       var d = snap && snap.exists ? snap.data() : null;
