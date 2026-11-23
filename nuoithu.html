@@ -465,13 +465,11 @@ if(fixFood())save();
 function prog(o){o=o||{};var f=o.fw||{};return (+o.base||0)+(+o.grow||0)+(+o.xuSpent||0)+(+o.xuWin||0)+(+f.w||0)+(+f.l||0)+(+o.adj||0)*100000}   // adj: số lần bố mẹ chỉnh tay (luôn thắng các bản cũ hơn)
 /* ---------- 📋 nhật ký chi tiết (bố mẹ xem ở Góc bố mẹ): lưu riêng ở thu-cung/nk_<bé>, không nằm trong bản thú nên bản cũ có đè cũng không mất ----------
    mỗi dòng: [lúc, máy, loại, nội dung, điểm lớn, giai đoạn, Lv, xu, tiến độ] */
-var DEV=(function(){var d=lsGet('thu_dev',null);if(d)return d;var u=navigator.userAgent||'',n=/iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'iPad':/iPhone/.test(u)?'iPhone':/Android/.test(u)?'Android':/Windows/.test(u)?'Máy tính Windows':/Mac/.test(u)?'Máy Mac':'Máy khác';
-  d=n+' #'+Math.random().toString(36).slice(2,6);lsSet('thu_dev',d);return d})();
-var NKQ=lsGet('thu_nk_q',{}),nkT=0;
-function nk(ty,txt){try{var q=NKQ[KID]||(NKQ[KID]=[]),g=growth(),p=T&&T.SPECIES?petAt(g):null;q.push([Date.now(),DEV,ty,txt,g,p?p.i+1:0,lvOf(g),xuNow(),prog(S)%100000]);if(q.length>150)q.splice(0,q.length-150);lsSet('thu_nk_q',NKQ);clearTimeout(nkT);nkT=setTimeout(nkFlush,1500)}catch(e){}}
-async function nkFlush(){var q=NKQ[KID];if(!q||!q.length||!B||!B.db)return;var n=q.length,part=q.slice(0,n);
-  try{var ref=B.db.doc('thu-cung/nk_'+KID),sn=await ref.get(),L=[];if(sn.exists){try{L=JSON.parse((sn.data()||{}).json||'[]')}catch(e){L=[]}}
-    L=L.concat(part);if(L.length>500)L=L.slice(-500);await ref.set({json:JSON.stringify(L),t:Date.now()});q.splice(0,n);lsSet('thu_nk_q',NKQ)}catch(e){}}
+/* ---------- 📋 nhật ký toàn diện (bố mẹ xem ở Góc bố mẹ): mỗi việc một dòng riêng có mã, ghi qua BANK.log vào nhatky/<bé>/e/<mã>
+   (trước bản 0059 ghi ở thu-cung/nk_<bé>, Góc bố mẹ vẫn đọc cả nhật ký cũ) */
+var DEV=(window.BANK&&BANK.dev)||'máy này';
+function nk(ty,txt){try{var g=growth(),p=T&&T.SPECIES?petAt(g):null;
+  if(window.BANK&&BANK.log)BANK.log(KID,ty,txt,{app:'nuoithu',x:{g:g,gd:p?p.i+1:0,lv:lvOf(g),xu:xuNow(),td:prog(S)%100000}})}catch(e){}}
 function pdesc(o){o=o||{};var g=(+o.base||0)+(+o.grow||0);return g+' điểm lớn (Lv '+lvOf(g)+'), xu đã tiêu '+(+o.xuSpent||0)+', tiến độ '+(prog(o)%100000)+(o.adj?', bố mẹ đã chỉnh':'')}
 var REM=false;
 function adopt(r){S=Object.assign(blank(),r);fixFood();var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a)}

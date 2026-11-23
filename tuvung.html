@@ -1230,6 +1230,7 @@ function starsOf(kd){const o=ownStars(kd);const B=window.BANK;if(!B)return o;
   return {bal:(+o.bal||0)+B.extSum(kd.id),led:ext.length?[...o.led,...ext].sort((a,b)=>b.t-a.t):o.led,paidB:o.paidB,paidM:o.paidM}}
 function addStars(kd,v,reason,k,m){if(!v)return 0;const a=store.get('vocab_stars_v1',{});const s=a[kd.id]||(a[kd.id]={bal:0,led:[]});
   s.bal=s.bal+v;s.led.unshift({t:Date.now(),v,r:reason,k:k||'auto',m:m||0});s.led=s.led.slice(0,500);store.set('vocab_stars_v1',a);
+  try{if(window.BANK&&BANK.log)BANK.log(kd.id,'sao',(BANK.fam&&!BANK.fam(kd.id)?'📗 Ghi sổ (tính xu): ':(v>0?'+':'')+v+' ⭐ ')+reason,{v,bal:BANK.fam&&!BANK.fam(kd.id)?null:s.bal,app:'tuvung'})}catch(e){}   // nhật ký toàn diện
   if(v>0&&S&&!(window.BANK&&BANK.fam&&!BANK.fam(kd.id)))(S.earned=S.earned||[]).push([v,reason]);return v}  // bạn không có sao: vẫn ghi sổ (để tính bài làm tốt → xu) nhưng không hiện sao
 function starFlag(kd,key){let got=0;updRec(kd,r=>{r.st=r.st||{};got=r.st[key]||0;r.st[key]=got+1});return got} // trả về số lần đã nhận hôm nay
 function todayStars(kd){const d=today();return starsOf(kd).led.filter(e=>e.v>0&&!String(e.r).startsWith('📌')&&ymd(new Date(e.t))===d).reduce((s,e)=>s+e.v,0)}
@@ -1630,6 +1631,17 @@ async function mergeWithCloud(k,id,str){ // đọc bản trên kho, gộp với 
   let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){return str}
   const out=JSON.stringify(mergeKidVal(k,a,b));if(out!==str){const kid=id.slice(id.indexOf('.')+1);try{const cur=JSON.parse(LS.getItem(k)||'{}')||{};cur[kid]=JSON.parse(out);LS.setItem(k,JSON.stringify(cur))}catch(e){}}
   return out}
+/* Chặn dữ liệu tụt (bố mẹ yêu cầu 23/11/2026): với tiến độ học (số từ đã học, lịch ôn, thống kê…), nếu bản trên máy sắp gửi
+   nhỏ hơn hẳn bản trên kho (dưới 80%) thì KHÔNG gửi, lấy bản kho về máy và ghi dòng đỏ vào Nhật ký toàn diện. */
+function sizeOf(v){return typeof v==='number'?v:Array.isArray(v)?v.length:v&&typeof v==='object'?Object.keys(v).length:0}
+async function guardShrink(k,id,str){
+  const sn=await SYNC.db.doc('sync/'+id).get();if(!sn.exists)return str;const cv=await readDoc(id,sn.data()||{},null);if(typeof cv!=='string'||cv===str)return str;
+  let a,b;try{a=JSON.parse(cv);b=JSON.parse(str)}catch(e){return str}
+  const ca=sizeOf(a),cb=sizeOf(b);if(!(ca>=10&&cb<ca*0.8))return str;
+  const kid=id.slice(id.indexOf('.')+1);try{const cur=JSON.parse(LS.getItem(k)||'{}')||{};cur[kid]=a;LS.setItem(k,JSON.stringify(cur))}catch(e){}
+  SYNC.last[id]=cv;
+  try{window.BANK&&BANK.log&&BANK.log(kid,'chan','⛔ Chặn gửi dữ liệu Từ vựng bị tụt ('+k.replace('vocab_','').replace('_v1','')+': máy này '+cb+', trên mạng '+ca+') → giữ bản trên mạng',{app:'tuvung',x:{k,local:cb,cloud:ca}})}catch(e){}
+  return null}
 async function syncFlush(){
   if(!SYNC.db||SYNC.hold)return; if(SYNC.busy){clearTimeout(SYNC.timer);SYNC.timer=setTimeout(syncFlush,800);return}
   SYNC.busy=true;const keys=[...SYNC.dirty];SYNC.dirty.clear();let err=null;
@@ -1644,6 +1656,7 @@ async function syncFlush(){
         setSyncBadge('saving');
         jobs.push((async()=>{let str=str0;
         try{if(MERGE_KEYS.has(k)&&!SYNC.replace)str=await mergeWithCloud(k,id,str0);
+          else if(KID_KEY_SET.has(k)&&!SYNC.replace){str=await guardShrink(k,id,str0);if(str==null)return}
           await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);setLH(id,str)}
         catch(e){err=e;if(e&&e.code==='unavailable'){await new Promise(r=>setTimeout(r,600+Math.random()*800));
           try{await writeDoc(id,str);SYNC.last[id]=str;SYNC.known.add(id);setLH(id,str);err=null}catch(e2){err=e2;SYNC.dirty.add(k)}}else SYNC.dirty.add(k)}
@@ -1971,7 +1984,7 @@ function doUndo(){
   const kd=kid(),m=starsOf(kd).led[UNDO];if(!m)return;let e=m;
   if(m.x){window.BANK&&BANK.void(kd.id,m.x)}
   else{const a=store.get('vocab_stars_v1',{}),s=a[kd.id];if(!s)return;const j=s.led.findIndex(x=>x.t===m.t&&x.r===m.r&&x.v===m.v);if(j<0)return;
-    e=s.led.splice(j,1)[0];s.bal-=e.v;(s.del=s.del||[]).push(e.t+'|'+e.r+'|'+e.v);store.set('vocab_stars_v1',a)}   // ghi dấu đã hủy để lần gộp với kho không hiện lại
+    e=s.led.splice(j,1)[0];s.bal-=e.v;(s.del=s.del||[]).push(e.t+'|'+e.r+'|'+e.v);store.set('vocab_stars_v1',a);try{window.BANK&&BANK.log&&BANK.log(kd.id,'huy','✖ Bố mẹ hủy dòng sao Từ vựng: '+e.r,{v:-e.v,bal:s.bal,app:'tuvung'})}catch(x){}}   // ghi dấu đã hủy để lần gộp với kho không hiện lại
   UNDO=-1;$('undoPin').value='';$('undoBox').classList.add('hide');renderStars();renderStarTabs();toast(`Đã hủy: ${e.r}`)}
 function fixesOf(kd){return store.get('vocab_fix_v1',{})[kd.id]||{}}
 let ORIG_VI=null;
