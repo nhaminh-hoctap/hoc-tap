@@ -1,0 +1,113 @@
+diff --git a/bank.js b/bank.js
+index 8e14df5..f47fbe6 100644
+--- a/bank.js
++++ b/bank.js
+@@ -59,4 +59,18 @@
+   function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) { } }
+ 
++  /* ---------- 📋 NHẬT KÝ TOÀN DIỆN (bố mẹ yêu cầu 23/11/2026) ----------
++     Mỗi thay đổi (sao, xu, lượt học, thú, đồ, đồng bộ, bố mẹ chỉnh) là MỘT tài liệu riêng: nhatky/<bé>/e/<mã>,
++     chỉ thêm, không sửa, nên nhiều máy cùng ghi không đè nhau. Mã (vd. NK-MWQ3ZK8A1B2C) dùng để tra cứu, khôi phục sau này. */
++  var NKP_KEY = 'nhatky_pending_v1', nkp = {};
++  try { nkp = JSON.parse(localStorage.getItem(NKP_KEY) || '{}') || {}; } catch (e) { nkp = {}; }
++  function saveNkp() { try { localStorage.setItem(NKP_KEY, JSON.stringify(nkp)); } catch (e) { } }
++  var DEV = (function () {   // tên máy: iPad / iPhone / máy tính… kèm 4 ký tự riêng (dùng chung với Nuôi thú)
++    var d = null; try { d = JSON.parse(localStorage.getItem('thu_dev') || 'null'); } catch (e) { }
++    if (d) return d;
++    var u = navigator.userAgent || '', n = /iPad/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1) ? 'iPad' : /iPhone/.test(u) ? 'iPhone' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Máy tính Windows' : /Mac/.test(u) ? 'Máy Mac' : 'Máy khác';
++    d = n + ' #' + Math.random().toString(36).slice(2, 6); try { localStorage.setItem('thu_dev', JSON.stringify(d)); } catch (e) { }
++    return d;
++  })();
++
+   var listeners = [], PIN = null;
+   var B = {
+@@ -96,9 +110,28 @@
+       var e = { id: o.id || rid(), t: Date.now(), v: Math.round(o.v), r: String(o.r || ''), src: o.src || 'home', k: o.k || 'x', key: o.key || '', day: ymd() };
+       cache[kid][e.id] = e; pending[kid + '/' + e.id] = e; saveCache(); B._emit(); B._flush();
++      B.log(kid, 'sao', (B.fam(kid) ? (e.v > 0 ? '+' : '') + e.v + ' ⭐ ' : '📗 Ghi sổ (tính xu): ') + e.r, { v: e.v, app: e.src, x: { bank: e.id, k: e.k } });
+       return e;
+     },
+     void: function (kid, id) {
+       var e = cache[kid] && cache[kid][id]; if (!e) return false;
+-      e.void = true; e.vt = Date.now(); pending[kid + '/' + id] = e; saveCache(); B._emit(); B._flush(); return true;
++      e.void = true; e.vt = Date.now(); pending[kid + '/' + id] = e; saveCache(); B._emit(); B._flush();
++      B.log(kid, 'huy', '✖ Hủy dòng sao: ' + e.r, { v: -e.v, app: e.src, x: { bank: e.id } });
++      return true;
++    },
++    dev: DEV,
++    /* ghi một dòng nhật ký: ty = loại (sao, huy, doi, tut, chan, mo, gui, loi, adj, mua, an, tienhoa, do, dau, chup…), txt = nội dung,
++       o = {v: số thay đổi, bal: số sau thay đổi, app, x: dữ liệu kèm, id: mã cố định (để nhiều máy ghi cùng một việc chỉ thành một dòng)} */
++    log: function (kid, ty, txt, o) {
++      o = o || {}; if (!kid) return null;
++      var id = o.id || ('L' + rid());
++      var e = { id: id, ma: 'NK-' + id.toUpperCase(), t: o.t || Date.now(), dev: DEV, ty: ty, txt: String(txt || ''), v: o.v == null ? null : o.v, bal: o.bal == null ? null : o.bal, app: o.app || (window.PORTAL && PORTAL.app) || '', x: o.x || null };
++      nkp[kid + '/' + id] = e; saveNkp(); setTimeout(B._flushLog, 800); return e;
++    },
++    _flushLog: function () {
++      if (!B.db) return;
++      Object.keys(nkp).forEach(function (p) {
++        var e = nkp[p], kid = p.split('/')[0];
++        B.db.doc('nhatky/' + kid + '/e/' + e.id).set(e).then(function () { if (nkp[p] === e) { delete nkp[p]; saveNkp(); } }).catch(function () { setTimeout(B._flushLog, 20000); });
++      });
+     },
+     _flush: function () {
+@@ -151,5 +184,5 @@
+     });
+     try { db.doc('sync/vocab_pin').onSnapshot(function (snap) { if (snap && snap.exists) { try { var v = JSON.parse((snap.data() || {}).v); if (v) { PIN = String(v); B.pinSet = true; } } catch (e) { } } }); } catch (e) { }
+-    B._flush();
++    B._flush(); B._flushLog();
+     return true;
+   })();
+diff --git a/thidua.js b/thidua.js
+index 0f7305c..ab1a957 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -80,4 +80,5 @@
+       D = n; AT = Date.now(); LOADING = null;
+       try { await finalize(); } catch (e) { console.error(e); }
++      if (db) setTimeout(function () { snapLog().catch(function (e) { console.error(e); }); }, 1500);
+       subs.forEach(function (f) { try { f(); } catch (e) { console.error(e); } });
+       return D;
+@@ -296,4 +297,42 @@
+   }
+ 
++  /* ---------- 📋 Nhật ký toàn diện: so số liệu hiện tại của từng bạn với lần ghi trước (nhatky/<bé>.last), có thay đổi thì ghi một dòng
++     (mã cố định theo "trường + số cũ + số mới + ngày" nên nhiều máy cùng thấy một thay đổi chỉ thành một dòng).
++     Số giảm bất thường (ngày học, bài luyện, câu đã làm, điểm lớn thú giảm; xu giảm hơn 30; sao giảm hơn 60) → dòng ĐỎ "tụt" và báo ở Góc bố mẹ.
++     Số giảm phải thấy lại ở lần kiểm tra sau (cách ≥ 1 phút) mới ghi, tránh báo nhầm khi một lần tải dữ liệu bị thiếu. ---------- */
++  var SNAP_AT = 0;
++  function balXu(kid) { var tc = tcOf(kid) || {}; if (famOf(kid) && !tc.rs1121) return 0; var xp = xpParts(kid).xp; if (tc.xu0 == null) return xp; return Math.max(0, xp - tc.xu0 - (+tc.xuSpent || 0) + (+tc.xuWin || 0)); }
++  function snapOf(kid) {
++    var vd = D.vd[kid] || {}, pl = D.pl[kid] || [], sj = D.sj[kid] || {}, tc = tcOf(kid) || {}, o = {};
++    o.xu = balXu(kid);
++    if (famOf(kid) && window.BANK && BANK.total) o.sao = BANK.total(kid);
++    o.en = Object.keys(vd).filter(function (d) { return dayDone(vd[d]); }).length;
++    o.lt = pl.filter(function (e) { return e && e.total > 0 && e.done >= e.total; }).length;
++    o.cau = Object.keys(sj).reduce(function (a, d) { return a + (+sj[d].q || 0); }, 0);
++    if (tc.sp) o.g = (+tc.base || 0) + (+tc.grow || 0);
++    return o;
++  }
++  var SNAP_F = { xu: ['🪙', 'Xu', 30], sao: ['⭐', 'Tổng sao', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
++  async function snapLog() {
++    var db = BANK.db; if (!db || !D || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();
++    var day = today();
++    for (var i = 0; i < KIDS.length; i++) {
++      var kid = KIDS[i], ref = db.doc('nhatky/' + kid), head = {};
++      try { var sn = await ref.get(); if (sn.exists) head = sn.data() || {}; } catch (e) { continue; }
++      var cur = snapOf(kid), last = head.last || null, pend = head.pend || {}, ch = false;
++      if (!last) { await ref.set({ last: cur, pend: {}, t: Date.now() }).catch(function () { }); continue; }   // lần đầu: chỉ ghi mốc
++      Object.keys(SNAP_F).forEach(function (f) {
++        if (cur[f] == null || last[f] == null || cur[f] === last[f]) { if (pend[f]) { delete pend[f]; ch = true; } return; }
++        var F = SNAP_F[f], d = cur[f] - last[f], bad = d < 0 && (-d > F[2]);
++        if (d < 0) { var p = pend[f]; if (!(p && p.to === cur[f] && Date.now() - p.t >= 60000)) { if (!p || p.to !== cur[f]) { pend[f] = { to: cur[f], t: Date.now() }; ch = true; } return; } delete pend[f]; }
++        BANK.log(kid, bad ? 'tut' : 'doi', F[0] + ' ' + F[1] + ': ' + last[f] + ' → ' + cur[f] + ' (' + (d > 0 ? '+' : '') + d + ')' + (bad ? ' ⚠️ giảm bất thường, cần xem lại' : ''),
++          { id: ('s' + f + '_' + last[f] + '_' + cur[f] + '_' + day).replace(/[^a-z0-9_\-]/gi, ''), v: d, bal: cur[f], app: 'tong', x: { f: f } });
++        last[f] = cur[f]; ch = true;
++      });
++      Object.keys(cur).forEach(function (f) { if (last[f] == null && cur[f] != null) { last[f] = cur[f]; ch = true; } });
++      if (ch) await ref.set({ last: last, pend: pend, t: Date.now() }).catch(function () { });
++    }
++  }
++
+   /* ---------- giao diện ---------- */
+   var CSS = '.lg-x{margin:8px 0 2px;display:grid;gap:6px;font-size:14.5px;color:#334155}.lg-x>div{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:7px 10px}.lg-tb{display:block;height:7px;border-radius:9px;background:#E2E8F0;margin-top:5px;overflow:hidden}.lg-tb i{display:block;height:100%;background:linear-gradient(90deg,#34D399,#059669)}' +
