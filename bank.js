@@ -58,6 +58,20 @@
   try { var c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); if (c && c.anhphong) { cache = c; KIDS.forEach(function (k) { if (!cache[k.id]) cache[k.id] = {}; }); } } catch (e) { }
   function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) { } }
 
+  /* ---------- 📋 NHẬT KÝ TOÀN DIỆN (bố mẹ yêu cầu 23/11/2026) ----------
+     Mỗi thay đổi (sao, xu, lượt học, thú, đồ, đồng bộ, bố mẹ chỉnh) là MỘT tài liệu riêng: nhatky/<bé>/e/<mã>,
+     chỉ thêm, không sửa, nên nhiều máy cùng ghi không đè nhau. Mã (vd. NK-MWQ3ZK8A1B2C) dùng để tra cứu, khôi phục sau này. */
+  var NKP_KEY = 'nhatky_pending_v1', nkp = {};
+  try { nkp = JSON.parse(localStorage.getItem(NKP_KEY) || '{}') || {}; } catch (e) { nkp = {}; }
+  function saveNkp() { try { localStorage.setItem(NKP_KEY, JSON.stringify(nkp)); } catch (e) { } }
+  var DEV = (function () {   // tên máy: iPad / iPhone / máy tính… kèm 4 ký tự riêng (dùng chung với Nuôi thú)
+    var d = null; try { d = JSON.parse(localStorage.getItem('thu_dev') || 'null'); } catch (e) { }
+    if (d) return d;
+    var u = navigator.userAgent || '', n = /iPad/.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1) ? 'iPad' : /iPhone/.test(u) ? 'iPhone' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Máy tính Windows' : /Mac/.test(u) ? 'Máy Mac' : 'Máy khác';
+    d = n + ' #' + Math.random().toString(36).slice(2, 6); try { localStorage.setItem('thu_dev', JSON.stringify(d)); } catch (e) { }
+    return d;
+  })();
+
   var listeners = [], PIN = null;
   var B = {
     KIDS: KIDS, SRC: SRC, RULES: RULES, ymd: ymd, stepStars: stepStars,
@@ -95,11 +109,30 @@
       if (!o || !o.v || !cache[kid]) return null;
       var e = { id: o.id || rid(), t: Date.now(), v: Math.round(o.v), r: String(o.r || ''), src: o.src || 'home', k: o.k || 'x', key: o.key || '', day: ymd() };
       cache[kid][e.id] = e; pending[kid + '/' + e.id] = e; saveCache(); B._emit(); B._flush();
+      B.log(kid, 'sao', (B.fam(kid) ? (e.v > 0 ? '+' : '') + e.v + ' ⭐ ' : '📗 Ghi sổ (tính xu): ') + e.r, { v: e.v, app: e.src, x: { bank: e.id, k: e.k } });
       return e;
     },
     void: function (kid, id) {
       var e = cache[kid] && cache[kid][id]; if (!e) return false;
-      e.void = true; e.vt = Date.now(); pending[kid + '/' + id] = e; saveCache(); B._emit(); B._flush(); return true;
+      e.void = true; e.vt = Date.now(); pending[kid + '/' + id] = e; saveCache(); B._emit(); B._flush();
+      B.log(kid, 'huy', '✖ Hủy dòng sao: ' + e.r, { v: -e.v, app: e.src, x: { bank: e.id } });
+      return true;
+    },
+    dev: DEV,
+    /* ghi một dòng nhật ký: ty = loại (sao, huy, doi, tut, chan, mo, gui, loi, adj, mua, an, tienhoa, do, dau, chup…), txt = nội dung,
+       o = {v: số thay đổi, bal: số sau thay đổi, app, x: dữ liệu kèm, id: mã cố định (để nhiều máy ghi cùng một việc chỉ thành một dòng)} */
+    log: function (kid, ty, txt, o) {
+      o = o || {}; if (!kid) return null;
+      var id = o.id || ('L' + rid());
+      var e = { id: id, ma: 'NK-' + id.toUpperCase(), t: o.t || Date.now(), dev: DEV, ty: ty, txt: String(txt || ''), v: o.v == null ? null : o.v, bal: o.bal == null ? null : o.bal, app: o.app || (window.PORTAL && PORTAL.app) || '', x: o.x || null };
+      nkp[kid + '/' + id] = e; saveNkp(); setTimeout(B._flushLog, 800); return e;
+    },
+    _flushLog: function () {
+      if (!B.db) return;
+      Object.keys(nkp).forEach(function (p) {
+        var e = nkp[p], kid = p.split('/')[0];
+        B.db.doc('nhatky/' + kid + '/e/' + e.id).set(e).then(function () { if (nkp[p] === e) { delete nkp[p]; saveNkp(); } }).catch(function () { setTimeout(B._flushLog, 20000); });
+      });
     },
     _flush: function () {
       if (!B.db) return;
@@ -150,7 +183,7 @@
       } catch (e) { }
     });
     try { db.doc('sync/vocab_pin').onSnapshot(function (snap) { if (snap && snap.exists) { try { var v = JSON.parse((snap.data() || {}).v); if (v) { PIN = String(v); B.pinSet = true; } } catch (e) { } } }); } catch (e) { }
-    B._flush();
+    B._flush(); B._flushLog();
     return true;
   })();
 

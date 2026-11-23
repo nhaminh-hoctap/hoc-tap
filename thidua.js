@@ -79,6 +79,7 @@
       KIDS.forEach(function (k) { n.sj[k] = subjDays(k, n); n.goal[k] = k === 'thanhnghi' ? ((n.l6 && n.l6.cfg && +n.l6.cfg.goal) || 20) : 20; });
       D = n; AT = Date.now(); LOADING = null;
       try { await finalize(); } catch (e) { console.error(e); }
+      if (db) setTimeout(function () { snapLog().catch(function (e) { console.error(e); }); }, 1500);
       subs.forEach(function (f) { try { f(); } catch (e) { console.error(e); } });
       return D;
     })();
@@ -293,6 +294,44 @@
     var tc = tcOf(kid), xp = (+tc.base || 0) + (+tc.grow || 0), L = petsOf(kid), i = 0;  // thú lớn nhờ được cho ăn (🐾 Nuôi thú)
     for (var j = 0; j < L.length; j++) if (xp >= L[j][0]) i = j;
     return { i: i, n: L.length, e: L[i][1], name: L[i][2], acc: L[i][3], xp: xp, from: L[i][0], next: L[i + 1] || null };
+  }
+
+  /* ---------- 📋 Nhật ký toàn diện: so số liệu hiện tại của từng bạn với lần ghi trước (nhatky/<bé>.last), có thay đổi thì ghi một dòng
+     (mã cố định theo "trường + số cũ + số mới + ngày" nên nhiều máy cùng thấy một thay đổi chỉ thành một dòng).
+     Số giảm bất thường (ngày học, bài luyện, câu đã làm, điểm lớn thú giảm; xu giảm hơn 30; sao giảm hơn 60) → dòng ĐỎ "tụt" và báo ở Góc bố mẹ.
+     Số giảm phải thấy lại ở lần kiểm tra sau (cách ≥ 1 phút) mới ghi, tránh báo nhầm khi một lần tải dữ liệu bị thiếu. ---------- */
+  var SNAP_AT = 0;
+  function balXu(kid) { var tc = tcOf(kid) || {}; if (famOf(kid) && !tc.rs1121) return 0; var xp = xpParts(kid).xp; if (tc.xu0 == null) return xp; return Math.max(0, xp - tc.xu0 - (+tc.xuSpent || 0) + (+tc.xuWin || 0)); }
+  function snapOf(kid) {
+    var vd = D.vd[kid] || {}, pl = D.pl[kid] || [], sj = D.sj[kid] || {}, tc = tcOf(kid) || {}, o = {};
+    o.xu = balXu(kid);
+    if (famOf(kid) && window.BANK && BANK.total) o.sao = BANK.total(kid);
+    o.en = Object.keys(vd).filter(function (d) { return dayDone(vd[d]); }).length;
+    o.lt = pl.filter(function (e) { return e && e.total > 0 && e.done >= e.total; }).length;
+    o.cau = Object.keys(sj).reduce(function (a, d) { return a + (+sj[d].q || 0); }, 0);
+    if (tc.sp) o.g = (+tc.base || 0) + (+tc.grow || 0);
+    return o;
+  }
+  var SNAP_F = { xu: ['🪙', 'Xu', 30], sao: ['⭐', 'Tổng sao', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
+  async function snapLog() {
+    var db = BANK.db; if (!db || !D || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();
+    var day = today();
+    for (var i = 0; i < KIDS.length; i++) {
+      var kid = KIDS[i], ref = db.doc('nhatky/' + kid), head = {};
+      try { var sn = await ref.get(); if (sn.exists) head = sn.data() || {}; } catch (e) { continue; }
+      var cur = snapOf(kid), last = head.last || null, pend = head.pend || {}, ch = false;
+      if (!last) { await ref.set({ last: cur, pend: {}, t: Date.now() }).catch(function () { }); continue; }   // lần đầu: chỉ ghi mốc
+      Object.keys(SNAP_F).forEach(function (f) {
+        if (cur[f] == null || last[f] == null || cur[f] === last[f]) { if (pend[f]) { delete pend[f]; ch = true; } return; }
+        var F = SNAP_F[f], d = cur[f] - last[f], bad = d < 0 && (-d > F[2]);
+        if (d < 0) { var p = pend[f]; if (!(p && p.to === cur[f] && Date.now() - p.t >= 60000)) { if (!p || p.to !== cur[f]) { pend[f] = { to: cur[f], t: Date.now() }; ch = true; } return; } delete pend[f]; }
+        BANK.log(kid, bad ? 'tut' : 'doi', F[0] + ' ' + F[1] + ': ' + last[f] + ' → ' + cur[f] + ' (' + (d > 0 ? '+' : '') + d + ')' + (bad ? ' ⚠️ giảm bất thường, cần xem lại' : ''),
+          { id: ('s' + f + '_' + last[f] + '_' + cur[f] + '_' + day).replace(/[^a-z0-9_\-]/gi, ''), v: d, bal: cur[f], app: 'tong', x: { f: f } });
+        last[f] = cur[f]; ch = true;
+      });
+      Object.keys(cur).forEach(function (f) { if (last[f] == null && cur[f] != null) { last[f] = cur[f]; ch = true; } });
+      if (ch) await ref.set({ last: last, pend: pend, t: Date.now() }).catch(function () { });
+    }
   }
 
   /* ---------- giao diện ---------- */
