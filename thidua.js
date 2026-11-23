@@ -35,12 +35,14 @@
   /* Rương báu: đủ số từ mới trong ngày (5; Hưng lớp 1: 3) + ôn tập + 2 bài luyện thêm trọn vẹn + 1 bài nghe & nói trọn vẹn */
   function newN(kid) { var b = window.BANK && BANK.kid(kid); return (b && b.nw) || NEWW; }   // số từ mới mỗi ngày (Hưng 3, các bạn khác 5)
   function chestCheck(r, plog, k, kid) {
-    var need = kid ? newN(kid) : NEWW;
+    var base = kid ? newN(kid) : NEWW;
     var lg = (plog || []).filter(function (e) { return e && e.t && dayOf(e.t) === k && e.total > 0 && e.done >= e.total; });
     /* từ mới chỉ tính khi bé học xong cả bước kiểm tra từ mới (có dấu newDone), mở ra học chưa tính */
     var nd = !!(r && (r.newDone || r.done)), nw = nd ? (r.new || []).length : 0, part = !nd && !!(r && r.new && r.new.length), rv = !!(r && (r.reviewDone || r.done));
     var pr = lg.filter(function (e) { return e.type !== 'ls'; }).length, ls = lg.filter(function (e) { return e.type === 'ls'; }).length;
-    return { nw: nw, part: part, rv: rv, pr: pr, ls: ls, need: need, ok: nw >= need && rv && pr >= 2 && ls >= 1 };
+    /* bố mẹ chốt 23/11/2026: tính theo số từ mới được giao hôm nay (học xong bài từ mới là xong phần này) */
+    var need = nd ? (nw || base) : ((r && r.new && r.new.length) || base); if (nd) nw = Math.max(nw, need);
+    return { nw: nw, part: part, rv: rv, pr: pr, ls: ls, need: need, ok: nd && rv && pr >= 2 && ls >= 1 };
   }
 
   /* ---------- đọc dữ liệu ---------- */

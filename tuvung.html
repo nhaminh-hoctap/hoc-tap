@@ -449,6 +449,9 @@ body.parent #kidChip::after{content:' ⇄';opacity:.8}
     <label class="l">🎤 Micro (phần tự đọc)</label>
     <div class="hint" id="micStatus"></div>
     <div class="row" style="margin-top:6px"><button class="btn ghost" id="micTest">🎤 Bấm rồi nói “apple”</button><span class="hint" id="micHeard"></span></div>
+    <label class="l">📘 Số từ mới mỗi ngày (chỉ bố mẹ đổi)</label>
+    <div id="setPer"></div>
+    <p class="hint">Nhiệm vụ hôm nay và rương báu tính theo số từ mới được giao trong ngày.</p>
     <label class="l">Bé <span id="setKid"></span> đã học đến từ số</label>
     <div class="row"><input type="number" id="setLearned" min="0"><span class="hint" id="setOf"></span><button class="btn ghost" id="setSave">Lưu</button></div>
     <p class="hint">Dùng khi bé đã học trước một phần danh sách. Mỗi ngày phần Ôn tập sẽ đưa thêm một số từ cũ chưa có lịch vào ôn (chọn 5/10/15/20 ở thẻ Ôn tập).</p>
@@ -770,8 +773,10 @@ function renderHome(){
     $('nBody').innerHTML=`<div class="num">${np.words.length} từ</div><div class="sub">Từ số ${a}${b>a?'–'+b:''} · nghe, đọc theo, rồi làm bài kiểm tra nhanh</div>`+(np.light?`<div class="sub">⚖️ Hôm nay giảm còn ${np.words.length} từ vì đang có nhiều từ chờ ôn — ôn xong sẽ học lại ${per} từ/ngày</div>`:'');
     $('nGo').textContent=(recToday(kd).new||[]).length?'▶ Học tiếp':'▶ Bắt đầu học';$('nGo').disabled=false;$('nGo').onclick=()=>startNew(false);
   } else {$('nBody').innerHTML=`<div class="done">🏆 Bé đã học hết ${N} từ!</div>`;$('nGo').textContent='Xong';$('nGo').disabled=true}
+  /* bố mẹ chốt 23/11/2026: chỉ bố mẹ đổi số từ mới mỗi ngày (bé tự chọn ít hơn thì nhiệm vụ, rương báu, Nuôi thú bị khóa) */
+  if(window.PORTAL&&!PORTAL_PARENT()){$('nPer').textContent=per+' từ'}else{
   $('nPer').innerHTML=[3,4,5].map(n=>`<button class="${n===per?'on':''}" data-n="${n}">${n}</button>`).join('')+' từ';
-  $('nPer').querySelectorAll('button').forEach(b=>b.onclick=()=>{const l=logOf(kd);l.per=+b.dataset.n;logSave(kd,l);renderHome()});
+  $('nPer').querySelectorAll('button').forEach(b=>b.onclick=()=>{const l=logOf(kd);l.per=+b.dataset.n;logSave(kd,l);renderHome()})}
 
   // thưởng các mốc thuộc chắc đã đủ (vd. sau khi đổi quy tắc 22/11) — chỉ khi đã tải xong dữ liệu kho, tránh thưởng trùng
   {let ready=true;try{ready=!SYNC.db||syncLoaded}catch(e){ready=false}
@@ -1214,7 +1219,7 @@ function finishSession(){
 }
 
 // ================= SAO THƯỞNG =================
-const STAR={block:50,blockLow:50,blockStars:150,bigStars:300,newDone:2,extra:1,revDone:1,revAcc:1,streak7:10,streak30:50,lsGood:2,lsPerfect:4,pracMinWords:20,pracPerDay:4,lsPerDay:2};
+const STAR={block:50,blockLow:0,blockStars:150,bigStars:300,newDone:2,extra:1,revDone:1,revAcc:1,streak7:10,streak30:50,lsGood:2,lsPerfect:4,pracMinWords:20,pracPerDay:4,lsPerDay:2};
 const pracDoneToday=kd=>plogOf(kd).filter(e=>e.type!=='ls'&&e.total>0&&e.done>=e.total&&ymd(new Date(e.t))===today()).length; // số bài luyện thêm làm trọn vẹn hôm nay
 const pracStarGot=kd=>{const d=today();return Math.max((((recToday(kd).st)||{}).prac||0),ownStars(kd).led.filter(e=>e.v>0&&String(e.r).startsWith('🎯 Luyện thêm')&&ymd(new Date(e.t))===d).length)};
 const pracStarLeft=kd=>Math.max(0,STAR.pracPerDay-pracStarGot(kd));
@@ -1245,7 +1250,7 @@ function renderStars(){
   $('stRuleBox').open=false;
   $('stRules').innerHTML=
     (()=>{const B=BLOCK_SPLIT[kd.id],g=mastProgress(kd);
-      return T('🏆 Thuộc chắc',`${STAR.blockLow} ⭐ / 50 từ · ${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là được thưởng<br>Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó mỗi 50 từ = +${STAR.blockStars} ⭐ và +150 🪙<br>`+
+      return T('🏆 Thuộc chắc',(STAR.blockLow?`${STAR.blockLow} ⭐ / 50 từ · `:`Từ ${B} từ: `)+`${STAR.blockStars} ⭐ / 50 từ`,`Cứ thuộc chắc thêm đủ 50 từ (bất kỳ từ nào) là một mốc<br>`+(STAR.blockLow?`Đến ${B} từ: mỗi 50 từ = +${STAR.blockLow} ⭐ · sau đó`:`Đến ${B} từ: chưa có thưởng · từ ${B} từ trở đi`)+` mỗi 50 từ = +${STAR.blockStars} ⭐ và +150 🪙<br>`+
         `Đã thuộc chắc <b>${g.M}</b> từ · còn <b>${g.left}</b> từ nữa đến mốc ${g.next}`+(g.paid?` · đã thưởng ${g.paid} mốc`:''))})()+
     T('📘 Học từ mới',`+${STAR.newDone} ⭐ / ngày`,'1 lần/ngày')+
     T('🔁 Ôn tập',`+${STAR.revDone} ⭐ / ngày`,`Đúng ngay ≥ 90%: +${STAR.revAcc}`)+
@@ -1376,12 +1381,14 @@ function blockOf(kd,n){const B=BLOCK_SPLIT[kd.id]||0;
 const mastCount=kd=>Object.values(srsOf(kd)).filter(x=>x&&x.m).length;
 const mileStars=(kd,k)=>k*50<=(BLOCK_SPLIT[kd.id]||0)?STAR.blockLow:STAR.blockStars;
 function paidMiles(kd){const o=ownStars(kd);return Math.max(+o.paidM||0,(o.paidB||[]).length)}
-function mastProgress(kd){const M=mastCount(kd),p=paidMiles(kd),next=(p+1)*50;return {M,paid:p,next,left:Math.max(0,next-M),stars:mileStars(kd,p+1)}}
+/* mốc có thưởng kế tiếp (bố mẹ chốt 23/11/2026: Anh Phong đến 400 từ, Thanh Nghị đến 600 từ không thưởng sao, xu; từ đó mỗi 50 từ = 150 sao + 150 xu) */
+function nextRewardMile(kd,p){let k=p+1;if(!NF(kd)&&!STAR.blockLow)k=Math.max(k,Math.floor((BLOCK_SPLIT[kd.id]||0)/50)+1);return k}
+function mastProgress(kd){const M=mastCount(kd),p=paidMiles(kd),k=nextRewardMile(kd,p),next=k*50;return {M,paid:p,next,left:Math.max(0,next-M),stars:mileStars(kd,k)}}
 function payMilestones(kd){let p=paidMiles(kd);const due=Math.floor(mastCount(kd)/50);
   while(p<due){p++;const a=store.get('vocab_stars_v1',{});const o=a[kd.id]||(a[kd.id]={bal:0,led:[]});o.paidM=p;store.set('vocab_stars_v1',a);
     addStars(kd,mileStars(kd,p),`🏆 Thuộc chắc ${p*50} từ`)}}
 /* phần thưởng một mốc, để hiện cho bé: bạn học cùng chỉ có xu; Anh Phong / Thanh Nghị có sao, thêm 150 xu khi vượt BLOCK_SPLIT (bố mẹ chốt 22/11) */
-function mileTxt(kd,k){const xu=NF(kd)||k*50>(BLOCK_SPLIT[kd.id]||0);return NF(kd)?'+150 🪙':`+${mileStars(kd,k)} ⭐`+(xu?' +150 🪙':'')}
+function mileTxt(kd,k){const xu=NF(kd)||k*50>(BLOCK_SPLIT[kd.id]||0),st=mileStars(kd,k);return NF(kd)?'+150 🪙':(st?`+${st} ⭐`:'')+(xu?' +150 🪙':'')||'chưa có thưởng'}
 function masteryReward(kd,w){
   payMilestones(kd);const g=mastProgress(kd);
   S.blockNote={m:`còn ${g.left} từ nữa đến mốc ${g.next} từ (${mileTxt(kd,g.next/50)})`};
@@ -1541,8 +1548,12 @@ function listenFor(w,o){
 }
 
 // ================= SETTINGS =================
-$('btnSet').onclick=()=>{if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').classList.contains('hide'))savePracticeLog(true);statTime();stopListening();clearTimeout(autoTimer);const kd=kid();$('setKid').textContent=kd.name;$('setLearned').value=learned(kd);$('setLearned').max=kd.words.length;$('setOf').textContent='/ '+kd.words.length;renderVoiceSrc();renderMicStatus();$('micHeard').textContent='';show('settings')};
+$('btnSet').onclick=()=>{if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').classList.contains('hide'))savePracticeLog(true);statTime();stopListening();clearTimeout(autoTimer);const kd=kid();$('setKid').textContent=kd.name;$('setLearned').value=learned(kd);$('setLearned').max=kd.words.length;$('setOf').textContent='/ '+kd.words.length;renderSetPer();renderVoiceSrc();renderMicStatus();$('micHeard').textContent='';show('settings')};
 $('setClose').onclick=()=>{renderHome();show('home')};
+/* bố mẹ chốt 23/11/2026: số từ mới mỗi ngày của từng bạn chỉ đổi ở đây (và màn Từ vựng khi mở từ Góc bố mẹ) */
+function renderSetPer(){const box=$('setPer');if(!box)return;
+  box.innerHTML=KIDS.map(k=>{const p=logOf(k).per;return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b style="min-width:120px">${esc(k.name)}</b>`+[3,4,5].map(n=>`<button class="btn ${n===p?'':'ghost'}" style="min-width:56px;min-height:48px" data-k="${k.id}" data-n="${n}">${n} từ</button>`).join('')+'</div>'}).join('');
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=KIDS.find(x=>x.id===b.dataset.k);if(!k)return;const l=logOf(k);l.per=+b.dataset.n;logSave(k,l);renderSetPer();toast(`${k.name}: ${l.per} từ mới mỗi ngày`)})}
 $('setSave').onclick=()=>{setLearned(kid(),$('setLearned').value);toast(`Đã lưu: ${kid().name} học đến từ số ${learned(kid())}`)};
 $('voiceSrc').onchange=e=>{V.src=e.target.value;renderVoiceSrc();saveSettings()};
 $('voicePick').onchange=e=>{V.voiceName=e.target.value;saveSettings();speak('Hello')};
@@ -1562,7 +1573,7 @@ $('btnHome').onclick=()=>{if((S.kind==='practice'||S.kind==='ls')&&!$('quiz').cl
 // Mỗi khóa dữ liệu học được lưu thành tài liệu "sync/<khóa>" (hoặc "sync/<khóa>.<bé>" với dữ liệu tách theo bé).
 // Mở trên máy nào (đăng nhập Claude) cũng tải về cùng một dữ liệu; thay đổi tự đẩy lên và các máy khác nhận ngay.
 const SYNC_KEYS=['vocab_progress_v1','vocab_srs_v1','vocab_daily_v1','vocab_practice_log_v1','vocab_pstat_v1','vocab_speak_v1',
-  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_cfg_20261119','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1','vocab_adj_tn240','vocab_enrich_v1'];
+  'vocab_prange_v1','vocab_stars_v1','vocab_stars_init_v1','vocab_pin','vocab_pin_v2','vocab_ls_lv','vocab_reset_20261118','vocab_phonics_v1','vocab_fix_v1','vocab_cfg_20261118','vocab_cfg_20261119','vocab_cfg_20261123','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1','vocab_shield_v1','vocab_adj_tn240','vocab_enrich_v1'];
 const KID_IDS=(window.BANK&&BANK.KIDS?BANK.KIDS.map(k=>k.id):['anhphong','thanhnghi']);
 // Dấu của bản đã đồng bộ gần nhất cho từng tài liệu: bản trên máy khác dấu này = có thay đổi chưa kịp gửi
 // (tắt ứng dụng, mất mạng…) -> giữ bản trên máy và gửi lên, không để bản cũ trên kho đè mất sao / tiến độ.
@@ -2244,10 +2255,12 @@ function canDecorate(kd){return canDecorate0(kd)}
 // ================= RƯƠNG BÁU & KHIÊN GIỮ CHUỖI =================
 const CHEST_NEW=5,SHIELD_MAX=2;
 const PORTAL_PARENT=()=>!!(window.PORTAL&&PORTAL.parent);
-function chestState(kd,k){k=k||today();const CHEST_NEW=kd.nw||5;const r=logOf(kd).days[k]||{},pl=plogOf(kd).filter(e=>e&&e.t&&ymd(new Date(e.t))===k&&e.total>0&&e.done>=e.total);
+function chestState(kd,k){k=k||today();const r=logOf(kd).days[k]||{},pl=plogOf(kd).filter(e=>e&&e.t&&ymd(new Date(e.t))===k&&e.total>0&&e.done>=e.total);
   const nd=!!(r.newDone||r.done),nw=nd?(r.new||[]).length:0,part=!nd&&!!(r.new&&r.new.length),rv=!!(r.reviewDone||r.done), // từ mới chỉ tính khi học xong cả bước kiểm tra
     pr=pl.filter(e=>e.type!=='ls').length,ls=pl.filter(e=>e.type==='ls').length;
-  return {nw,part,rv,pr,ls,need:CHEST_NEW,ok:nw>=CHEST_NEW&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
+  /* bố mẹ chốt 23/11/2026: tính theo số từ mới được giao hôm nay (ngày nhiều từ cần ôn, ứng dụng giảm còn 2 từ vẫn xong nhiệm vụ) */
+  let CHEST_NEW=nd?(nw||kd.nw||5):((r.new&&r.new.length)||(k===today()?newPlan(kd).words.length:0)||kd.nw||5);
+  return {nw:nd?Math.max(nw,CHEST_NEW):nw,part,rv,pr,ls,need:CHEST_NEW,ok:nd&&rv&&pr>=2&&ls>=1,opened:+r.chest||0}}
 function renderChest(kd){const box=$('chestCard');if(!box)return;if(PORTAL_PARENT()){box.classList.add('hide');return}box.classList.remove('hide');
   const st=chestState(kd),CHEST_NEW=st.need,it=(ok,t)=>`<span class="${ok?'ok':''}">${ok?'✅':'⬜'} ${t}</span>`;
   const items=[it(st.nw>=CHEST_NEW,st.part?`${CHEST_NEW} từ mới (còn bước kiểm tra)`:`${CHEST_NEW} từ mới (${Math.min(st.nw,CHEST_NEW)}/${CHEST_NEW})`),it(st.rv,'Ôn tập'),it(st.pr>=2,`2 bài luyện thêm (${Math.min(st.pr,2)}/2)`),it(st.ls>=1,`1 bài nghe & nói (${Math.min(st.ls,1)}/1)`)];
@@ -2384,6 +2397,8 @@ $('fFix').onclick=()=>{const w=S.newWords&&S.newWords[S.fi];if(w)openFix(w)};$('
     KIDS.forEach(k=>{const l=logOf(k);if(k.id==='anhphong')l.per=4;l.old=10;logSave(k,l)});store.set('vocab_cfg_20261118',true)}
   if(SAFE1&&!store.get('vocab_cfg_20261119',false)&&!SYNC.hold){ // bố mẹ chốt: mặc định mỗi bé 5 từ mới/ngày (khớp điều kiện rương báu)
     KIDS.forEach(k=>{const l=logOf(k);l.per=k.nw||5;logSave(k,l)});store.set('vocab_cfg_20261119',true)}
+  if(SAFE1&&!store.get('vocab_cfg_20261123',false)&&!SYNC.hold){ // bố mẹ chốt 23/11/2026: đặt lại số từ mới mỗi ngày (Hưng 3, các bạn khác 5), từ nay chỉ bố mẹ đổi
+    KIDS.forEach(k=>{const l=logOf(k);l.per=k.nw||5;logSave(k,l)});store.set('vocab_cfg_20261123',true)}
   if(SAFE1&&!store.get('vocab_cfg_20261121',false)&&!SYNC.hold){ // bố mẹ chốt: Hưng (lớp 1) học 3 từ mới/ngày
     KIDS.forEach(k=>{if(k.nw){const l=logOf(k);l.per=k.nw;logSave(k,l)}});store.set('vocab_cfg_20261121',true)}
   if(SAFE1&&!store.get('vocab_adj_tn240',false)&&!SYNC.hold){ // bố mẹ chỉnh: số sao hiện có của Thanh Nghị = −240 (điều chỉnh vào dòng số sao chuyển ban đầu)
