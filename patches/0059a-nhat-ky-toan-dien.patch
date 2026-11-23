@@ -1,0 +1,258 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 99760ff..37830de 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 23/11 | 0059 | Bố mẹ yêu cầu: **Góc bố mẹ gọn hơn** — "Các con đã học gì 3 ngày qua" đủ 6 bạn, mỗi bạn một dòng (✓/· từng ngày), bấm mới mở chi tiết (`renderRecent`, `lxName`); **Đấu trường tuần thu gọn**, chỉ một dòng người dẫn đầu (`renderLeagueFold`). **📋 Nhật ký toàn diện** thay Nhật ký chi tiết Nuôi thú: mỗi thay đổi một tài liệu riêng có mã `NK-…` ở `nhatky/<bé>/e/<mã>`, chỉ thêm không sửa (`BANK.log`, `BANK.dev`); ghi mọi dòng sao (Toán/TV/Văn qua `BANK.add`/`void`, Từ vựng qua `addStars`, hủy dòng), việc Nuôi thú (`nk`), và so số liệu từng bạn — xu, tổng sao, ngày xong tiếng Anh, bài luyện trọn, câu môn lớp, điểm lớn thú — với lần trước (`snapLog`, mốc ở `nhatky/<bé>.last`), mã cố định nên nhiều máy chỉ ghi một dòng; lọc theo bạn, loại, tìm theo mã. **Báo động dữ liệu tụt**: số giảm bất thường (thấy lại sau ≥ 1 phút) ghi dòng đỏ `tut` và hiện khung đỏ đầu Góc bố mẹ (`renderNkAlert`); Từ vựng chặn gửi tiến độ học nhỏ hơn 80% bản trên mạng, lấy bản mạng về (`guardShrink`). **📸 Bản chụp tự động mỗi ngày**: máy đầu tiên mở trang chụp toàn bộ dữ liệu cả 6 bạn lên `chup/<ngày>` (chia phần 600 KB), giữ 14 ngày (`autoSnap`, `gatherAll`); Tải bản sao lưu nay gồm cả dữ liệu 4 bạn học cùng và nhật ký. |
+ | 23/11 | 0058 | **Sửa lỗi mất dữ liệu Từ vựng** (tối 22/11 khoảng 22:38–23:16, máy mới của bạn học cùng tải kho chậm, chạy các bước "một lần" — xóa dữ liệu học thử 18/11, chuyển sao ban đầu — rồi gửi bản gần trống của Anh Phong, Thanh Nghị lên: mất nhật ký ngày, nhật ký Luyện thêm, sổ sao Từ vựng; xu tính ra tụt nên xu bảng tuần không hiện). Sửa: (1) các bước "một lần" chỉ chạy khi đã tải chắc dữ liệu kho; kho đã có dữ liệu thì không bao giờ chạy bước xóa; (2) các sổ ghi (`vocab_daily_v1`, `vocab_practice_log_v1`, `vocab_stars_v1`, `vocab_badges_v1`, `vocab_bstat_v1`, `vocab_title_v1`) được **gộp** thay vì đè: trước khi gửi đọc bản kho rồi gộp, nhận từ kho cũng gộp, máy có phần kho chưa có thì gửi bù lên; không tự xóa trên kho (`MERGE_KEYS`, `mergeKidVal`, `mergeWithCloud`); dòng sao một lần (sao chuyển ban đầu, thuộc chắc, rương báu ngày) không bị nhân đôi; (3) hủy dòng sao ghi dấu `del` để gộp không hiện lại; bố mẹ bấm Xóa dữ liệu học thì lần gửi đó được đè (`SYNC.replace`). |
+ | 23/11 | 0057 | **📋 Nhật ký chi tiết Nuôi thú** (bố mẹ yêu cầu): Góc bố mẹ có ô mới, chọn từng bạn, lọc Tất cả / Đồng bộ & cảnh báo / Cho ăn & lớn / Đồ / Đấu; mỗi dòng: lúc, máy nào (iPad, máy tính… kèm mã máy), việc, chi tiết, điểm lớn, Lv · giai đoạn, xu; dòng vàng (chặn đè, gửi bản máy, lỗi mạng, bố mẹ chỉnh), dòng đỏ (giai đoạn giảm). Nhật ký lưu riêng ở `thu-cung/nk_<bé>` (tối đa 500 dòng), Nuôi thú ghi khi mở, mua, cho ăn, lên Lv, tiến hóa, nhặt đồ, đấu, chặn đè (`nk`, `nkFlush`, `DEV`); kèm nhật ký trận và nhặt đồ cũ trong bản thú. Thêm `adj` (số lần bố mẹ chỉnh tay; bản có `adj` cao hơn luôn thắng bản cũ). `tcOf` (thidua.js) cũng chọn bản theo tiến độ. |
+diff --git a/index.html b/index.html
+index 4257482..50c4629 100644
+--- a/index.html
++++ b/index.html
+@@ -95,4 +95,11 @@ h2{font-size:19px;margin:24px 2px 10px}
+ .recent th{font-size:14px}.recent th:first-child,.recent td:first-child{width:76px;font-weight:700;color:var(--ink2)}
+ .recent .ln{margin:2px 0;line-height:1.4}.recent .mu{color:var(--ink2)}.recent .no{color:#94A3B8;font-style:italic}
++.rc-k{border-top:1px solid var(--line)}.rc-k summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:11px 4px;min-height:48px;touch-action:manipulation}.rc-k summary::-webkit-details-marker{display:none}
++.rc-k summary::after{content:'›';margin-left:auto;font-size:22px;color:#94A3B8;transition:transform .15s}.rc-k[open] summary::after{transform:rotate(90deg)}
++.rc-n{font-weight:800;font-size:16px;min-width:110px}.rc-s{display:flex;flex-wrap:wrap;gap:6px}.rc-d{font-size:13px;font-weight:700;border-radius:999px;padding:3px 9px}.rc-d.ok{background:#DCFCE7;color:#166534}.rc-d.no{background:#F1F5F9;color:#94A3B8}
++.rc-day{padding:6px 6px 10px 12px;border-left:3px solid var(--line);margin:0 0 8px 6px;font-size:14px}.rc-day>b{display:block;color:var(--ink2);margin-bottom:2px}
++.lg-fold{margin-top:18px;background:#fff;border:2px solid var(--line);border-radius:22px;padding:0 16px}.lg-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 0;min-height:52px;font-weight:800;font-size:18px;touch-action:manipulation}.lg-fold>summary::-webkit-details-marker{display:none}
++.lg-fold>summary small{font-weight:600;font-size:14px;color:var(--ink2)}.lg-fold>summary::after{content:'›';margin-left:auto;font-size:24px;color:#94A3B8;transition:transform .15s}.lg-fold[open]>summary::after{transform:rotate(90deg)}.lg-fold[open]{padding-bottom:14px}
++.nk-alert{margin-top:14px;background:#FEF2F2;border:2px solid #FCA5A5;border-radius:18px;padding:12px 16px;color:#7F1D1D;font-weight:700;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.nk-alert button{margin-left:auto}
+ @media (max-width:520px){.recent table{font-size:13px}.recent th:first-child,.recent td:first-child{width:56px}}
+ .hide{display:none!important}
+@@ -134,7 +141,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=60"></script>
+-<script src="bank.js?v=60"></script>
+-<script src="thidua.js?v=60"></script>
++<script src="claude-shim.js?v=61"></script>
++<script src="bank.js?v=61"></script>
++<script src="thidua.js?v=61"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+@@ -172,4 +179,5 @@ h2{font-size:19px;margin:24px 2px 10px}
+     <div class="kidsum" id="pParSum"></div>
+     <div class="recent" id="pRecent"></div>
++    <div id="pNkAlert"></div>
+     <div id="pParAlert"></div>
+     <div id="pParWeek"></div>
+@@ -180,5 +188,5 @@ h2{font-size:19px;margin:24px 2px 10px}
+     <div class="setList" id="pParSet"></div>
+     <h2>💾 Sao lưu dữ liệu</h2>
+-    <div class="bk"><div class="bk-t"><b>Tải bản sao lưu toàn bộ việc học</b><small>Gồm từ vựng, Toán, Tiếng Việt, Ngữ văn, sao thưởng, đấu trường và nuôi thú của cả hai con. Nên tải mỗi tháng một lần và cất vào Tệp hoặc Google Drive.</small><small id="pBkLast"></small></div><button class="btnp" id="pBkBtn">💾 Tải bản sao lưu</button></div>
++    <div class="bk"><div class="bk-t"><b>Tải bản sao lưu toàn bộ việc học</b><small>Gồm từ vựng, Toán, Tiếng Việt, Ngữ văn, sao thưởng, đấu trường, nuôi thú và nhật ký của cả 6 bạn. Nên tải mỗi tháng một lần và cất vào Tệp hoặc Google Drive.</small><small id="pBkLast"></small><small id="pSnapInfo"></small></div><button class="btnp" id="pBkBtn">💾 Tải bản sao lưu</button></div>
+     <div class="foot"><button class="ghost" id="pParOut">🚪 Thoát Góc bố mẹ</button><span>Các con không thấy các mục chấm sao, phạt sao và cài đặt.</span></div>
+   </section>
+@@ -193,7 +201,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ .nk-bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}.nk-bar button{touch-action:manipulation}.nk-bar button.on{background:#1E293B;color:#fff;border-color:#1E293B}
+ .nk-now{background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 16px;margin:0 0 12px;font-size:15px;line-height:1.6}
+-.ar-tb td.nk-tx{white-space:normal;text-align:left;min-width:240px}.ar-tb td.nk-dv{white-space:normal;min-width:90px;font-size:14px}.ar-tb tr.nk-w td{background:#FEF3C7}.ar-tb tr.nk-bad td{background:#FEE2E2}.ar-tb tr.nk-old td{color:#64748B}.ar-tb{border-collapse:collapse;width:100%;font-size:15px}.ar-tb th,.ar-tb td{padding:9px 10px;border-top:1px solid var(--line);text-align:center;white-space:nowrap}.ar-tb tr:first-child th{border-top:0;background:#F8FAFC}.ar-tb td.x{color:#CBD5E1}.ar-log td{text-align:left}.ar-tb small{color:var(--ink2)}.ar-sel{font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--line);border-radius:12px;min-height:46px;background:#fff;max-width:100%}.ar-warn{color:#B45309;font-weight:800}.ar-okc{color:#15803D;font-weight:800}.ar-bf{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:8px}.ar-bf label{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:700;font-size:15px}.ar-bf .ar-step button{width:44px;height:44px;font-size:22px}.ar-bf .ar-step b{font-size:20px}.ar-on{background:#FFF7ED;border:2px solid #FDBA74;border-radius:12px;padding:6px 10px;font-size:14px;font-weight:700;color:#9A3412}
++.ar-tb td.nk-tx{white-space:normal;text-align:left;min-width:240px}.ar-tb td.nk-ma{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#475569}.ar-tb td.nk-dv{white-space:normal;min-width:90px;font-size:14px}.ar-tb tr.nk-w td{background:#FEF3C7}.ar-tb tr.nk-bad td{background:#FEE2E2}.ar-tb tr.nk-old td{color:#64748B}.ar-tb{border-collapse:collapse;width:100%;font-size:15px}.ar-tb th,.ar-tb td{padding:9px 10px;border-top:1px solid var(--line);text-align:center;white-space:nowrap}.ar-tb tr:first-child th{border-top:0;background:#F8FAFC}.ar-tb td.x{color:#CBD5E1}.ar-log td{text-align:left}.ar-tb small{color:var(--ink2)}.ar-sel{font:inherit;font-size:16px;padding:8px 10px;border:2px solid var(--line);border-radius:12px;min-height:46px;background:#fff;max-width:100%}.ar-warn{color:#B45309;font-weight:800}.ar-okc{color:#15803D;font-weight:800}.ar-bf{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;display:grid;gap:8px}.ar-bf label{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:700;font-size:15px}.ar-bf .ar-step button{width:44px;height:44px;font-size:22px}.ar-bf .ar-step b{font-size:20px}.ar-on{background:#FFF7ED;border:2px solid #FDBA74;border-radius:12px;padding:6px 10px;font-size:14px;font-weight:700;color:#9A3412}
+     </style>
+-    <div style="display:flex;align-items:center;gap:12px;margin:6px 0 14px"><button class="backBtn" id="pNkBack" aria-label="Quay lại">⬅ Quay lại</button><h1 style="font-size:26px;margin:0">📋 Nhật ký chi tiết Nuôi thú</h1></div>
++    <div style="display:flex;align-items:center;gap:12px;margin:6px 0 14px"><button class="backBtn" id="pNkBack" aria-label="Quay lại">⬅ Quay lại</button><h1 style="font-size:26px;margin:0">📋 Nhật ký toàn diện</h1></div>
+     <div id="pNkBody"></div>
+   </section>
+@@ -475,9 +483,11 @@ async function loadTitles(){if(window.LESSON_TITLES)return;var K='lesson_titles_
+     window.LESSON_TITLES=T;try{localStorage.setItem(K,JSON.stringify(T))}catch(e){}}catch(e){}}
+ async function renderRecent(){var box=$('pRecent');if(!box)return;
+-  if(RECENT.html)box.innerHTML=RECENT.html;else box.innerHTML='<h3>📋 Các con đã học gì 3 ngày qua</h3><div class="mu">Đang tải…</div>';
++  if(RECENT.html){box.innerHTML=RECENT.html;bindRecent(box)}else box.innerHTML='<h3>📋 Các con đã học gì 3 ngày qua</h3><div class="mu">Đang tải…</div>';
+   if(Date.now()-RECENT.at<20000)return;RECENT.at=Date.now();
+   await Promise.all([BANK.ready,loadTitles()]);var db=BANK.db;if(!db){box.innerHTML='<h3>📋 Các con đã học gì 3 ngày qua</h3><div class="mu">Chưa kết nối được dữ liệu.</div>';return}
+   var days=[0,1,2].map(function(i){var d=new Date();d.setDate(d.getDate()-i);return {k:ymdL(d),lab:i===0?'Hôm nay':i===1?'Hôm qua':d.getDate()+'/'+(d.getMonth()+1)}});
+-  var R=await Promise.all([getJSON(db,'sync/vocab_daily_v1.anhphong'),getJSON(db,'sync/vocab_practice_log_v1.anhphong'),getJSON(db,'sync/vocab_daily_v1.thanhnghi'),getJSON(db,'sync/vocab_practice_log_v1.thanhnghi'),getJSON(db,'data/users/gia-dinh/sync'),getJSON(db,'tien-do/hoc-sinh')]);
++  var KS=BANK.KIDS,L2X={lop1:'lop1',lop3:'lop3',lop5:'lop5',lop7:'lop7'};
++  var R=await Promise.all(KS.map(function(k){return Promise.all([getJSON(db,'sync/vocab_daily_v1.'+k.id),getJSON(db,'sync/vocab_practice_log_v1.'+k.id)])}).concat([getJSON(db,'data/users/gia-dinh/sync'),getJSON(db,'tien-do/hoc-sinh')]).concat(['lop1','lop3','lop5','lop7'].map(function(a){return getJSON(db,'data/users/gia-dinh/'+a)})));
++  var L2=R[KS.length],L6=R[KS.length+1],LX={lop1:R[KS.length+2],lop3:R[KS.length+3],lop5:R[KS.length+4],lop7:R[KS.length+5]};
+   function vocabLines(daily,log,k){var out=[],r=daily&&daily.days&&daily.days[k];
+     var lg=(log||[]).filter(function(e){return e&&e.t&&ymdL(new Date(e.t))===k});
+@@ -491,7 +501,9 @@ async function renderRecent(){var box=$('pRecent');if(!box)return;
+     var tail=r&&r.q?' · '+r.q+' câu, đúng '+pct(r.ok,r.q)+(r.sec?', '+Math.round(r.sec/60)+' phút':''):'';
+     out.push('<div class="ln">📘 <b>Từ vựng:</b> '+(parts.join(' · ')||'có học')+'<span class="mu">'+tail+'</span></div>');return out}
+-  function l2Lines(doc,k){var out=[];if(!doc)return out;var by={};
++  function lxName(app,id){var g=app.slice(3),T=window.LESSON_TITLES||{},m;if(app==='lop2')return l2Name(id);if(app==='lop3')return l3Name(id);
++    if(m=/^t(\d+)$/.exec(id))return '🧮 Toán '+g+' Bài '+m[1];if(m=/^c(\d+)$/.exec(id))return '🧮 Toán '+g+': cả chủ đề '+m[1];if(m=/^w(\d+)$/.exec(id))return '📖 '+(g==='7'?'Ngữ văn':'Tiếng Việt')+' '+g+' tuần '+m[1];return (/^(r|u|on)/.test(id)?'📖 ':'🧮 ')+id}
++  function l2Lines(doc,k,app){var out=[];if(!doc)return out;var by={};app=app||'lop2';var nm=function(id){return lxName(app,id)};
+     (doc.rounds||[]).forEach(function(r){if(!Array.isArray(r)||ymdL(new Date(r[0]))!==k)return;var o=by[r[2]]||(by[r[2]]={c:0,n:0,x:0});o.c+=+r[3]||0;o.n+=+r[4]||0;o.x++});
+-    Object.keys(by).forEach(function(id){var o=by[id];out.push('<div class="ln">'+l2Name(id)+' <span class="mu">('+(o.x>1?o.x+' lượt, ':'')+o.c+'/'+o.n+')</span></div>')});
++    Object.keys(by).forEach(function(id){var o=by[id];out.push('<div class="ln">'+nm(id)+' <span class="mu">('+(o.x>1?o.x+' lượt, ':'')+o.c+'/'+o.n+')</span></div>')});
+     (doc.tests||[]).forEach(function(r){if(Array.isArray(r)&&ymdL(new Date(r[0]))===k)out.push('<div class="ln">📝 Kiểm tra '+(r[2]==='toan'?'Toán':'Tiếng Việt')+(r[7]?' · '+r[7]:'')+' <span class="mu">('+r[4]+'/'+r[3]+')</span></div>')});
+     var dr=(doc.drills||[]).filter(function(r){return Array.isArray(r)&&ymdL(new Date(r[0]))===k});
+@@ -504,9 +516,14 @@ async function renderRecent(){var box=$('pRecent');if(!box)return;
+     var dd=S.days&&S.days[k];if(dd&&out.length){var q=0,c=0;Object.keys(dd).forEach(function(x){q+=dd[x].q||0;c+=dd[x].c||0});if(q)out.push('<div class="ln mu">Tổng '+q+' câu, đúng '+pct(c,q)+'</div>')}
+     return out}
+-  var rows=days.map(function(d){
+-    var ap=vocabLines(R[0],R[1],d.k).concat(l2Lines(R[4],d.k)),tn=vocabLines(R[2],R[3],d.k).concat(l6Lines(R[5],d.k));
+-    return '<tr><td>'+d.lab+'</td><td>'+(ap.join('')||'<span class="no">Chưa học</span>')+'</td><td>'+(tn.join('')||'<span class="no">Chưa học</span>')+'</td></tr>'}).join('');
+-  RECENT.html='<h3>📋 Các con đã học gì 3 ngày qua</h3><table><tr><th>Ngày</th><th>'+BANK.nameplate('anhphong','S',null,{av:true})+'</th><th>'+BANK.nameplate('thanhnghi','S',null,{av:true})+'</th></tr>'+rows+'</table>';
+-  var b=$('pRecent');if(b)b.innerHTML=RECENT.html}
++  /* bố mẹ chốt 23/11/2026: đủ 6 bạn, mỗi bạn một dòng gọn (✓ đã học / · chưa học từng ngày), bấm vào mới mở chi tiết */
++  var open=RECENT.open||{};
++  var cards=KS.map(function(kd,ix){var vd=R[ix][0],vl=R[ix][1],app=kd.app;
++    var per=days.map(function(d){var L=vocabLines(vd,vl,d.k);if(app==='lop6')L=L.concat(l6Lines(L6,d.k));else if(app==='lop2')L=L.concat(l2Lines(L2,d.k,'lop2'));else if(LX[app])L=L.concat(l2Lines(LX[app],d.k,app));return {d:d,L:L}});
++    var sum=per.map(function(x){return '<span class="rc-d '+(x.L.length?'ok':'no')+'">'+(x.L.length?'✓':'·')+' '+x.d.lab+'</span>'}).join('');
++    return '<details class="rc-k" data-k="'+kd.id+'"'+(open[kd.id]?' open':'')+'><summary><span class="rc-n">'+(kd.av||'')+' '+esc(kd.name)+'</span><span class="rc-s">'+sum+'</span></summary>'+
++      per.map(function(x){return '<div class="rc-day"><b>'+x.d.lab+'</b>'+(x.L.join('')||'<span class="no">Chưa học</span>')+'</div>'}).join('')+'</details>'}).join('');
++  RECENT.html='<h3>📋 Các con đã học gì 3 ngày qua <small class="mu">(bấm tên để xem chi tiết)</small></h3>'+cards;
++  var b=$('pRecent');if(b){b.innerHTML=RECENT.html;bindRecent(b)}}
++function bindRecent(b){b.querySelectorAll('details.rc-k').forEach(function(d){d.ontoggle=function(){RECENT.open=RECENT.open||{};RECENT.open[d.dataset.k]=d.open}})}
+ 
+ /* ---------- Báo cáo tuần ---------- */
+@@ -516,34 +533,46 @@ function renderWeek(){var TD=window.THIDUA,box=$('pParWeek');if(!TD||!TD.data()|
+   box.querySelectorAll('.wr-nav button').forEach(function(b){b.onclick=function(){if(b.disabled)return;WEEK=b.dataset.wk;renderWeek()}})})}
+ 
+-/* ---------- 📋 Nhật ký chi tiết Nuôi thú (bố mẹ): đọc thu-cung/nk_<bé> (Nuôi thú ghi từ bản 0057) + nhật ký trận, nhặt đồ cũ trong bản thú ---------- */
+-var NK={kid:'thanhnghi',f:'all'};
+-var NK_TY={mo:['📲','Mở'],gui:['⬆️','Gửi bản máy'],chan:['⛔','Chặn đè'],lui:['⚠️','Lùi giai đoạn'],loi:['📵','Lỗi mạng'],adj:['🛠️','Bố mẹ chỉnh'],mua:['🛒','Mua'],an:['🍖','Cho ăn'],tienhoa:['🎉','Tiến hóa'],'do':['🎁','Đồ'],dau:['⚔️','Đấu']};
+-var NK_F={all:['Tất cả',null],sync:['Đồng bộ & cảnh báo',['mo','gui','chan','lui','loi','adj']],grow:['Cho ăn & lớn',['mua','an','tienhoa','lui','adj']],item:['Đồ',['do']],fight:['Đấu',['dau']]};
++/* ---------- 📋 Nhật ký toàn diện (bố mẹ yêu cầu 23/11/2026): đọc nhatky/<bé>/e (mỗi việc một dòng có mã, ghi qua BANK.log)
++   + nhật ký Nuôi thú cũ thu-cung/nk_<bé> (bản 0057–0058) + nhật ký trận, nhặt đồ cũ trong bản thú ---------- */
++var NK={kid:'thanhnghi',f:'all',q:''};
++var NK_TY={sao:['⭐','Sao / ghi sổ'],huy:['✖','Hủy dòng'],doi:['🔢','Số liệu thay đổi'],tut:['🚨','Giảm bất thường'],chan:['⛔','Chặn đè'],lui:['⚠️','Lùi giai đoạn'],mo:['📲','Mở'],gui:['⬆️','Gửi bản máy'],loi:['📵','Lỗi mạng'],adj:['🛠️','Bố mẹ chỉnh'],mua:['🛒','Mua'],an:['🍖','Cho ăn'],tienhoa:['🎉','Tiến hóa'],'do':['🎁','Đồ'],dau:['⚔️','Đấu'],chup:['📸','Chụp dữ liệu']};
++var NK_F={all:['Tất cả',null],warn:['⚠️ Cảnh báo',['tut','chan','lui','loi']],sao:['⭐ Sao',['sao','huy']],num:['🔢 Xu, lượt học, thú',['doi','tut']],pet:['🐾 Nuôi thú',['mua','an','tienhoa','do','dau','lui']],sync:['📲 Đồng bộ',['mo','gui','chan','loi','chup']],adj:['🛠️ Bố mẹ chỉnh',['adj']]};
++var NK_APP={tuvung:'Từ vựng',toan:'Toán',tv:'Tiếng Việt',van:'Ngữ văn',home:'Bố mẹ',cup:'Đấu trường',nuoithu:'Nuôi thú',tong:'Tổng hợp',vocab:'Từ vựng'};
+ function nkItem(id){var m=String(id).split('_'),G={vk:'Vũ khí',gi:'Áo giáp',gy:'Giày',bu:'Bùa'},Lo={cong:'Cuồng công',bao:'Bạo kích',trau:'Trâu bò',toc:'Tốc độ',hoi:'Hồi phục'},R=['Thường','Hiếm','Sử thi','Huyền thoại'];return (G[m[0]]||m[0])+' '+(Lo[m[1]]||m[1]||'')+' ('+(R[(+m[2]||1)-1]||'')+')'}
+-function openNk(fromPop){if(!fromPop)pushNav({p:'nk'});show('pNk');window.scrollTo(0,0);renderNk()}
++function openNk(fromPop,opt){if(opt)Object.assign(NK,opt);if(!fromPop)pushNav({p:'nk'});show('pNk');window.scrollTo(0,0);renderNk()}
++async function nkRows(k){var L=[],cur=null;
++  try{var q=await BANK.db.collection('nhatky/'+k+'/e').orderBy('t','desc').limit(400).get();q.docs.forEach(function(d){var e=d.data()||{};L.push({t:+e.t||0,ma:e.ma||('NK-'+String(d.id).toUpperCase()),dev:e.dev||'',ty:e.ty||'',app:e.app||'',txt:e.txt||'',v:e.v,bal:e.bal,x:e.x||null})})}catch(e){}
++  try{var a=await BANK.db.doc('thu-cung/nk_'+k).get();if(a.exists){JSON.parse((a.data()||{}).json||'[]').forEach(function(r){L.push({t:r[0],ma:'',dev:r[1]||'',ty:r[2],app:'nuoithu',txt:r[3],v:null,bal:null,x:{g:r[4],gd:r[5],lv:r[6],xu:r[7]}})})}}catch(e){}
++  try{var b=await BANK.db.doc('thu-cung/'+k).get();if(b.exists){var x=b.data()||{};cur=JSON.parse(x.json||'null');if(cur)cur._t=+x.t||0}}catch(e){}
++  var since=L.length?Math.min.apply(null,L.map(function(r){return r.t})):Date.now(),nm=function(id){var q=BANK.kid(id);return q?q.name:id};
++  if(cur){((cur.fw||{}).log||[]).forEach(function(r){if(r[0]<since)L.push({t:r[0],ma:'',dev:'',ty:'dau',app:'nuoithu',txt:'⚔️ '+(r[3]?'Thắng':'Thua')+' '+(r[1]==='sib'?'thú của '+nm(r[2]):r[2])+' (Lv '+r[5]+' đấu Lv '+r[6]+')'+(r[4]?' +'+r[4]+' 🪙':''),old:1})});
++    (cur.dlog||[]).forEach(function(r){if(r[0]<since)L.push({t:r[0],ma:'',dev:'',ty:'do',app:'nuoithu',txt:'🎁 Nhặt đồ: '+nkItem(r[1])+(r[3]?' — trùng':''),old:1})})}
++  L.sort(function(p,q){return q.t-p.t});return {L:L,cur:cur}}
+ async function renderNk(){var box=$('pNkBody');if(!box)return;box.innerHTML='<p>⏳ Đang tải nhật ký…</p>';
+-  var KS=BANK.KIDS,k=NK.kid,L=[],cur=null,err='';
+-  try{await BANK.ready;if(!BANK.db)throw 0;
+-    var a=await BANK.db.doc('thu-cung/nk_'+k).get();if(a.exists){try{L=JSON.parse((a.data()||{}).json||'[]')}catch(e){}}
+-    var b=await BANK.db.doc('thu-cung/'+k).get();if(b.exists){var x=b.data()||{};try{cur=JSON.parse(x.json||'null')}catch(e){}if(cur)cur._t=+x.t||0}}catch(e){err='Chưa kết nối được dữ liệu trên mạng, thử lại sau nhé.'}
+-  var nm=function(id){var q=BANK.kid(id);return q?q.name:id};
+-  var since=L.length?L[0][0]:Date.now(),old=[];
+-  if(cur){((cur.fw||{}).log||[]).forEach(function(r){if(r[0]<since)old.push([r[0],'',' dau','⚔️ '+(r[3]?'Thắng':'Thua')+' '+(r[1]==='sib'?'thú của '+nm(r[2]):r[2])+' (Lv '+r[5]+' đấu Lv '+r[6]+')'+(r[4]?' +'+r[4]+' 🪙':''),null,null,null,null,null,1])});
+-    (cur.dlog||[]).forEach(function(r){if(r[0]<since)old.push([r[0],'','do','🎁 Nhặt đồ: '+nkItem(r[1])+(r[3]?' — trùng':'')+({r1:' · rương hạng 1 tuần',r2:' · rương hạng 2 tuần',g:' · bố mẹ tặng',b:' · rương có chỉnh (bí mật)'}[r[2]]||''),null,null,null,null,null,1])})}
+-  L=L.concat(old).map(function(r){r[2]=String(r[2]).trim();return r}).sort(function(p,q){return q[0]-p[0]});
+-  var F=NK_F[NK.f]||NK_F.all;if(F[1])L=L.filter(function(r){return F[1].indexOf(r[2])>=0});
++  var KS=BANK.KIDS,k=NK.kid,err='',res={L:[],cur:null};
++  try{await BANK.ready;if(!BANK.db)throw 0;res=await nkRows(k)}catch(e){err='Chưa kết nối được dữ liệu trên mạng, thử lại sau nhé.'}
++  var L=res.L,cur=res.cur,F=NK_F[NK.f]||NK_F.all;if(F[1])L=L.filter(function(r){return F[1].indexOf(r.ty)>=0});
++  var q=(NK.q||'').trim().toUpperCase();if(q)L=L.filter(function(r){return (r.ma||'').toUpperCase().indexOf(q)>=0||(r.txt||'').toUpperCase().indexOf(q)>=0});
+   var d2=function(n){return String(n).padStart(2,'0')},fmt=function(t){var d=new Date(t);return d2(d.getDate())+'/'+d2(d.getMonth()+1)+' '+d2(d.getHours())+':'+d2(d.getMinutes())};
+-  var h='<p class="mu2">Mỗi bạn một nhật ký, lưu riêng nên bản thú bị đè cũng không mất. Ghi đầy đủ từ ngày 23/11/2026; dòng chữ xám là nhật ký trận và nhặt đồ cũ lấy từ bản thú. Dòng vàng: cần để ý · dòng đỏ: thú bị lùi.</p>';
+-  h+='<div class="nk-bar">'+KS.map(function(q){return '<button class="ghost'+(q.id===k?' on':'')+'" data-nkk="'+q.id+'">'+esc(q.name)+'</button>'}).join('')+'</div>';
++  var h='<p class="mu2">Mọi thay đổi về sao, xu, lượt học, thú, đồ, đồng bộ và bố mẹ chỉnh của từng bạn — mỗi việc một dòng có <b>mã</b> (NK-…) để tra cứu, khôi phục. Ghi đầy đủ từ 23/11/2026; dòng chữ xám là nhật ký trận, nhặt đồ cũ. Dòng vàng: cần để ý · dòng đỏ: giảm bất thường hoặc thú bị lùi.</p>';
++  h+='<div class="nk-bar">'+KS.map(function(x){return '<button class="ghost'+(x.id===k?' on':'')+'" data-nkk="'+x.id+'">'+(x.av||'')+' '+esc(x.name)+'</button>'}).join('')+'</div>';
+   h+='<div class="nk-bar">'+Object.keys(NK_F).map(function(f){return '<button class="ghost'+(f===NK.f?' on':'')+'" data-nkf="'+f+'">'+NK_F[f][0]+'</button>'}).join('')+'<button class="ghost" data-nkr="1">🔄 Tải lại</button></div>';
++  h+='<div class="nk-bar"><input id="nkQ" class="ar-sel" style="flex:1;min-width:200px" placeholder="Tìm theo mã (NK-…) hoặc chữ" value="'+esc(NK.q||'')+'"><button class="ghost" id="nkQGo">🔍 Tìm</button></div>';
+   if(err)h+='<div class="ar-msg err">'+err+'</div>';
+-  if(cur){var g=(+cur.base||0)+(+cur.grow||0),f=cur.fw||{};h+='<div class="nk-now"><b>Bản thú đang lưu trên mạng</b> (lưu lúc '+fmt(cur._t)+'): '+g+' điểm lớn · Lv '+Math.min(50,1+Math.floor(g/30))+' · xu đã tiêu '+(+cur.xuSpent||0)+' · xu thắng đấu '+(+cur.xuWin||0)+' · trận '+((+f.w||0)+(+f.l||0))+' · đồ '+Object.keys(cur.bag||{}).length+' món'+(cur.adj?' · bố mẹ đã chỉnh '+cur.adj+' lần':'')+'</div>'}
+-  else if(!err)h+='<div class="nk-now">'+esc(nm(k))+' chưa có thú.</div>';
+-  h+=L.length?'<div class="ar-tw"><table class="ar-tb"><tr><th>Lúc</th><th>Máy</th><th>Việc</th><th>Chi tiết</th><th>Điểm lớn</th><th>Lv · GĐ</th><th>Xu</th></tr>'+L.slice(0,300).map(function(r){var ty=NK_TY[r[2]]||['•',r[2]],cls=r[9]?'nk-old':r[2]==='lui'?'nk-bad':/^(chan|gui|loi|adj)$/.test(r[2])?'nk-w':'';
+-    return '<tr class="'+cls+'"><td>'+fmt(r[0])+'</td><td class="nk-dv">'+esc(r[1]||'')+'</td><td>'+ty[0]+' '+ty[1]+'</td><td class="nk-tx">'+esc(r[3])+'</td><td>'+(r[4]==null?'':r[4])+'</td><td>'+(r[6]==null?'':'Lv '+r[6]+' · '+r[5]+'/9')+'</td><td>'+(r[7]==null?'':r[7]+' 🪙')+'</td></tr>'}).join('')+'</table></div>'+(L.length>300?'<p class="mu2">Hiện 300 dòng mới nhất.</p>':''):'<p class="mu2">Chưa có dòng nào'+(F[1]?' ở mục này':'')+'.</p>';
++  if(cur){var g=(+cur.base||0)+(+cur.grow||0),f=cur.fw||{};h+='<div class="nk-now"><b>Thú đang lưu trên mạng</b> (lúc '+fmt(cur._t)+'): '+g+' điểm lớn · Lv '+Math.min(50,1+Math.floor(g/30))+' · xu đã tiêu '+(+cur.xuSpent||0)+' · xu thắng đấu '+(+cur.xuWin||0)+' · trận '+((+f.w||0)+(+f.l||0))+' · đồ '+Object.keys(cur.bag||{}).length+' món'+(cur.adj?' · bố mẹ đã chỉnh '+cur.adj+' lần':'')+'</div>'}
++  h+=L.length?'<div class="ar-tw"><table class="ar-tb"><tr><th>Lúc</th><th>Mã</th><th>Máy</th><th>Ứng dụng</th><th>Việc</th><th>Chi tiết</th><th>Thay đổi</th><th>Sau</th></tr>'+L.slice(0,300).map(function(r){var ty=NK_TY[r.ty]||['•',r.ty],cls=r.old?'nk-old':/^(lui|tut)$/.test(r.ty)?'nk-bad':/^(chan|gui|loi|adj)$/.test(r.ty)?'nk-w':'';
++    var after=r.bal!=null?r.bal:(r.x&&r.x.g!=null&&r.app==='nuoithu'?'Lv '+r.x.lv+' · '+r.x.g+' đ.lớn':'');
++    return '<tr class="'+cls+'"><td>'+fmt(r.t)+'</td><td class="nk-ma">'+esc(r.ma||'')+'</td><td class="nk-dv">'+esc(r.dev||'')+'</td><td>'+esc(NK_APP[r.app]||r.app||'')+'</td><td>'+ty[0]+' '+ty[1]+'</td><td class="nk-tx">'+esc(r.txt)+'</td><td>'+(r.v==null?'':(r.v>0?'+':'')+r.v)+'</td><td>'+esc(String(after))+'</td></tr>'}).join('')+'</table></div>'+(L.length>300?'<p class="mu2">Hiện 300 dòng mới nhất.</p>':''):'<p class="mu2">Chưa có dòng nào'+(F[1]||q?' ở mục này':'')+'.</p>';
+   box.innerHTML=h;
+   box.querySelectorAll('[data-nkk]').forEach(function(b){b.onclick=function(){NK.kid=b.dataset.nkk;renderNk()}});
+   box.querySelectorAll('[data-nkf]').forEach(function(b){b.onclick=function(){NK.f=b.dataset.nkf;renderNk()}});
+-  box.querySelectorAll('[data-nkr]').forEach(function(b){b.onclick=renderNk})}
++  box.querySelectorAll('[data-nkr]').forEach(function(b){b.onclick=renderNk});
++  var go=function(){NK.q=$('nkQ').value;renderNk()};$('nkQGo').onclick=go;$('nkQ').onkeydown=function(e){if(e.key==='Enter')go()}}
++/* cảnh báo dữ liệu 3 ngày qua (dòng tụt / chặn đè / thú lùi) hiện ở đầu Góc bố mẹ */
++async function renderNkAlert(){var box=$('pNkAlert');if(!box)return;try{await BANK.ready;if(!BANK.db)return;var since=Date.now()-3*864e5,hits=[];
++  for(var i=0;i<BANK.KIDS.length;i++){var k=BANK.KIDS[i];try{var q=await BANK.db.collection('nhatky/'+k.id+'/e').where('t','>',since).get();q.docs.forEach(function(d){var e=d.data()||{};if(/^(tut|chan|lui)$/.test(e.ty))hits.push({k:k,e:e})})}catch(e){}}
++  if(!hits.length){box.innerHTML='';return}var by={};hits.forEach(function(h){by[h.k.id]=(by[h.k.id]||0)+1});
++  box.innerHTML='<div class="nk-alert">🚨 Cảnh báo dữ liệu 3 ngày qua: '+Object.keys(by).map(function(id){return esc(BANK.kid(id).name)+' ('+by[id]+')'}).join(', ')+'<button class="ghost" id="nkAlGo">Xem nhật ký</button></div>';
++  $('nkAlGo').onclick=function(){openNk(false,{kid:Object.keys(by)[0],f:'warn'})}}catch(e){}}
+ 
+ /* ---------- ⚔️ Quản lý đấu thú (bố mẹ) — cài đặt lưu ở thu-cung/_admin, trang Nuôi thú đọc và làm theo ---------- */
+@@ -653,14 +682,34 @@ function renderBkLast(){var e=$('pBkLast');if(!e)return;var t=lsGet('portal_back
+   if(!t){e.innerHTML='<span style="color:#B45309;font-weight:700">Chưa sao lưu lần nào.</span>';return}
+   var d=Math.floor((Date.now()-t)/864e5),dt=new Date(t);e.innerHTML='Lần gần nhất trên máy này: '+dt.getDate()+'/'+(dt.getMonth()+1)+'/'+dt.getFullYear()+(d>=30?' · <span style="color:#B45309;font-weight:700">đã hơn 30 ngày, nên tải bản mới</span>':'')}
++/* gom toàn bộ dữ liệu học (cả 6 bạn) — dùng cho Tải bản sao lưu và Bản chụp tự động mỗi ngày */
++async function gatherAll(db,withLog){
++  var out={app:'goc-hoc-tap',ver:2,at:new Date().toISOString(),docs:{}},n=0;
++  function put(path,data){out.docs[path]=data;n++}
++  var cols=['sync','league','thu-cung'].concat(BANK.KIDS.map(function(k){return 'bankx/'+k.id+'/e'}));
++  if(withLog)cols=cols.concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id+'/e'}));
++  for(var i=0;i<cols.length;i++){try{var sn=await db.collection(cols[i]).get();sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}catch(e){}}
++  var docs=['data/users/gia-dinh/sync','data/users/gia-dinh/progress','tien-do/hoc-sinh','data/users/gia-dinh/lop1','data/users/gia-dinh/lop3','data/users/gia-dinh/lop5','data/users/gia-dinh/lop7'].concat(BANK.KIDS.map(function(k){return 'nhatky/'+k.id}));
++  for(var j=0;j<docs.length;j++){try{var s1=await db.doc(docs[j]).get();if(s1.exists)put(docs[j],s1.data())}catch(e){}}
++  if(!n)throw new Error('Không đọc được dữ liệu nào');
++  out.count=n;return out}
++/* 📸 Bản chụp tự động (bố mẹ chốt 23/11/2026): mỗi ngày, máy đầu tiên mở trang sẽ chụp toàn bộ dữ liệu lên chup/<ngày> (chia phần), giữ 14 ngày */
++var SNAP_CHUNK=600000;
++async function autoSnap(){try{await BANK.ready;var db=BANK.db;if(!db)return;var day=ymdL(new Date());if(lsGet('chup_day')===day)return;
++  var h=await db.doc('chup/'+day).get();if(h.exists&&(h.data()||{}).c){lsSet('chup_day',day);return}
++  await db.doc('chup/'+day).set({busy:BANK.dev,t:Date.now()});   // giữ chỗ, máy khác thấy thì thôi
++  var out=await gatherAll(db,false),txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v}),c=Math.ceil(txt.length/SNAP_CHUNK);
++  for(var i=0;i<c;i++)await db.doc('chup/'+day+'~'+i).set({p:txt.slice(i*SNAP_CHUNK,(i+1)*SNAP_CHUNK)});
++  await db.doc('chup/'+day).set({c:c,t:Date.now(),dev:BANK.dev,n:out.count,size:txt.length});lsSet('chup_day',day);
++  var old=new Date();old.setDate(old.getDate()-15);var od=ymdL(old);   // xóa bản cũ hơn 14 ngày
++  try{var oh=await db.doc('chup/'+od).get();if(oh.exists){var oc=+(oh.data()||{}).c||0;for(var j=0;j<oc;j++)await db.doc('chup/'+od+'~'+j).delete();await db.doc('chup/'+od).delete()}}catch(e){}
++  renderSnapInfo()}catch(e){console.error(e)}}
++async function renderSnapInfo(){var e=$('pSnapInfo');if(!e)return;try{await BANK.ready;var db=BANK.db;if(!db){e.textContent='';return}
++  for(var i=0;i<3;i++){var d=new Date();d.setDate(d.getDate()-i);var day=ymdL(d),h=await db.doc('chup/'+day).get();
++    if(h.exists&&(h.data()||{}).c){var x=h.data(),t=new Date(+x.t);e.innerHTML='📸 Bản chụp tự động mỗi ngày (giữ 14 ngày) · mới nhất: '+t.getDate()+'/'+(t.getMonth()+1)+' lúc '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+' ('+x.n+' mục)';return}}
++  e.innerHTML='📸 Bản chụp tự động: chưa có bản nào (sẽ tự chụp khi mở trang)'}catch(x){}}
++setTimeout(autoSnap,20000);
+ async function doBackup(){var btn=$('pBkBtn');if(!btn||btn.disabled)return;btn.disabled=true;var old=btn.textContent;btn.textContent='⏳ Đang gom dữ liệu…';
+   try{await BANK.ready;var db=BANK.db;if(!db)throw new Error('Chưa kết nối được dữ liệu');
+-    var out={app:'goc-hoc-tap',ver:1,at:new Date().toISOString(),docs:{}},n=0;
+-    function put(path,data){out.docs[path]=data;n++}
+-    var cols=['sync','league','thu-cung'].concat(BANK.KIDS.map(function(k){return 'bankx/'+k.id+'/e'}));
+-    for(var i=0;i<cols.length;i++){var sn=await db.collection(cols[i]).get();sn.docs.forEach(function(d){put(cols[i]+'/'+d.id,d.data())})}
+-    var docs=['data/users/gia-dinh/sync','data/users/gia-dinh/progress','tien-do/hoc-sinh'];
+-    for(var j=0;j<docs.length;j++){var s1=await db.doc(docs[j]).get();if(s1.exists)put(docs[j],s1.data())}
+-    if(!n)throw new Error('Không đọc được dữ liệu nào');
+-    out.count=n;
++    var out=await gatherAll(db,true),n=out.count;
+     var txt=JSON.stringify(out,function(k,v){return v&&typeof v==='object'&&typeof v.toDate==='function'?v.toDate().toISOString():v});
+     var d=new Date(),name='sao-luu-hoc-tap-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.json';
+@@ -684,12 +733,12 @@ function renderParent(){if(!PARENT)return;
+     var ti=BANK.title(k.id);
+     return '<div class="ks '+k.id+'" style="background:linear-gradient(150deg,'+(k.light||k.color)+','+k.color+')"><div class="n">'+BANK.nameplate(k.id,'M',null,{av:true})+'</div>'+(ti&&ti.rank?'<div class="t" style="margin-top:6px">🏆 Cấp '+ti.rank+'/7 '+(ti.re||'')+' '+esc(ti.rn||'')+' · '+(ti.pts||0)+' điểm huy hiệu'+(ti.spe&&ti.spe.length?' · Đặc biệt: '+ti.spe.join(''):'')+'</div>':'')+(BANK.fam(k.id)?'<div class="b">⭐ '+showTotal(k.id)+'</div><div class="t">Hôm nay: '+(t||'chưa nhận sao')+'</div>':'<div class="b">🪙 '+xuOf(k.id)+' xu</div><div class="t">'+esc(k.grade||'')+' · bạn học cùng</div>')+'</div>'}).join('');
+-  var TD=window.THIDUA;if(TD){if(TD.data()){$('pParLeague').innerHTML=TD.leagueHtml(null,true);$('pParAlert').innerHTML=TD.alertsHtml();renderWeek()}TD.load()}
+-  renderBkLast();
+-  renderRecent();
++  var TD=window.THIDUA;if(TD){if(TD.data()){renderLeagueFold();$('pParAlert').innerHTML=TD.alertsHtml();renderWeek()}TD.load()}
++  renderBkLast();renderSnapInfo();
++  renderRecent();renderNkAlert();
+   var T=function(app,ic,t,sub,cls){return '<button class="tile '+(cls||'par')+'" data-app="'+app+'"><span class="ic">'+ic+'</span><span class="t">'+t+'</span><span class="s">'+sub+'</span><span class="go">Mở →</span></button>'};
+   $('pParStar').innerHTML=T('p-sao','⭐','Thưởng · Phạt · Tiêu sao','Chấm sao việc nhà, việc tốt; phạt; đổi quà; hủy dòng sao nhầm. Xem lịch sử sao của cả hai con.','star')+
+     T('p-report','📊','Báo cáo học từ vựng','Báo cáo tuần, tiến độ thuộc chắc của từng con.')+
+     T('p-arena','⚔️','Quản lý đấu thú','Mở / tạm đóng đấu trường, năng lượng mỗi ngày, giờ đấu, thêm năng lượng, thành tích và nhật ký trận của các con.')+
+-    T('p-nk','📋','Nhật ký chi tiết Nuôi thú','Từng việc của thú mỗi bạn: mở trên máy nào, cho ăn, lên cấp, tiến hóa, nhặt đồ, đấu, các lần chặn lưu đè và bố mẹ chỉnh.');
++    T('p-nk','📋','Nhật ký toàn diện','Mọi thay đổi sao, xu, lượt học, thú, đồ của từng bạn, mỗi việc một dòng có mã; cảnh báo khi dữ liệu giảm bất thường.');
+   var R=function(app,ic,t,sub){return '<button data-app="'+app+'"><span class="si">'+ic+'</span><span><b>'+t+'</b><small>'+sub+'</small></span><span class="ar">›</span></button>'};
+   $('pParSet').innerHTML=R('p-tuvung','📘','Học từ vựng','Số từ mới, số từ ôn mỗi ngày, giọng đọc, micro, mã bố mẹ, sao lưu')+
+@@ -698,4 +747,8 @@ function renderParent(){if(!PARENT)return;
+   document.querySelectorAll('#pPar .tile,#pParSet button').forEach(function(b){b.onclick=function(){goParent(b.dataset.app)}});
+ }
++/* bố mẹ chốt 23/11/2026: Đấu trường tuần thu gọn, chỉ một dòng người dẫn đầu; bấm vào mới hiện bảng đầy đủ */
++function renderLeagueFold(){var TD=window.THIDUA,box=$('pParLeague');if(!TD||!TD.data()||!box)return;var was=box.querySelector('details.lg-fold'),op=was?was.open:false;
++  var sc=BANK.KIDS.map(function(k){return {k:k,p:TD.weekPts?TD.weekPts(k.id):0}}).sort(function(a,b){return b.p-a.p}),top=sc[0];
++  box.innerHTML='<details class="lg-fold"'+(op?' open':'')+'><summary>🏆 Đấu trường tuần <small>'+(top&&top.p?'dẫn đầu: '+esc(top.k.name)+' '+top.p+' điểm':'tuần mới chưa có điểm')+' · bấm để xem bảng</small></summary>'+TD.leagueHtml(null,true)+'</details>'}
+ function goParent(app){if(app==='p-arena'){openArAdm();return}if(app==='p-nk'){openNk();return}pushNav({p:'app',app:app});if(!P.pin){try{P.pin=sessionStorage.getItem('portal_pin')}catch(e){}}P.pin=P.pin||'5789';var m={'p-sao':['tuvung','parent-sao'],'p-report':['tuvung','parent-report'],'p-tuvung':['tuvung','parent-set'],'p-lop2':['lop2','parent'],'p-lop6':['lop6','parent']}[app];if(!m)return;
+   var kid=app==='p-lop2'?'anhphong':app==='p-lop6'?'thanhnghi':(lsGet('portal_last_kid')||'anhphong');
+diff --git a/sw.js b/sw.js
+index 45dd9f2..8dff52a 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v60';
++const V = 'hoc-tap-v61';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=60', 'bank.js?v=60', 'thidua.js?v=60', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=61', 'bank.js?v=61', 'thidua.js?v=61', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
