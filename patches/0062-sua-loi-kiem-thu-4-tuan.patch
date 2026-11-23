@@ -1,0 +1,146 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 2bc5248..25a6695 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 23/11 | 0062 | **Sửa lỗi tìm ra khi kiểm thử 4 tuần giả lập (6 bạn, 9 máy)**: (1) **Từ vựng đồng bộ** — máy có thay đổi chưa gửi của một bé từng đánh dấu cả loại dữ liệu của mọi bé, nên khi có mạng lại / mở máy cũ thì gửi bản cũ của bé khác đè lên (giả lập: lịch ôn Thanh Nghị 222→210, số từ đã học 699→667, Mun 65→60). Nay chỉ gửi phần thật sự đổi trên máy đó (so với dấu lần đồng bộ trước `lh`), khi nhận từ kho xét từng bé (`modLoc`); lịch ôn, số từ đã học, thống kê luyện/nói cũng **gộp** (`MERGE_KEYS` thêm `vocab_srs_v1`, `vocab_progress_v1`, `vocab_pstat_v1`, `vocab_speak_v1`; lịch ôn từng từ lấy bản trả lời nhiều lần hơn, giữ dấu đã thưởng thuộc chắc; so sánh không phụ thuộc thứ tự khóa `canonJ`). (2) **Nuôi thú** — thêm `__beforeHome` gửi bản thú lên mạng xong mới về trang chính (trước đây lần lưu cuối có thể chưa kịp gửi, máy khác thấy thú lùi); `push` chờ ghi xong; cho ăn trừ phần ăn và cộng điểm lớn ngay khi bấm (trước đây trừ sau 0,7 giây nên bấm nhanh được ăn quá số phần đã mua); rời trận lúc đang hiện kết quả không báo lỗi. (3) **Báo động tụt** — tách xu kiếm được / xu đã tiêu, sao đã cộng / sao đã trừ (`xuk`, `xut`, `saoc`, `saot`); tiêu xu mua thức ăn, bố mẹ cho đổi sao không còn bị báo đỏ. |
+ | 23/11 | 0061 | Bố mẹ yêu cầu: Góc bố mẹ **bỏ 6 ô màu của các con** (`pParSum`), bắt đầu từ "Các con đã học gì 3 ngày qua". **Trang của từng bạn dùng phông nền đã chọn trong 🐾 Nuôi thú** làm nền (phủ lớp trắng mờ cho dễ đọc; chưa chọn thì nền mặc định) — `kidBg`, `body.kbg`, biến `--kbg`. |
+ | 23/11 | 0060 | Nhật ký toàn diện: chỉ ghi "Tổng sao" khi sao Từ vựng đã tải xong (trước đó có lúc ghi nhầm số âm). |
+diff --git a/index.html b/index.html
+index e5d9867..34f6480 100644
+--- a/index.html
++++ b/index.html
+@@ -143,7 +143,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=63"></script>
+-<script src="bank.js?v=63"></script>
+-<script src="thidua.js?v=63"></script>
++<script src="claude-shim.js?v=64"></script>
++<script src="bank.js?v=64"></script>
++<script src="thidua.js?v=64"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/nuoithu.html b/nuoithu.html
+index 8a97ca6..523f020 100644
+--- a/nuoithu.html
++++ b/nuoithu.html
+@@ -479,5 +479,7 @@ async function push(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID
+   try{var sn=await ref.get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
+     if(r&&prog(r)>prog(S)){nk('chan','⛔ Chặn lưu đè: bản trên máy này ('+pdesc(S)+') cũ hơn bản trên mạng ('+pdesc(r)+') → lấy bản trên mạng');adopt(r);try{render()}catch(e){}return}}}catch(e){return}
+-  ref.set({json:JSON.stringify(S),t:S.t}).catch(function(){})}
++  try{await ref.set({json:JSON.stringify(S),t:S.t})}catch(e){}}
++/* sửa 0062: bấm về trang chính thì gửi nốt bản thú lên mạng rồi mới tải lại trang (trước đây lần lưu cuối có thể chưa kịp gửi, máy khác thấy thú bị lùi) */
++window.__beforeHome=function(){clearTimeout(saveT);if(!REM||!B||!B.db)return Promise.resolve();return push()};
+ async function loadRemote(){
+   if(!B)return;await B.ready;if(!B.db)return;
+@@ -594,10 +596,8 @@ function pat(){var d=today(),c=S.pat[d]||0;jump();fx('💖',2);snd('pat');
+ function refreshBars(){var e=energy(),c=fightCap(),h=hapNow();$('ntFull').style.width=(c?Math.round(e/c*100):0)+'%';$('ntFullN').textContent=e+'/'+c;$('ntHap').style.width=h+'%';$('ntHapN').textContent=h}
+ function eat(kind){var have=S.inv[kind]||0;if(have<=0)return;
+-  var before=pet().i;
++  var before=pet().i;S.inv[kind]=have-1;var lv0=lvOf(growth());S.grow+=CFG.growN;setHap(hapNow()+CFG.hapN);nk('an','Cho ăn +'+CFG.growN+' điểm lớn'+(lvOf(growth())>lv0?' → lên Lv '+lvOf(growth()):''));save();   // sửa 0062: tính ngay khi bấm (trước đây trừ sau 0,7 giây nên bấm nhanh được ăn quá số phần đã mua)
+   var sc=$('ntScene'),e=document.createElement('span');e.className='nt-fly';e.textContent=kind==='s'?'🍰':'🍖';e.style.left='8%';e.style.top='82%';sc.appendChild(e);
+   var pp=petPos();requestAnimationFrame(function(){e.style.left=(pp[0]-4)+'%';e.style.top=pp[1]+'%';e.style.transform='scale(.4)';e.style.opacity='.2'});
+-  setTimeout(function(){e.remove();S.inv[kind]--;
+-    {var lv0=lvOf(growth());S.grow+=CFG.growN;setHap(hapNow()+CFG.hapN);fx('🌱',2);say('Măm măm, ngon quá! +'+CFG.growN+' 🌱');nk('an','Cho ăn +'+CFG.growN+' điểm lớn'+(lvOf(growth())>lv0?' → lên Lv '+lvOf(growth()):''))}
+-    save();jump();snd('eat');render()},720)}
++  setTimeout(function(){e.remove();fx('🌱',2);say('Măm măm, ngon quá! +'+CFG.growN+' 🌱');jump();snd('eat');render()},720)}
+ function buyXu(k){k='n';var price=CFG.priceN;
+   if(xuNow()<price){dlg('Con chưa đủ xu. Học bài để có thêm xu nhé! 💪',[['Đồng ý',null,'ok']]);return}
+@@ -1173,5 +1173,5 @@ function finish(w,timeUp){if(!BT||BT.over)return;BT.over=true;BT.busy=true;bars(
+   var loser=$('bFt'+(win?'fo':'me')),winner=$('bFt'+(win?'me':'fo'));if(loser)loser.classList.add('ko');if(winner)winner.classList.add('winp');
+   snd(win?'win':'bad');banner(win?'🏆 CHIẾN THẮNG!':'💪 Cố lên lần sau!');
+-  setTimeout(function(){if(!document.getElementById('ntAr'))return;var m=document.createElement('div');m.className='nt-msg';
++  var bt=BT;setTimeout(function(){if(!document.getElementById('ntAr')||BT!==bt)return;var m=document.createElement('div');m.className='nt-msg';
+     m.innerHTML=(win?'<div style="font-size:60px">🏆</div><b>'+esc(BT.me.name)+'</b> thắng rồi!'+(timeUp?'<br><span class="mu">(hết '+FIGHT.maxRound+' hiệp, còn nhiều máu hơn)</span>':'')+(gain?'<br>Con được <b>+'+gain+' 🪙</b>':''):
+       '<div style="font-size:60px">💪</div>Lần này <b>'+esc(BT.fo.name)+'</b> thắng.'+(timeUp?'<br><span class="mu">(hết '+FIGHT.maxRound+' hiệp)</span>':'')+'<br><span class="mu">Cho thú ăn, rèn trang bị rồi đấu lại nhé! Thua không mất gì đâu.</span>')+
+diff --git a/sw.js b/sw.js
+index a638f41..3a14d33 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v63';
++const V = 'hoc-tap-v64';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=63', 'bank.js?v=63', 'thidua.js?v=63', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=64', 'bank.js?v=64', 'thidua.js?v=64', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/thidua.js b/thidua.js
+index 65f2d36..d3e6ea5 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -305,6 +305,12 @@
+   function snapOf(kid) {
+     var vd = D.vd[kid] || {}, pl = D.pl[kid] || [], sj = D.sj[kid] || {}, tc = tcOf(kid) || {}, o = {};
++    /* sửa 0062: tách xu kiếm được / xu đã tiêu, sao cộng / sao trừ — tiêu xu mua thức ăn, bố mẹ cho đổi sao là bình thường, không báo tụt */
+     o.xu = balXu(kid);
+-    if (famOf(kid) && window.BANK && BANK.total && BANK.vocabBal(kid) != null) o.sao = BANK.total(kid);   // sao Từ vựng chưa tải xong thì bỏ qua, tránh ghi nhầm
++    if (tc.xu0 != null) { o.xuk = xpParts(kid).xp + (+tc.xuWin || 0); o.xut = +tc.xuSpent || 0; }
++    if (famOf(kid) && window.BANK && BANK.total && BANK.vocabBal(kid) != null) {
++      o.sao = BANK.total(kid);
++      var led = (BANK.vocabLed ? BANK.vocabLed(kid) : []).concat(BANK.extList ? BANK.extList(kid) : []);
++      o.saoc = led.reduce(function (a, e) { return a + (+e.v > 0 ? +e.v : 0); }, 0); o.saot = led.reduce(function (a, e) { return a + (+e.v < 0 ? -e.v : 0); }, 0);
++    }   // sao Từ vựng chưa tải xong thì bỏ qua, tránh ghi nhầm
+     o.en = Object.keys(vd).filter(function (d) { return dayDone(vd[d]); }).length;
+     o.lt = pl.filter(function (e) { return e && e.total > 0 && e.done >= e.total; }).length;
+@@ -313,5 +319,5 @@
+     return o;
+   }
+-  var SNAP_F = { xu: ['🪙', 'Xu', 30], sao: ['⭐', 'Tổng sao', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
++  var SNAP_F = { xu: ['🪙', 'Xu còn lại', 1e9], xuk: ['🪙', 'Xu đã kiếm được', 30], xut: ['🛒', 'Xu đã tiêu', 0], sao: ['⭐', 'Tổng sao', 1e9], saoc: ['⭐', 'Sao đã cộng', 60], saot: ['➖', 'Sao đã trừ / đã đổi', 60], en: ['📘', 'Ngày học xong tiếng Anh', 0], lt: ['🎯', 'Bài luyện thêm / nghe nói làm trọn', 0], cau: ['🧮', 'Câu môn lớp đã làm', 0], g: ['🌱', 'Điểm lớn của thú', 0] };
+   async function snapLog() {
+     var db = BANK.db; if (!db || !D || !window.BANK || !BANK.log || Date.now() - SNAP_AT < 60000) return; SNAP_AT = Date.now();
+diff --git a/tuvung.html b/tuvung.html
+index e7172a2..96b2ef3 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -1591,5 +1591,7 @@ const KID_KEY_SET=new Set(['vocab_enrich_v1','vocab_progress_v1','vocab_srs_v1',
+    Các dữ liệu "sổ ghi" dưới đây chỉ được gộp: mỗi lần gửi lên đều đọc bản trên kho rồi gộp với bản trên máy; nhận từ kho cũng gộp.
+    Muốn xóa thật (bố mẹ bấm Xóa dữ liệu học) thì đặt SYNC.replace = true trong lần gửi đó. */
+-const MERGE_KEYS=new Set(['vocab_daily_v1','vocab_practice_log_v1','vocab_stars_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1']);
++const canonJ=v=>JSON.stringify(v,(k,x)=>x&&typeof x==='object'&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,kk)=>(o[kk]=x[kk],o),{}):x);   // so sánh không phụ thuộc thứ tự khóa
++const MERGE_KEYS=new Set(['vocab_daily_v1','vocab_practice_log_v1','vocab_stars_v1','vocab_badges_v1','vocab_bstat_v1','vocab_title_v1',
++  'vocab_srs_v1','vocab_progress_v1','vocab_pstat_v1','vocab_speak_v1']);   // sửa 0062 (kiểm thử 4 tuần): lịch ôn, số từ đã học, thống kê luyện/nói cũng gộp, hai máy học cùng ngày không đè nhau
+ function mRec(o,n){ // gộp một bản ghi: số lấy lớn hơn, đúng/sai lấy "có", mảng lấy dài hơn, đối tượng gộp sâu
+   if(o==null)return n;if(n==null)return o;
+@@ -1602,4 +1604,5 @@ const ONE_LINE=/^(📌 Số sao chuyển|🏆 Thuộc chắc \d+ từ|🎁 Rươ
+ function ledKey(e){return ONE_LINE.test(String(e.r))?'r|'+String(e.r).replace(/\s*\(.*$/,''):e.t+'|'+e.r+'|'+e.v}
+ function mergeKidVal(k,o,n){ // o: bản cũ hơn, n: bản mới hơn (cùng một bé)
++  if(k==='vocab_progress_v1'&&o!=null&&n!=null)return Math.max(+o||0,+n||0);   // số từ đã học: lấy số lớn hơn
+   if(o==null||typeof o!=='object')return n;if(n==null||typeof n!=='object')return o;
+   if(k==='vocab_daily_v1'){const r=Object.assign({},o,n);r.days=Object.assign({},o.days||{});Object.keys(n.days||{}).forEach(d=>{r.days[d]=mRec((o.days||{})[d],n.days[d])});return r}
+@@ -1609,4 +1612,8 @@ function mergeKidVal(k,o,n){ // o: bản cũ hơn, n: bản mới hơn (cùng m
+     const led=[...m.values()].sort((a,b)=>b.t-a.t).slice(0,500),sum=a=>(a||[]).reduce((x,e)=>x+(+e.v||0),0),off=(+n.bal||0)-sum(n.led);
+     const r=Object.assign({},o,n,{led,bal:sum(led)+((n.led||[]).length>=500?off:0)});if(del.size)r.del=[...del].slice(-300);['paidM','paidB'].forEach(f=>{if(o[f]!=null||n[f]!=null)r[f]=Math.max(+o[f]||0,+n[f]||0)});return r}
++  if(k==='vocab_srs_v1'){ // lịch ôn: từng từ lấy bản đã trả lời nhiều lần hơn (x), bằng nhau thì lấy bản ôn gần hơn; giữ dấu đã thưởng thuộc chắc
++    const r=Object.assign({},o);Object.keys(n).forEach(w=>{const a=o[w],b=n[w];if(!a||typeof a!=='object'){r[w]=b;return}if(!b||typeof b!=='object')return;
++      const xa=+a.x||0,xb=+b.x||0,c=Object.assign({},xb>xa?b:xa>xb?a:(String(b.r||'')+String(b.d||''))>=(String(a.r||'')+String(a.d||''))?b:a);
++      if(a.m||b.m){c.m=1;c.ma=[a.ma,b.ma].filter(Boolean).sort()[0]||c.ma}r[w]=c});return r}
+   return mRec(o,n)}
+ const CHUNK=60000; // ký tự mỗi phần (kho giới hạn 256 KiB/tài liệu)
+@@ -1654,4 +1661,5 @@ async function syncFlush(){
+       for(const [id,str0] of Object.entries(docs)){
+         if(SYNC.last[id]===str0)continue;
++        if(!SYNC.replace&&lh[id]&&strHash(str0)===lh[id])continue;   // sửa 0062: phần này (thường là của bé khác) không đổi trên máy này từ lần đồng bộ trước -> không gửi, tránh bản cũ đè bản mới
+         setSyncBadge('saving');
+         jobs.push((async()=>{let str=str0;
+@@ -1680,5 +1688,6 @@ function applyCloudDocs(docs){ // docs: [{id, v}]
+     let val;try{val=JSON.parse(v)}catch(e){return}
+     const loc=(localDocs[k]=localDocs[k]||docsFor(k))[id];
+-    if(SYNC.dirty.has(k)&&!(id in SYNC.last&&SYNC.last[id]===(loc||null)))return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
++    const modLoc=loc!=null&&(lh[id]?strHash(loc)!==lh[id]:!(id in SYNC.last&&SYNC.last[id]===loc));   // sửa 0062: xét từng bé, không xét cả loại dữ liệu
++    if(SYNC.dirty.has(k)&&modLoc)return; // máy này có thay đổi chưa gửi -> giữ bản trên máy
+     if(LH_ON&&loc&&loc!==v&&lh[id]&&strHash(loc)!==lh[id]){SYNC.dirty.add(k);keptLocal=true;return} // thay đổi từ lần trước chưa gửi được
+     SYNC.last[id]=v;SYNC.known.add(id);setLH(id,v);
+@@ -1689,5 +1698,5 @@ function applyCloudDocs(docs){ // docs: [{id, v}]
+     // dữ liệu tách theo bé: ghép từng bé, giữ phần của bé chưa có trên kho
+     if(KID_KEY_SET.has(k)&&cur&&typeof cur==='object'&&!Array.isArray(cur)&&val&&typeof val==='object'){
+-      if(MERGE_KEYS.has(k)){const nv={};Object.keys(val).forEach(kid=>{nv[kid]=mergeKidVal(k,cur[kid],val[kid]);if(cur[kid]!=null&&JSON.stringify(nv[kid])!==JSON.stringify(val[kid]))regain.add(k)});val=nv}   // máy này có phần kho chưa có -> gộp và gửi bù lên
++      if(MERGE_KEYS.has(k)){const nv={};Object.keys(val).forEach(kid=>{nv[kid]=mergeKidVal(k,cur[kid],val[kid]);if(cur[kid]!=null&&canonJ(nv[kid])!==canonJ(val[kid]))regain.add(k)});val=nv}   // máy này có phần kho chưa có -> gộp và gửi bù lên
+       val=Object.assign({},cur,val)}
+     try{LS.setItem(k,JSON.stringify(val))}catch(e){}
