@@ -207,7 +207,9 @@
       S: ['#FCE7F3,#F9A8D4', '#FCE7F3,#F472B6', '#FAE8FF,#E879F9', '#EDE9FE,#C084FC', '#FCE7F3,#EC4899', '#E0E7FF,#818CF8', '#FDF4FF,#D946EF', '#A78BFA,#6D28D9', '#F0ABFC,#7E22CE'] }
   };
   /* loài bé đã chọn: kho (thu-cung/<bé>) hoặc bản trên máy; chưa chọn thì Anh Phong mặc định khủng long, Thanh Nghị là quả trứng bí ẩn */
-  function tcOf(kid) { var a = lsGet('thu_cung_v1', {})[kid] || null, b = D && D.tc && D.tc[kid] || null; return (a && b) ? ((+a.t || 0) >= (+b.t || 0) ? a : b) : (a || b || {}); }
+  /* tiến độ thú chỉ tăng (giống prog trong nuoithu.html): bản nào cao hơn thì đúng hơn, bằng nhau mới so giờ lưu (sửa 23/11/2026) */
+  function tcProg(o) { o = o || {}; var f = o.fw || {}; return (+o.base || 0) + (+o.grow || 0) + (+o.xuSpent || 0) + (+o.xuWin || 0) + (+f.w || 0) + (+f.l || 0) + (+o.adj || 0) * 100000; }
+  function tcOf(kid) { var a = lsGet('thu_cung_v1', {})[kid] || null, b = D && D.tc && D.tc[kid] || null; if (!(a && b)) return a || b || {}; var pa = tcProg(a), pb = tcProg(b); return pa !== pb ? (pa > pb ? a : b) : ((+a.t || 0) >= (+b.t || 0) ? a : b); }
   /* Tên các cấp và hình vẽ (img/thu/<loài><cấp>.webp, bố mẹ tạo bằng Gemini 20/11/2026) */
   var PNAMES = { dino: ['Trứng khủng long', 'Khủng long sơ sinh', 'Khủng long tập đi', 'Khủng long chạy nhảy', 'Khủng long khiên lá', 'Khủng long phiêu lưu', 'Khủng long gầm vang', 'Hiệp sĩ khủng long', 'Vua khủng long'],
     dragon: ['Trứng rồng', 'Rồng sơ sinh', 'Rồng con tập bay', 'Rồng con phun lửa', 'Rồng cưỡi mây', 'Rồng giữ ngọc', 'Rồng sấm sét', 'Hiệp sĩ rồng', 'Long vương'],
