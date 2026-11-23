@@ -458,13 +458,26 @@ function blank(){return{sp:'',t:0,full:60,fAt:Date.now(),hap:60,hAt:Date.now(),x
 var S=Object.assign(blank(),lsGet('thu_cung_v1',{})[KID]||{}),BADGES=null,saveT=0;
 function fixFood(){if(S.inv&&S.inv.s>0){S.inv.n=(+S.inv.n||0)+3*S.inv.s;S.inv.s=0;return true}return false}  // bỏ món đặc biệt: 1 món = 3 phần ăn
 if(fixFood())save();
+/* chống máy cũ đè bản mới (lỗi 23/11/2026: máy web còn bản cũ, mở rương tuần là lưu đè, thú lùi giai đoạn):
+   - "tiến độ" của thú chỉ tăng chứ không giảm (điểm lớn + xu đã tiêu + xu thắng đấu + số trận), bản nào tiến độ cao hơn thì giữ bản đó;
+   - chưa tải được bản trên mạng thì chỉ lưu trên máy, chưa gửi lên;
+   - trước mỗi lần gửi đều đọc lại bản trên mạng, thấy bản trên mạng tiến độ cao hơn thì lấy bản đó về, không gửi đè. */
+function prog(o){o=o||{};var f=o.fw||{};return (+o.base||0)+(+o.grow||0)+(+o.xuSpent||0)+(+o.xuWin||0)+(+f.w||0)+(+f.l||0)}
+var REM=false;
+function adopt(r){S=Object.assign(blank(),r);fixFood();var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a)}
 function save(){S.t=Date.now();var lc=myLc();if(lc)S.lc=lc;var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a);if(window.PORTAL&&PORTAL.bar)PORTAL.bar();
-  clearTimeout(saveT);saveT=setTimeout(function(){if(B&&B.db)B.db.doc('thu-cung/'+KID).set({json:JSON.stringify(S),t:S.t}).catch(function(){})},600)}
+  clearTimeout(saveT);saveT=setTimeout(push,600)}
+async function push(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
+  try{var sn=await ref.get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
+    if(r&&prog(r)>prog(S)){adopt(r);try{render()}catch(e){}return}}}catch(e){return}
+  ref.set({json:JSON.stringify(S),t:S.t}).catch(function(){})}
 async function loadRemote(){
   if(!B)return;await B.ready;if(!B.db)return;
   try{var sa=await B.db.doc('thu-cung/_admin').get();if(sa.exists){var xa=sa.data()||{};ADM=typeof xa.json==='string'?JSON.parse(xa.json):{};lsSet('thu_admin_v1',ADM)}}catch(e){}
-  try{var sn=await B.db.doc('thu-cung/'+KID).get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
-    if(r&&(+r.t||0)>(+S.t||0)){S=Object.assign(blank(),r);if(fixFood())save();var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a)}}}catch(e){}
+  try{var sn=await B.db.doc('thu-cung/'+KID).get();var r=null;if(sn.exists){var x=sn.data()||{};r=typeof x.json==='string'?JSON.parse(x.json):null}
+    var pr=prog(r),pl=prog(S);REM=true;
+    if(r&&(pr>pl||(pr===pl&&(+r.t||0)>(+S.t||0)))){adopt(r)}
+    else if(S.sp&&(!r||pl>pr))save()}catch(e){}   // bản trên máy tiến độ cao hơn (máy này giữ bản đúng) thì gửi lên
   try{var sb=await B.db.doc('sync/vocab_badges_v1.'+KID).get();if(sb.exists){var y=sb.data()||{},s=typeof y.v==='string'?y.v:null;
     if(!s&&y.c){s='';for(var i=0;i<y.c;i++){var p=await B.db.doc('sync/vocab_badges_v1.'+KID+'~'+i).get();s+=(p.exists?(p.data()||{}).p:'')||''}}
     if(s)BADGES=JSON.parse(s)}}catch(e){}
@@ -1174,7 +1187,7 @@ window.addEventListener('resize',function(){});
 
 (async function(){
   if(T&&T.load){try{await T.load()}catch(e){}}
-  await loadRemote();
+  await loadRemote();REM=true;   // từ đây mới gửi lên mạng (mỗi lần gửi vẫn so tiến độ với bản trên mạng trước)
   migrate();
   render();
   setTimeout(life,1200);
