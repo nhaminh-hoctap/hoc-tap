@@ -1,0 +1,50 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index 37830de..80a4b67 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 23/11 | 0060 | Nhật ký toàn diện: chỉ ghi "Tổng sao" khi sao Từ vựng đã tải xong (trước đó có lúc ghi nhầm số âm). |
+ | 23/11 | 0059 | Bố mẹ yêu cầu: **Góc bố mẹ gọn hơn** — "Các con đã học gì 3 ngày qua" đủ 6 bạn, mỗi bạn một dòng (✓/· từng ngày), bấm mới mở chi tiết (`renderRecent`, `lxName`); **Đấu trường tuần thu gọn**, chỉ một dòng người dẫn đầu (`renderLeagueFold`). **📋 Nhật ký toàn diện** thay Nhật ký chi tiết Nuôi thú: mỗi thay đổi một tài liệu riêng có mã `NK-…` ở `nhatky/<bé>/e/<mã>`, chỉ thêm không sửa (`BANK.log`, `BANK.dev`); ghi mọi dòng sao (Toán/TV/Văn qua `BANK.add`/`void`, Từ vựng qua `addStars`, hủy dòng), việc Nuôi thú (`nk`), và so số liệu từng bạn — xu, tổng sao, ngày xong tiếng Anh, bài luyện trọn, câu môn lớp, điểm lớn thú — với lần trước (`snapLog`, mốc ở `nhatky/<bé>.last`), mã cố định nên nhiều máy chỉ ghi một dòng; lọc theo bạn, loại, tìm theo mã. **Báo động dữ liệu tụt**: số giảm bất thường (thấy lại sau ≥ 1 phút) ghi dòng đỏ `tut` và hiện khung đỏ đầu Góc bố mẹ (`renderNkAlert`); Từ vựng chặn gửi tiến độ học nhỏ hơn 80% bản trên mạng, lấy bản mạng về (`guardShrink`). **📸 Bản chụp tự động mỗi ngày**: máy đầu tiên mở trang chụp toàn bộ dữ liệu cả 6 bạn lên `chup/<ngày>` (chia phần 600 KB), giữ 14 ngày (`autoSnap`, `gatherAll`); Tải bản sao lưu nay gồm cả dữ liệu 4 bạn học cùng và nhật ký. |
+ | 23/11 | 0058 | **Sửa lỗi mất dữ liệu Từ vựng** (tối 22/11 khoảng 22:38–23:16, máy mới của bạn học cùng tải kho chậm, chạy các bước "một lần" — xóa dữ liệu học thử 18/11, chuyển sao ban đầu — rồi gửi bản gần trống của Anh Phong, Thanh Nghị lên: mất nhật ký ngày, nhật ký Luyện thêm, sổ sao Từ vựng; xu tính ra tụt nên xu bảng tuần không hiện). Sửa: (1) các bước "một lần" chỉ chạy khi đã tải chắc dữ liệu kho; kho đã có dữ liệu thì không bao giờ chạy bước xóa; (2) các sổ ghi (`vocab_daily_v1`, `vocab_practice_log_v1`, `vocab_stars_v1`, `vocab_badges_v1`, `vocab_bstat_v1`, `vocab_title_v1`) được **gộp** thay vì đè: trước khi gửi đọc bản kho rồi gộp, nhận từ kho cũng gộp, máy có phần kho chưa có thì gửi bù lên; không tự xóa trên kho (`MERGE_KEYS`, `mergeKidVal`, `mergeWithCloud`); dòng sao một lần (sao chuyển ban đầu, thuộc chắc, rương báu ngày) không bị nhân đôi; (3) hủy dòng sao ghi dấu `del` để gộp không hiện lại; bố mẹ bấm Xóa dữ liệu học thì lần gửi đó được đè (`SYNC.replace`). |
+diff --git a/index.html b/index.html
+index 50c4629..b467aca 100644
+--- a/index.html
++++ b/index.html
+@@ -141,7 +141,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=61"></script>
+-<script src="bank.js?v=61"></script>
+-<script src="thidua.js?v=61"></script>
++<script src="claude-shim.js?v=62"></script>
++<script src="bank.js?v=62"></script>
++<script src="thidua.js?v=62"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/sw.js b/sw.js
+index 8dff52a..18fc04e 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v61';
++const V = 'hoc-tap-v62';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=61', 'bank.js?v=61', 'thidua.js?v=61', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=62', 'bank.js?v=62', 'thidua.js?v=62', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/thidua.js b/thidua.js
+index ab1a957..65f2d36 100644
+--- a/thidua.js
++++ b/thidua.js
+@@ -306,5 +306,5 @@
+     var vd = D.vd[kid] || {}, pl = D.pl[kid] || [], sj = D.sj[kid] || {}, tc = tcOf(kid) || {}, o = {};
+     o.xu = balXu(kid);
+-    if (famOf(kid) && window.BANK && BANK.total) o.sao = BANK.total(kid);
++    if (famOf(kid) && window.BANK && BANK.total && BANK.vocabBal(kid) != null) o.sao = BANK.total(kid);   // sao Từ vựng chưa tải xong thì bỏ qua, tránh ghi nhầm
+     o.en = Object.keys(vd).filter(function (d) { return dayDone(vd[d]); }).length;
+     o.lt = pl.filter(function (e) { return e && e.total > 0 && e.done >= e.total; }).length;
