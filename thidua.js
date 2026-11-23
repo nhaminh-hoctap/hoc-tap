@@ -305,7 +305,7 @@
   function snapOf(kid) {
     var vd = D.vd[kid] || {}, pl = D.pl[kid] || [], sj = D.sj[kid] || {}, tc = tcOf(kid) || {}, o = {};
     o.xu = balXu(kid);
-    if (famOf(kid) && window.BANK && BANK.total) o.sao = BANK.total(kid);
+    if (famOf(kid) && window.BANK && BANK.total && BANK.vocabBal(kid) != null) o.sao = BANK.total(kid);   // sao Từ vựng chưa tải xong thì bỏ qua, tránh ghi nhầm
     o.en = Object.keys(vd).filter(function (d) { return dayDone(vd[d]); }).length;
     o.lt = pl.filter(function (e) { return e && e.total > 0 && e.done >= e.total; }).length;
     o.cau = Object.keys(sj).reduce(function (a, d) { return a + (+sj[d].q || 0); }, 0);
