@@ -462,22 +462,34 @@ if(fixFood())save();
    - "tiến độ" của thú chỉ tăng chứ không giảm (điểm lớn + xu đã tiêu + xu thắng đấu + số trận), bản nào tiến độ cao hơn thì giữ bản đó;
    - chưa tải được bản trên mạng thì chỉ lưu trên máy, chưa gửi lên;
    - trước mỗi lần gửi đều đọc lại bản trên mạng, thấy bản trên mạng tiến độ cao hơn thì lấy bản đó về, không gửi đè. */
-function prog(o){o=o||{};var f=o.fw||{};return (+o.base||0)+(+o.grow||0)+(+o.xuSpent||0)+(+o.xuWin||0)+(+f.w||0)+(+f.l||0)}
+function prog(o){o=o||{};var f=o.fw||{};return (+o.base||0)+(+o.grow||0)+(+o.xuSpent||0)+(+o.xuWin||0)+(+f.w||0)+(+f.l||0)+(+o.adj||0)*100000}   // adj: số lần bố mẹ chỉnh tay (luôn thắng các bản cũ hơn)
+/* ---------- 📋 nhật ký chi tiết (bố mẹ xem ở Góc bố mẹ): lưu riêng ở thu-cung/nk_<bé>, không nằm trong bản thú nên bản cũ có đè cũng không mất ----------
+   mỗi dòng: [lúc, máy, loại, nội dung, điểm lớn, giai đoạn, Lv, xu, tiến độ] */
+var DEV=(function(){var d=lsGet('thu_dev',null);if(d)return d;var u=navigator.userAgent||'',n=/iPad/.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)?'iPad':/iPhone/.test(u)?'iPhone':/Android/.test(u)?'Android':/Windows/.test(u)?'Máy tính Windows':/Mac/.test(u)?'Máy Mac':'Máy khác';
+  d=n+' #'+Math.random().toString(36).slice(2,6);lsSet('thu_dev',d);return d})();
+var NKQ=lsGet('thu_nk_q',{}),nkT=0;
+function nk(ty,txt){try{var q=NKQ[KID]||(NKQ[KID]=[]),g=growth(),p=T&&T.SPECIES?petAt(g):null;q.push([Date.now(),DEV,ty,txt,g,p?p.i+1:0,lvOf(g),xuNow(),prog(S)%100000]);if(q.length>150)q.splice(0,q.length-150);lsSet('thu_nk_q',NKQ);clearTimeout(nkT);nkT=setTimeout(nkFlush,1500)}catch(e){}}
+async function nkFlush(){var q=NKQ[KID];if(!q||!q.length||!B||!B.db)return;var n=q.length,part=q.slice(0,n);
+  try{var ref=B.db.doc('thu-cung/nk_'+KID),sn=await ref.get(),L=[];if(sn.exists){try{L=JSON.parse((sn.data()||{}).json||'[]')}catch(e){L=[]}}
+    L=L.concat(part);if(L.length>500)L=L.slice(-500);await ref.set({json:JSON.stringify(L),t:Date.now()});q.splice(0,n);lsSet('thu_nk_q',NKQ)}catch(e){}}
+function pdesc(o){o=o||{};var g=(+o.base||0)+(+o.grow||0);return g+' điểm lớn (Lv '+lvOf(g)+'), xu đã tiêu '+(+o.xuSpent||0)+', tiến độ '+(prog(o)%100000)+(o.adj?', bố mẹ đã chỉnh':'')}
 var REM=false;
 function adopt(r){S=Object.assign(blank(),r);fixFood();var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a)}
 function save(){S.t=Date.now();var lc=myLc();if(lc)S.lc=lc;var a=lsGet('thu_cung_v1',{});a[KID]=S;lsSet('thu_cung_v1',a);if(window.PORTAL&&PORTAL.bar)PORTAL.bar();
   clearTimeout(saveT);saveT=setTimeout(push,600)}
 async function push(){if(!REM||!B||!B.db)return;var ref=B.db.doc('thu-cung/'+KID);
   try{var sn=await ref.get();if(sn.exists){var x=sn.data()||{},r=typeof x.json==='string'?JSON.parse(x.json):null;
-    if(r&&prog(r)>prog(S)){adopt(r);try{render()}catch(e){}return}}}catch(e){return}
+    if(r&&prog(r)>prog(S)){nk('chan','⛔ Chặn lưu đè: bản trên máy này ('+pdesc(S)+') cũ hơn bản trên mạng ('+pdesc(r)+') → lấy bản trên mạng');adopt(r);try{render()}catch(e){}return}}}catch(e){return}
   ref.set({json:JSON.stringify(S),t:S.t}).catch(function(){})}
 async function loadRemote(){
   if(!B)return;await B.ready;if(!B.db)return;
   try{var sa=await B.db.doc('thu-cung/_admin').get();if(sa.exists){var xa=sa.data()||{};ADM=typeof xa.json==='string'?JSON.parse(xa.json):{};lsSet('thu_admin_v1',ADM)}}catch(e){}
   try{var sn=await B.db.doc('thu-cung/'+KID).get();var r=null;if(sn.exists){var x=sn.data()||{};r=typeof x.json==='string'?JSON.parse(x.json):null}
     var pr=prog(r),pl=prog(S);REM=true;
-    if(r&&(pr>pl||(pr===pl&&(+r.t||0)>(+S.t||0)))){adopt(r)}
-    else if(S.sp&&(!r||pl>pr))save()}catch(e){}   // bản trên máy tiến độ cao hơn (máy này giữ bản đúng) thì gửi lên
+    var loc='bản trên máy: '+(S.sp?pdesc(S):'chưa có')+' · bản trên mạng: '+(r?pdesc(r):'chưa có');
+    if(r&&(pr>pl||(pr===pl&&(+r.t||0)>(+S.t||0)))){adopt(r);nk('mo','Mở Nuôi thú, dùng bản trên mạng ('+loc+')')}
+    else if(S.sp&&(!r||pl>pr)){nk(r?'gui':'mo',(r?'⚠️ Máy này giữ bản tiến độ cao hơn, gửi bản trên máy lên (':'Mở Nuôi thú (')+loc+')');save()}
+    else nk('mo','Mở Nuôi thú ('+loc+')')}catch(e){nk('loi','Không tải được bản trên mạng (mạng yếu?), chỉ dùng bản trên máy')}   // bản trên máy tiến độ cao hơn (máy này giữ bản đúng) thì gửi lên
   try{var sb=await B.db.doc('sync/vocab_badges_v1.'+KID).get();if(sb.exists){var y=sb.data()||{},s=typeof y.v==='string'?y.v:null;
     if(!s&&y.c){s='';for(var i=0;i<y.c;i++){var p=await B.db.doc('sync/vocab_badges_v1.'+KID+'~'+i).get();s+=(p.exists?(p.data()||{}).p:'')||''}}
     if(s)BADGES=JSON.parse(s)}}catch(e){}
@@ -587,11 +599,11 @@ function eat(kind){var have=S.inv[kind]||0;if(have<=0)return;
   var sc=$('ntScene'),e=document.createElement('span');e.className='nt-fly';e.textContent=kind==='s'?'🍰':'🍖';e.style.left='8%';e.style.top='82%';sc.appendChild(e);
   var pp=petPos();requestAnimationFrame(function(){e.style.left=(pp[0]-4)+'%';e.style.top=pp[1]+'%';e.style.transform='scale(.4)';e.style.opacity='.2'});
   setTimeout(function(){e.remove();S.inv[kind]--;
-    {S.grow+=CFG.growN;setHap(hapNow()+CFG.hapN);fx('🌱',2);say('Măm măm, ngon quá! +'+CFG.growN+' 🌱')}
+    {var lv0=lvOf(growth());S.grow+=CFG.growN;setHap(hapNow()+CFG.hapN);fx('🌱',2);say('Măm măm, ngon quá! +'+CFG.growN+' 🌱');nk('an','Cho ăn +'+CFG.growN+' điểm lớn'+(lvOf(growth())>lv0?' → lên Lv '+lvOf(growth()):''))}
     save();jump();snd('eat');render()},720)}
 function buyXu(k){k='n';var price=CFG.priceN;
   if(xuNow()<price){dlg('Con chưa đủ xu. Học bài để có thêm xu nhé! 💪',[['Đồng ý',null,'ok']]);return}
-  S.xuSpent+=price;S.inv[k]=(S.inv[k]||0)+1;save();snd('buy');render();say('Có thêm 1 phần ăn rồi! Cho tớ ăn nhé 🥰')}
+  S.xuSpent+=price;S.inv[k]=(S.inv[k]||0)+1;nk('mua','Mua 1 phần ăn (−'+price+' 🪙)');save();snd('buy');render();say('Có thêm 1 phần ăn rồi! Cho tớ ăn nhé 🥰')}
 function dlg(html,btns){var w=document.createElement('div');w.className='nt-dlg';w.innerHTML='<div>'+html+'<div class="row2">'+btns.map(function(b,i){return '<button class="nt-btn '+(b[2]||'')+'" data-i="'+i+'">'+b[0]+'</button>'}).join('')+'</div></div>';
   document.body.appendChild(w);w.querySelectorAll('button').forEach(function(x){x.onclick=function(){w.remove();var f=btns[+x.dataset.i][1];if(f)f()}})}
 
@@ -630,7 +642,7 @@ function ceremony(from,to){var L=stepsL(),hatch=from<=1&&to>=2,w=document.create
       ['🎉','⭐','✨','💖','🌟','🎊'].forEach(function(e,i){for(var k=0;k<3;k++){var c=document.createElement('span');c.className='cf';c.textContent=e;var a=Math.random()*6.28,d=140+Math.random()*220;
         c.style.setProperty('--dx',Math.cos(a)*d+'px');c.style.setProperty('--dy',Math.sin(a)*d+'px');c.style.setProperty('--r',(Math.random()*720-360)+'deg');c.style.animationDelay=(Math.random()*.25)+'s';w.appendChild(c)}});
       w.querySelector('#cerOk').onclick=function(){w.remove();render();if(hatch&&!S.name)setTimeout(function(){askName(true)},250)}},180)},1800)}
-function checkLevel(p){if(S.seen==null){S.seen=p.i;save();return}if(p.i>S.seen){var from=S.seen;S.seen=p.i;save();ceremony(from,p.i)}else if(p.i<S.seen){S.seen=p.i;save()}}
+function checkLevel(p){if(S.seen==null){S.seen=p.i;save();return}if(p.i>S.seen){var from=S.seen;S.seen=p.i;nk('tienhoa','🎉 Tiến hóa: giai đoạn '+(from+1)+' → '+(p.i+1));save();ceremony(from,p.i)}else if(p.i<S.seen){nk('lui','⚠️ Giai đoạn GIẢM: '+(S.seen+1)+' → '+(p.i+1)+' (cần xem lại)');S.seen=p.i;save()}}
 
 /* ---------- thăm thú của anh/em (chỉ xem, không so điểm) ---------- */
 /* các bạn cùng nhóm (6 bạn): thăm thú, đấu thú */
@@ -993,7 +1005,7 @@ function checkDrops(){bagOf(S);if(!S.sp)return[];var E=learnEvents();
   if(ch)save();return rankDrops().concat(got,giftDrops())}
 var DLSRC=0;   // nguồn ghi vào nhật ký nhặt đồ: 'b' rương được bố mẹ buff, 'g' rương bố mẹ tặng (con không thấy khác)
 function giveItem(id,cup){var o=bagOf(S),dup=o.bag[id]!=null,r=itParse(id).r;o.col[id]=1;
-  var dl=S.dlog||(S.dlog=[]);dl.push([Date.now(),id,DLSRC||cup||0,dup?1:0]);DLSRC=0;if(dl.length>120)S.dlog=dl.slice(-120);   // nhật ký nhặt đồ cho bố mẹ xem (Góc bố mẹ → Quản lý đấu thú)
+  var dl=S.dlog||(S.dlog=[]);try{nk('do','🎁 Nhặt đồ: '+itName(id)+' ('+(RAR[r-1]||'')+')'+(dup?' — trùng, đổi thành mảnh':'')+({r1:' · rương hạng 1 tuần',r2:' · rương hạng 2 tuần',g:' · bố mẹ tặng',b:' · rương có chỉnh (bí mật)',1:' · rương cúp'}[DLSRC||cup]||' · rương học tốt'))}catch(e){}dl.push([Date.now(),id,DLSRC||cup||0,dup?1:0]);DLSRC=0;if(dl.length>120)S.dlog=dl.slice(-120);   // nhật ký nhặt đồ cho bố mẹ xem (Góc bố mẹ → Quản lý đấu thú)
   if(dup)o.shard+=DROP.dupShard[r-1];else{o.bag[id]=0;var g=itParse(id).g;if(!o.eqp[g])o.eqp[g]=id}
   return{id:id,dup:dup,cup:cup||0,sh:dup?DROP.dupShard[r-1]:0}}
 /* BUFF ẨN của bố mẹ (Góc bố mẹ → ⚔️ Quản lý đấu thú → 🎁 Cân bằng đồ): ADM.buff[bé]={id,n,minR,g,l,fresh,gift}.
@@ -1159,7 +1171,7 @@ function finish(w,timeUp){if(!BT||BT.over)return;BT.over=true;BT.busy=true;bars(
   usePlay('fight');if(win){r.w++;if(BT.kind==='sib')r.sw++}else{r.l++;if(BT.kind==='sib')r.sl++}
   if(!r.log)r.log=[];r.log.push([Date.now(),BT.kind,BT.kind==='sib'?(BT.fo.wid||''):BT.fo.name,win?1:0,gain,BT.me.st.lv,BT.fo.st.lv]);if(r.log.length>40)r.log=r.log.slice(-40);
   if(BT.kind==='sib'&&BT.fo.wid){var vv=r.vs[BT.fo.wid]||(r.vs[BT.fo.wid]={w:0,l:0});if(win)vv.w++;else vv.l++}
-  if(gain)S.xuWin=(+S.xuWin||0)+gain;setHap(hapNow()+(win?15:8));save();
+  if(gain)S.xuWin=(+S.xuWin||0)+gain;setHap(hapNow()+(win?15:8));nk('dau','⚔️ '+(win?'Thắng':'Thua')+' '+(BT.kind==='sib'?'thú của '+((B&&B.kid&&B.kid(BT.fo.wid)||{}).name||BT.fo.wid||'bạn'):BT.fo.name)+' (Lv '+BT.me.st.lv+' đấu Lv '+BT.fo.st.lv+')'+(gain?' +'+gain+' 🪙':''));save();
   var loser=$('bFt'+(win?'fo':'me')),winner=$('bFt'+(win?'me':'fo'));if(loser)loser.classList.add('ko');if(winner)winner.classList.add('winp');
   snd(win?'win':'bad');banner(win?'🏆 CHIẾN THẮNG!':'💪 Cố lên lần sau!');
   setTimeout(function(){if(!document.getElementById('ntAr'))return;var m=document.createElement('div');m.className='nt-msg';
