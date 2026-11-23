@@ -89,6 +89,8 @@
     extSum: function (kid) { return B.extList(kid).reduce(function (s, e) { return s + (+e.v || 0); }, 0); },
     vocabBal: function (kid) { return vocab[kid] ? (+vocab[kid].bal || 0) : null; },
     vocabLed: function (kid) { return vocab[kid] && vocab[kid].led ? vocab[kid].led : []; },
+    vocabDel: function (kid) { return vocab[kid] && vocab[kid].del ? vocab[kid].del : []; },   // dòng sao Từ vựng bố mẹ đã hủy ("lúc|lí do|số sao")
+    voidList: function (kid) { var m = cache[kid] || {}; return Object.keys(m).map(function (k) { return m[k]; }).filter(function (e) { return e && e.void; }); },   // dòng sao bố mẹ đã hủy
     total: function (kid) { var v = B.vocabBal(kid); return (v == null ? 0 : v) + B.extSum(kid); },
     /* sao nhận hôm nay theo nguồn: {vocab, toan, tv, van, home} */
     todayBySrc: function (kid) {

@@ -317,6 +317,9 @@
       o.sao = BANK.total(kid);
       var led = (BANK.vocabLed ? BANK.vocabLed(kid) : []).concat(BANK.extList ? BANK.extList(kid) : []);
       o.saoc = led.reduce(function (a, e) { return a + (+e.v > 0 ? +e.v : 0); }, 0); o.saot = led.reduce(function (a, e) { return a + (+e.v < 0 ? -e.v : 0); }, 0);
+      /* sửa 0065: dòng sao bố mẹ hủy vẫn tính vào "đã cộng" và thêm vào "đã trừ / đã hủy" — bố mẹ hủy một dòng sao lớn không còn bị báo tụt nhầm */
+      (BANK.voidList ? BANK.voidList(kid).map(function (e) { return +e.v || 0; }) : []).concat((BANK.vocabDel ? BANK.vocabDel(kid) : []).map(function (x) { return +String(x).split('|').pop() || 0; }))
+        .forEach(function (v) { var a = Math.abs(v); o.saoc += a; o.saot += a; });
     }   // sao Từ vựng chưa tải xong thì bỏ qua, tránh ghi nhầm
     o.en = Object.keys(vd).filter(function (d) { return dayDone(vd[d]); }).length;
     o.lt = pl.filter(function (e) { return e && e.total > 0 && e.done >= e.total; }).length;

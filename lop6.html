@@ -3959,6 +3959,18 @@ try { var raw = localStorage.getItem(LS_KEY); if (raw) S = fixState(JSON.parse(r
 
 /* gộp hai bản tiến độ (từ hai máy) — không bản nào làm mất dữ liệu của bản kia */
 function clone(x) { return JSON.parse(JSON.stringify(x)); }
+/* sửa 0065 (kiểm thử 60 ngày): bài viết gộp từng phần — chữ bé viết lấy bản sửa sau cùng, điểm bố mẹ chấm lấy lần chấm cao nhất.
+   Trước đây lấy cả bài theo lúc sửa chữ; bố mẹ chấm không đổi lúc sửa chữ nên máy của bé (bài chưa chấm) gửi lên làm mất điểm đã chấm. */
+function mergeWrit(a, b) {
+  var r = {}, k; a = a || {}; b = b || {}; for (k in a) r[k] = a[k];
+  for (k in b) {
+    var x = b[k], y = r[k]; if (!y) { r[k] = x; continue; }
+    var o = Object.assign({}, (x.at || 0) > (y.at || 0) ? x : y), gx = x.g, gy = y.g;
+    var g = gx && gy ? (((gx.v || 0) > (gy.v || 0) || ((gx.v || 0) === (gy.v || 0) && (gx.at || 0) > (gy.at || 0))) ? gx : gy) : (gx || gy);
+    if (g) o.g = g; else delete o.g; r[k] = o;
+  }
+  return r;
+}
 function mergeMap(a, b, better) { var r = {}, k; for (k in a) r[k] = a[k]; for (k in b) if (!(k in r) || better(b[k], r[k])) r[k] = b[k]; return r; }
 function byAt(x, y) { return (x.at || 0) - (y.at || 0); }
 function trimState(X) {
@@ -3986,7 +3998,7 @@ function merge(A, B) {
   var toMap = function (arr) { var m = {}; arr.forEach(function (x) { m[x.sid] = x; }); return m; };
   var ms = mergeMap(toMap(A.mistakes), toMap(B.mistakes), function (x, y) { return (x.at || 0) > (y.at || 0); });
   C.mistakes = Object.keys(ms).map(function (s) { return ms[s]; }).filter(function (m) { return !(C.fixed[m.sid] >= m.at); }).sort(byAt);
-  C.writings = mergeMap(A.writings, B.writings, function (x, y) { return (x.at || 0) > (y.at || 0); });
+  C.writings = mergeWrit(A.writings, B.writings);
   C.devs = mergeMap(A.devs, B.devs, function (x, y) { return (x.s || 0) > (y.s || 0); });
   return trimState(C);
 }
