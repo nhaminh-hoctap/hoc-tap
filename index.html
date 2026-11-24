@@ -127,6 +127,8 @@ h2{font-size:19px;margin:24px 2px 10px}
 .mini2 button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
 .mini2 .mi{font-size:36px;line-height:1}.mini2 b{display:block;font-size:19px}.mini2 small{display:block;color:var(--ink2);font-size:14px;margin-top:2px}
 .mini2 .star{background:#FFFBEB;border-color:#FCD34D;box-shadow:0 4px 0 #FCD34D}.mini2 .pet{background:#FDF2F8;border-color:#F9A8D4;box-shadow:0 4px 0 #F9A8D4}
+.chatbar{display:flex;align-items:center;gap:14px;width:100%;margin:14px 0 4px;min-height:84px;padding:12px 18px;border-radius:22px;border:3px solid #818CF8;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);box-shadow:0 4px 0 #818CF8;text-align:left;color:inherit;font:inherit;cursor:pointer;touch-action:manipulation}
+.chatbar:active{transform:translateY(3px);box-shadow:0 1px 0 #818CF8}.chatbar .ci{font-size:42px;line-height:1}.chatbar .ct{flex:1;min-width:0}.chatbar b{display:block;font-size:21px}.chatbar small{display:block;color:#4338CA;font-size:15px;font-weight:700;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chatbar .cg{flex:none;font-weight:900;color:#fff;background:#4F46E5;border-radius:14px;padding:10px 16px;font-size:17px}
 .setList{background:#fff;border:2px solid var(--line);border-radius:20px;overflow:hidden}
 .setList button{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;padding:12px 18px;border:0;border-top:1px solid var(--line);background:#fff;text-align:left}
 .setList button:first-child{border-top:0}.setList button:active{background:#F8FAFC}
@@ -142,9 +144,9 @@ h2{font-size:19px;margin:24px 2px 10px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="claude-shim.js?v=69"></script>
-<script src="bank.js?v=69"></script>
-<script src="thidua.js?v=69"></script>
+<script src="claude-shim.js?v=70"></script>
+<script src="bank.js?v=70"></script>
+<script src="thidua.js?v=70"></script>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -248,7 +250,8 @@ var APPS={
   lop6:{file:'lop6.html',ic:'📐',t:'Toán & Ngữ văn lớp 6',s:'Bài giảng, Hỏi thầy, luyện tập, sổ lỗi sai, kiểm tra'},
   sao:{file:'tuvung.html',ic:'⭐',t:'Sao thưởng',s:'Xem sao của mọi môn, bố mẹ chấm sao, đổi quà'},
   huyhieu:{file:'tuvung.html',ic:'🏅',t:'Huy hiệu',s:'Bộ sưu tập huy hiệu học từ vựng'},
-  thu:{file:'nuoithu.html',ic:'🐾',t:'Nuôi thú',s:'Cho thú ăn, vuốt ve, chơi cùng thú'}
+  thu:{file:'nuoithu.html',ic:'🐾',t:'Nuôi thú',s:'Cho thú ăn, vuốt ve, chơi cùng thú'},
+  chat:{file:'sanchoi.html',ic:'💬',t:'Sân chơi chung',s:'Trò chuyện, bản tin, thách đấu trực tiếp'}   /* bản thử 24/11/2026 */
 };
 var NAV_KEY='portal_nav_v1';
 var SHELL={style:document.querySelector('style[data-shell]').cloneNode(true),body:document.body.innerHTML};
@@ -267,6 +270,9 @@ var P=window.PORTAL={kid:null,app:null,mode:null,
     var go=function(){if(go.d)return;go.d=1;location.reload();setTimeout(restorePortal,2500)};
     try{var f=window.__beforeHome&&window.__beforeHome();if(f&&f.then){f.then(go,go);setTimeout(go,3000)}else go()}catch(e){go()} // dự phòng: không tải lại được trang thì dựng lại trang chính tại chỗ
   },
+  /* mở thẳng một ứng dụng khác (Sân chơi ⇄ đấu trực tiếp trong Nuôi thú): gửi nốt dữ liệu của ứng dụng đang mở rồi mới chuyển */
+  open:function(app,mode){var f=null;try{f=window.__beforeHome&&window.__beforeHome()}catch(e){}window.__beforeHome=null;var done=false,go=function(){if(done)return;done=true;pushNav({p:'app',app:app});mount(app,P.kid,mode)};
+    if(f&&f.then){f.then(go,go);setTimeout(go,3000)}else go()},
   mounted:function(){clearTimeout(P._mt);requestAnimationFrame(function(){document.documentElement.classList.remove('pmount')})}, // ứng dụng con báo đã hiện đúng màn
   homeBtnHtml:function(style){if(document.getElementById('pbar'))return ''; // đã có thanh trên cùng chung
     var h='<button type="button" class="portal-home" onclick="PORTAL.home()" title="Về trang chính" style="'+(style||'')+'">🏠</button>';
@@ -351,7 +357,7 @@ var BAR_CSS='html.pmount body>*:not(#pbar){visibility:hidden!important}html.pmou
   'html.pbar .btn.small{min-height:44px}html.pbar .icon-btn{min-width:48px;min-height:48px}';
 function barTitle(){var m=P.mode,a=P.app;
   if(m==='parent-sao')return['⭐','Thưởng · Phạt · Tiêu sao'];if(m==='parent-report')return['📊','Báo cáo học từ vựng'];if(m==='parent-set')return['📘','Cài đặt Học từ vựng'];
-  if(m==='parent')return a==='lop2'?['🧮','Cài đặt Lớp 2']:['📐','Cài đặt Lớp 6'];var A=APPS[a]||{ic:'',t:''};return[A.ic,A.t]}
+  if(m==='parent')return a==='chat'?['💬','Quản lý Sân chơi']:a==='lop2'?['🧮','Cài đặt Lớp 2']:['📐','Cài đặt Lớp 6'];var A=APPS[a]||{ic:'',t:''};return[A.ic,A.t]}
 /* 🪙 (đồng xu) không có trên Windows 10 và iPad đời cũ (hiện ô vuông): thay mọi chữ 🪙 trên trang bằng hình đồng xu 3D */
 (function(){var SRC='img/fe/1fa99.webp',C='🪙',SKIP=/^(SCRIPT|STYLE|TEXTAREA|TITLE|OPTION|INPUT)$/;
   function css(){if(document.getElementById('xuIcCss'))return;var st=document.createElement('style');st.id='xuIcCss';st.textContent='img.xu-ic{width:1.1em;height:1.1em;vertical-align:-.18em;display:inline-block;margin:0 .04em;object-fit:contain}';(document.head||document.documentElement).appendChild(st)}
@@ -411,6 +417,12 @@ function openKid(id,fromPop){if(!fromPop)pushNav({p:'kid',kid:id});
   show('pKid');try{localStorage.setItem('portal_last_kid',JSON.stringify(id))}catch(e){}
   renderKid();window.scrollTo(0,0);
 }
+/* 💬 Sân chơi chung (bản thử 24/11/2026): trên trang của bé hiện số bạn đang ở Sân chơi và bản tin mới nhất */
+var PEEK={t:0};
+async function chatPeek(){var e=$('pChatS');if(!e||!BANK.db)return;if(PEEK.h&&Date.now()-PEEK.t<20000){e.textContent=PEEK.h;return}PEEK.t=Date.now();
+  try{var on=0,now=Date.now(),qs=await BANK.db.collection('sanchoi/on/k').get();qs.docs.forEach(function(x){var v=x.data()||{};if(x.id!==CUR&&v.t&&now-v.t<45000)on++});
+    var ms=await BANK.db.collection('sanchoi/tin/m').orderBy('t','desc').limit(1).get(),m=ms.docs[0]&&ms.docs[0].data();
+    var h=(on?'🟢 '+on+' bạn đang ở đây':'Chưa có bạn nào ở đây')+(m&&m.x&&!m.an?' · '+(m.ty==='bt'?'📣 ':'💬 ')+String(m.x).slice(0,60):'');PEEK.h=h;var e2=$('pChatS');if(e2)e2.textContent=h}catch(err){}}
 function renderKid(){
   if(!CUR)return;kidBg(CUR);var k=kidById(CUR),tot=showTotal(CUR),td=BANK.todayBySrc(CUR),T=window.THIDUA,has=T&&T.data();
   $('pAv').innerHTML=T&&T.pet(CUR)?T.petScene(CUR,150):'<span style="font-size:80px">'+BANK.avOf(k.id)+'</span>';$('pAv').style.cursor='pointer';$('pAv').title='Vào chuồng nuôi thú';$('pAv').onclick=function(){go('thu')};
@@ -431,7 +443,9 @@ function renderKid(){
     '<button data-app="huyhieu"><span class="mi">🏅</span><span><b>Huy hiệu</b><small>'+(ti&&ti.rank?'Cấp '+ti.rank+'/7 · '+(ti.pts||0)+' điểm':'Bộ sưu tập, trang trí tên')+'</small></span></button>'+
     '<button class="pet" data-app="thu"><span class="mi">🐾</span><span><b>Nuôi thú</b><small>Cho thú ăn, chơi cùng thú</small></span></button>';   /* bố mẹ chốt 21/11 tối: bỏ nút Cách chơi */
   if(fam)$('pMini').className='mini2 m3';
-  document.querySelectorAll('#pTiles .tile,#pMini button[data-app]').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
+  if(!$('pChat'))$('pMission').insertAdjacentHTML('beforebegin','<button class="chatbar" id="pChat" data-app="chat"><span class="ci">💬</span><span class="ct"><b>Sân chơi chung</b><small id="pChatS">Trò chuyện với các bạn, xem bản tin, thách đấu thú trực tiếp</small></span><span class="cg">Vào →</span></button>');
+  chatPeek();
+  document.querySelectorAll('#pTiles .tile,#pMini button[data-app],#pChat').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
   $('pLeague').innerHTML=has?T.leagueHtml(CUR,false,'compact'):'';
   $('pMission').innerHTML=has?T.missionHtml(CUR):'';
   document.querySelectorAll('#pMission .ms-it').forEach(function(b){b.onclick=function(){go(b.dataset.app)}});
@@ -744,6 +758,7 @@ function renderParent(){if(!PARENT)return;
   $('pParStar').innerHTML=T('p-sao','⭐','Thưởng · Phạt · Tiêu sao','Chấm sao việc nhà, việc tốt; phạt; đổi quà; hủy dòng sao nhầm. Xem lịch sử sao của cả hai con.','star')+
     T('p-report','📊','Báo cáo học từ vựng','Báo cáo tuần, tiến độ thuộc chắc của từng con.')+
     T('p-arena','⚔️','Quản lý đấu thú','Mở / tạm đóng đấu trường, năng lượng mỗi ngày, giờ đấu, thêm năng lượng, thành tích và nhật ký trận của các con.')+
+    T('p-chat','💬','Quản lý Sân chơi','Xem mọi tin nhắn của các con, ẩn / xóa tin, tạm đóng Sân chơi hoặc khóa từng bạn, gửi lời nhắn cho cả nhóm.')+
     T('p-nk','📋','Nhật ký toàn diện','Mọi thay đổi sao, xu, lượt học, thú, đồ của từng bạn, mỗi việc một dòng có mã; cảnh báo khi dữ liệu giảm bất thường.');
   var R=function(app,ic,t,sub){return '<button data-app="'+app+'"><span class="si">'+ic+'</span><span><b>'+t+'</b><small>'+sub+'</small></span><span class="ar">›</span></button>'};
   $('pParSet').innerHTML=R('p-tuvung','📘','Học từ vựng','Số từ mới, số từ ôn mỗi ngày, giọng đọc, micro, mã bố mẹ, sao lưu')+
@@ -755,7 +770,7 @@ function renderParent(){if(!PARENT)return;
 function renderLeagueFold(){var TD=window.THIDUA,box=$('pParLeague');if(!TD||!TD.data()||!box)return;var was=box.querySelector('details.lg-fold'),op=was?was.open:false;
   var sc=BANK.KIDS.map(function(k){return {k:k,p:TD.weekPts?TD.weekPts(k.id):0}}).sort(function(a,b){return b.p-a.p}),top=sc[0];
   box.innerHTML='<details class="lg-fold"'+(op?' open':'')+'><summary>🏆 Đấu trường tuần <small>'+(top&&top.p?'dẫn đầu: '+esc(top.k.name)+' '+top.p+' điểm':'tuần mới chưa có điểm')+' · bấm để xem bảng</small></summary>'+TD.leagueHtml(null,true)+'</details>'}
-function goParent(app){if(app==='p-arena'){openArAdm();return}if(app==='p-nk'){openNk();return}pushNav({p:'app',app:app});if(!P.pin){try{P.pin=sessionStorage.getItem('portal_pin')}catch(e){}}P.pin=P.pin||'5789';var m={'p-sao':['tuvung','parent-sao'],'p-report':['tuvung','parent-report'],'p-tuvung':['tuvung','parent-set'],'p-lop2':['lop2','parent'],'p-lop6':['lop6','parent']}[app];if(!m)return;
+function goParent(app){if(app==='p-arena'){openArAdm();return}if(app==='p-nk'){openNk();return}pushNav({p:'app',app:app});if(!P.pin){try{P.pin=sessionStorage.getItem('portal_pin')}catch(e){}}P.pin=P.pin||'5789';var m={'p-chat':['chat','parent'],'p-sao':['tuvung','parent-sao'],'p-report':['tuvung','parent-report'],'p-tuvung':['tuvung','parent-set'],'p-lop2':['lop2','parent'],'p-lop6':['lop6','parent']}[app];if(!m)return;
   var kid=app==='p-lop2'?'anhphong':app==='p-lop6'?'thanhnghi':(lsGet('portal_last_kid')||'anhphong');
   mount(m[0],kid,m[1])}
 function restorePortal(){
