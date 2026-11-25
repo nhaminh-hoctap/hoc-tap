@@ -29,6 +29,7 @@
 .sc-tabs{display:flex;gap:8px;margin-bottom:8px}
 .sc-tabs button{flex:1;min-height:46px;border-radius:14px;border:2px solid var(--line);background:#fff;font-weight:800;font-size:16px;color:var(--ink)}
 .sc-tabs button.on{background:#1E293B;border-color:#1E293B;color:#fff}
+.sc-tabs button{position:relative}.sc-tabs .nb{display:none;position:absolute;top:-8px;right:-4px;min-width:26px;height:26px;padding:0 7px;border-radius:13px;background:#EF4444;color:#fff;font-style:normal;font-size:14px;font-weight:900;line-height:26px;box-shadow:0 0 0 3px #fff}.sc-tabs .nb.on{display:block}
 /* danh sách tin */
 .sc-list{background:#F8FAFC;border:2px solid var(--line);border-radius:22px;padding:12px;min-height:300px;height:calc(100vh - 500px);height:calc(100dvh - 500px);overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:10px}
 .sc-empty{margin:auto;text-align:center;color:var(--mut);font-weight:700;font-size:17px}
@@ -104,7 +105,7 @@
   <section id="scMain">
     <div class="sc-head"><div class="sc-tt">💬 Sân chơi chung</div><div class="sc-cnt" id="scCnt">…</div></div>
     <div class="sc-frs" id="scFrs"></div>
-    <div class="sc-tabs"><button data-tab="all" class="on">Tất cả</button><button data-tab="tin">💬 Trò chuyện</button><button data-tab="bt">📣 Bản tin</button></div>
+    <div class="sc-tabs"><button data-tab="tin" class="on">💬 Trò chuyện<i class="nb" id="scNb_tin"></i></button><button data-tab="bt">📣 Bản tin<i class="nb" id="scNb_bt"></i></button></div>
     <div class="sc-list" id="scList"><div class="sc-empty">⏳ Đang mở Sân chơi…</div></div>
     <div class="sc-quick" id="scQuick"></div>
     <div class="sc-comp" id="scComp"></div>
@@ -143,7 +144,7 @@ function KIDS(){return (B&&B.KIDS)||[]}
 function nm(id){return id==='_pm'?'Bố mẹ':kid(id).name}
 function picOf(id,sz){try{if(T&&T.pet){var p=T.pet(id);if(p&&p.i>=1)return T.picOf(p.e,sz||'40px')}}catch(e){}return esc(kid(id).av||'🙂')}
 function hm(t){var d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())}
-var DB=null,MSG=[],ON={},ONR={},CFG={},TAB='all',DEM={d:'',n:0},TR={},TRSEEN={},MYCH=null,ADM=lsGet('thu_admin_v1',null)||{},HB=0,UNS=[];
+var DB=null,MSG=[],ON={},ONR={},CFG={},TAB='tin',DEM={d:'',n:0},TR={},TRSEEN={},MYCH=null,ADM=lsGet('thu_admin_v1',null)||{},HB=0,UNS=[];
 function toast(t,ms){var o=document.querySelector('.sc-toast');if(o)o.remove();var e=document.createElement('div');e.className='sc-toast';e.textContent=t;document.body.appendChild(e);setTimeout(function(){e.remove()},ms||2800)}
 function dlg(html,btns,cls){var w=document.createElement('div');w.className='sc-dlg';w.innerHTML='<div class="'+(cls||'')+'">'+html+(btns&&btns.length?'<div class="row2">'+btns.map(function(b,i){return '<button data-i="'+i+'" class="'+(b[2]||'')+'">'+b[0]+'</button>'}).join('')+'</div>':'')+'</div>';
   document.body.appendChild(w);w.querySelectorAll('[data-i]').forEach(function(x){x.onclick=function(){var b=btns[+x.dataset.i];w.remove();if(b[1])b[1]()}});return w}
@@ -179,7 +180,7 @@ async function send(x){x=clean(x);if(!x||SENDING)return;var why=sendLock();if(wh
   if(!DB){toast('Chưa kết nối mạng, con thử lại sau nhé.');return}
   SENDING=true;var t=Date.now(),id=t+'_'+KID,n=used()+1,m={k:KID,x:x,t:t,ty:'tin'};
   MSG.push(Object.assign({id:id},m));DEM={d:today(),n:n};var a=lsGet('sc_dem_v1',{});a[KID]=DEM;lsSet('sc_dem_v1',a);
-  var inp=$('scIn');if(inp)inp.value='';render();
+  var inp=$('scIn');if(inp)inp.value='';if(TAB!=='tin'){var tb=document.querySelector('.sc-tabs [data-tab="tin"]');if(tb)tb.click()}render();
   try{await DB.doc('sanchoi/tin/m/'+id).set(m);await DB.doc('sanchoi/dem_'+KID).set(DEM)}catch(e){toast('Gửi chưa được, mạng yếu. Con thử lại nhé.')}
   SENDING=false;try{if(window.BANK&&BANK.log)BANK.log(KID,'chat','💬 Sân chơi: '+x,{app:'sanchoi'})}catch(e){}}
 
@@ -224,11 +225,21 @@ function msgHtml(m,par){var k=kid(m.k),t=new Date(m.t),tools=par?'<span class="s
 function listHtml(L,par){if(!L.length)return '<div class="sc-empty">'+(TAB==='bt'?'📣 Chưa có bản tin nào. Học tốt để lên bản tin nhé!':'👋 Chưa có ai nhắn. Con chào các bạn trước nhé!')+'</div>';
   var h='',lastD='',td=today(),yd=ymd(new Date(Date.now()-864e5));
   L.forEach(function(m){var d=ymd(new Date(m.t));if(d!==lastD){lastD=d;h+='<div class="sc-day">'+(d===td?'Hôm nay':d===yd?'Hôm qua':d.split('-').reverse().slice(0,2).join('/'))+'</div>'}h+=msgHtml(m,par)});return h}
-function shown(){return MSG.filter(function(m){if(m.an)return false;if(TAB==='tin')return m.ty==='tin'||m.k==='_pm';if(TAB==='bt')return m.ty==='bt'||m.k==='_pm';return true}).sort(function(a,b){return a.t-b.t})}
+function shown(){return MSG.filter(function(m){if(m.an)return false;if(TAB==='tin')return m.ty==='tin'||m.k==='_pm';return m.ty==='bt'||m.k==='_pm'}).sort(function(a,b){return a.t-b.t})}
 function bindList(box){box.querySelectorAll('[data-say]').forEach(function(b){b.onclick=function(){var m=MSG.filter(function(x){return x.id===b.dataset.say})[0];if(m)sayIt(nm(m.k)+' nói: '+m.x)}})}
 var LASTN=-1;
-function renderList(){var box=$('scList');if(!box)return;var L=shown(),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.innerHTML=listHtml(L);bindList(box);
-  if(atEnd||L.length!==LASTN)box.scrollTop=box.scrollHeight;LASTN=L.length}
+/* tin mới nhất luôn ở dưới cùng; mở Sân chơi / đổi thẻ / có tin mới thì cuộn xuống dưới.
+   Cuộn lại vài lần và khi hình thú tải xong (hình tải chậm làm khung dài thêm). */
+function toEnd(box){if(!box)return;var go=function(){box.scrollTop=box.scrollHeight};go();
+  try{requestAnimationFrame(go)}catch(e){}[120,400,1000].forEach(function(ms){setTimeout(go,ms)});
+  box.querySelectorAll('img').forEach(function(im){if(!im.complete)im.addEventListener('load',go,{once:true})})}
+/* chấm đỏ: số tin mới ở thẻ đang không xem (tính từ lần xem thẻ đó gần nhất, lưu trên máy) */
+var SEEN=lsGet('sc_seen_v1',{});
+function seenMark(){var L=shown(),t=L.length?L[L.length-1].t:0;if(t>(SEEN[TAB]||0)){SEEN[TAB]=t;lsSet('sc_seen_v1',SEEN)}}
+function renderBadges(){['tin','bt'].forEach(function(tb){var e=$('scNb_'+tb);if(!e)return;var n=tb===TAB?0:MSG.filter(function(m){return !m.an&&m.k!==KID&&(tb==='tin'?m.ty==='tin':m.ty==='bt')&&m.t>(SEEN[tb]||Date.now()-864e5)}).length;
+  e.textContent=n>9?'9+':n;e.classList.toggle('on',n>0)})}
+function renderList(){var box=$('scList');if(!box)return;var L=shown(),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<120;box.innerHTML=listHtml(L);bindList(box);
+  if(atEnd||L.length!==LASTN)toEnd(box);LASTN=L.length;seenMark();renderBadges()}
 function renderComp(){var c=$('scComp'),q=$('scQuick'),cnt=$('scCnt');if(!c)return;var lk=sendLock(),l=left();
   var mx=maxOf(),md=missionDone();cnt.textContent=l?'✏️ Hôm nay còn '+l+'/'+mx+' câu'+(md?' 🎁':' · xong Nhiệm vụ +'+BONUS):(md?'✅ Đã gửi đủ '+mx+' câu':'🎯 Xong Nhiệm vụ để được thêm '+BONUS+' câu');cnt.className='sc-cnt'+(l?'':' end');
   if(lk){if(!c.querySelector('.sc-lock')||c.dataset.lk!==lk){c.innerHTML='<div class="sc-lock">'+esc(lk)+'</div>';c.dataset.lk=lk}q.innerHTML='';return}
@@ -240,7 +251,7 @@ function render(){if(PAR){renderPar();return}
   if(CFG.on===false){showSec('scClosed');$('scClosedT').innerHTML='<div class="big">🔒</div>Bố mẹ đang tạm đóng Sân chơi.'+(CFG.msg?'<br>'+esc(CFG.msg):'');return}
   showSec('scMain');renderFrs();renderList();renderComp()}
 function showSec(id){['scMain','scClosed','scPar'].forEach(function(x){$(x).classList.toggle('hide',x!==id)})}
-document.querySelectorAll('.sc-tabs [data-tab]').forEach(function(b){b.onclick=function(){TAB=b.dataset.tab;document.querySelectorAll('.sc-tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x===b)});LASTN=-1;renderList()}});
+document.querySelectorAll('.sc-tabs [data-tab]').forEach(function(b){b.onclick=function(){TAB=b.dataset.tab;document.querySelectorAll('.sc-tabs [data-tab]').forEach(function(x){x.classList.toggle('on',x===b)});LASTN=-1;renderList();toEnd($('scList'))}});
 
 /* ---------- Góc bố mẹ: mở / đóng, khóa từng bạn, ẩn / xóa tin, lời nhắn của bố mẹ ---------- */
 async function saveCfg(){try{await DB.doc('sanchoi/_cfg').set({on:CFG.on!==false,khoa:CFG.khoa||{},msg:CFG.msg||'',t:Date.now()});toast('✅ Đã lưu')}catch(e){toast('Chưa lưu được, kiểm tra mạng.')}}
@@ -249,7 +260,7 @@ function renderPar(){showSec('scPar');var s=$('scPSet'),on=CFG.on!==false,kh=CFG
     KIDS().map(function(k){var off=!!kh[k.id],nN=MSG.filter(function(m){return m.k===k.id&&m.ty==='tin'&&ymd(new Date(m.t))===today()}).length;return '<div class="sc-prow"><span>'+esc(k.av||'')+' '+esc(k.name)+' <small style="color:#64748B">· hôm nay '+nN+'/'+maxOf(k.id)+' câu · '+(online(k.id)?'🟢 đang ở đây':'⚪ không ở đây')+'</small></span><button class="sc-sw'+(off?' off':'')+'" data-sw="'+k.id+'">'+(off?'🔴 Đang khóa':'🟢 Được nhắn')+'</button></div>'}).join('')+
     '<div class="sc-prow" style="color:#64748B;font-size:14px">Giờ mở: 6:00–22:00 · 10 câu mỗi bạn mỗi ngày, xong Nhiệm vụ được thêm 10 câu (tổng 20) · nhắn được cả khi chưa xong Nhiệm vụ (để khích lệ nhau); thách đấu vẫn cần xong Nhiệm vụ.</div>';
   s.querySelectorAll('[data-sw]').forEach(function(b){b.onclick=function(){var k=b.dataset.sw;if(k==='all')CFG.on=!(CFG.on!==false);else{CFG.khoa=CFG.khoa||{};if(CFG.khoa[k])delete CFG.khoa[k];else CFG.khoa[k]=1}saveCfg();renderPar()}});
-  var box=$('scPList'),L=MSG.slice().sort(function(a,b){return a.t-b.t});box.innerHTML=listHtml(L,true);bindList(box);box.scrollTop=box.scrollHeight;
+  var box=$('scPList'),L=MSG.slice().sort(function(a,b){return a.t-b.t});box.innerHTML=listHtml(L,true);bindList(box);toEnd(box);
   box.querySelectorAll('[data-hide]').forEach(function(b){b.onclick=async function(){var m=MSG.filter(function(x){return x.id===b.dataset.hide})[0];if(!m)return;m.an=m.an?0:1;var o=Object.assign({},m);delete o.id;try{await DB.doc('sanchoi/tin/m/'+m.id).set(o)}catch(e){}renderPar()}});
   box.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var id=b.dataset.del;dlg('Xóa hẳn tin này?',[['Thôi',null],['Xóa',async function(){MSG=MSG.filter(function(x){return x.id!==id});try{await DB.doc('sanchoi/tin/m/'+id).delete()}catch(e){}renderPar()},'red']])}})}
 $('scPGo').onclick=async function(){var x=String($('scPIn').value||'').trim().slice(0,200);if(!x||!DB)return;var t=Date.now(),id=t+'__pm',m={k:'_pm',x:x,t:t,ty:'tin'};MSG.push(Object.assign({id:id},m));$('scPIn').value='';renderPar();try{await DB.doc('sanchoi/tin/m/'+id).set(m)}catch(e){toast('Chưa gửi được.')}};
