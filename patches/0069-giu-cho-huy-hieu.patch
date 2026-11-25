@@ -1,0 +1,50 @@
+diff --git a/docs/NHAT-KY.md b/docs/NHAT-KY.md
+index e1aba60..eb73343 100644
+--- a/docs/NHAT-KY.md
++++ b/docs/NHAT-KY.md
+@@ -7,4 +7,5 @@ Mới nhất ở trên. Mỗi bản sửa thêm một dòng: ngày · số patch
+ | Ngày | Bản sửa | Nội dung |
+ |---|---|---|
++| 25/11 | 0069 | Sửa lỗi bố mẹ báo: màn **🏅 Huy hiệu / Danh hiệu** đang kéo xuống thì tự nhảy lên đầu trang (iPhone, máy tính) — mỗi khi máy khác gửi dữ liệu (6 bạn học cùng lúc) màn được vẽ lại và cuộn về đầu. Nay vẽ lại nhưng giữ nguyên chỗ đang xem (`refreshAfterRemote` trong `tuvung.html`). |
+ | 24/11 | 0068 | **💬 Sân chơi chung** (bố mẹ yêu cầu, đã thử trên bản thử): một phòng chung cho cả 6 bạn — tự gõ chữ hoặc bấm 🎤 nói thành chữ, 🔊 đọc to tin, câu bấm nhanh; **10 câu/bạn/ngày**; mở **6:00–22:00**; nhắn được cả khi chưa xong Nhiệm vụ (để khích lệ nhau); chặn từ chưa đẹp, số điện thoại, đường link. **📣 Bản tin tự động** (xong nhiệm vụ + thứ tự, chuỗi ngày, trứng nở / tiến hóa, Lv 5/10/…, nhặt đồ Hiếm trở lên, 50/75/100 điểm tuần, dẫn đầu tuần, thắng đấu trực tiếp; không đăng ai thua). **⚔️ Thách đấu trực tiếp**: bạn đang ở Sân chơi (chấm xanh) → thách → bạn kia nhận lời trong 60 giây → hai máy cùng vào trận trong Nuôi thú, mỗi bạn tự ra chiêu (30 giây/lượt), may rủi tính theo mã trận nên hai máy cùng kết quả; cần xong Nhiệm vụ, còn ⚡; tính vào 5 trận/ngày, thắng +2/+3 xu; rời trận = thua, bạn mất kết nối quá 25 giây = mình thắng. Thanh **💬 Sân chơi chung** trên trang của bé đặt ngay trên 🎯 Nhiệm vụ hôm nay. Góc bố mẹ → **💬 Quản lý Sân chơi**: mở/đóng, khóa từng bạn, ẩn/xóa tin, lời nhắn của bố mẹ. Tệp mới `sanchoi.html`; `nuoithu.html` khối ĐẤU TRỰC TIẾP; `index.html` app `chat`, `PORTAL.open`. |
+ | 23/11 | 0067 | Kết thúc kiểm thử 60 ngày (bản v67, 6 bạn, 13 máy, 344 buổi học, 65 lần bố mẹ vào Góc bố mẹ): không còn mất dữ liệu, không báo tụt nhầm, không lệch số giữa các máy, không thưởng trùng. Sửa thêm: **bản chụp tự động** chỉ xóa đúng bản của 15 ngày trước, ngày nào không xóa được (vd. hôm đó mạng chập chờn) thì bản cũ nằm lại mãi (giả lập: 16 bản) → nay mỗi ngày xét lại các bản 15–45 ngày trước và xóa bù. |
+diff --git a/index.html b/index.html
+index 9f9e059..530807d 100644
+--- a/index.html
++++ b/index.html
+@@ -145,7 +145,7 @@ h2{font-size:19px;margin:24px 2px 10px}
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+ <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+-<script src="claude-shim.js?v=70"></script>
+-<script src="bank.js?v=70"></script>
+-<script src="thidua.js?v=70"></script>
++<script src="claude-shim.js?v=71"></script>
++<script src="bank.js?v=71"></script>
++<script src="thidua.js?v=71"></script>
+ <link rel="manifest" href="manifest.json">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+diff --git a/sw.js b/sw.js
+index 57df46b..1c40b4a 100644
+--- a/sw.js
++++ b/sw.js
+@@ -4,7 +4,7 @@
+    - Hình (img/): lưu riêng một lần, lần sau mở ngay không cần mạng (đổi hình thì đổi tên tệp)
+    - Dữ liệu học (Firestore) không đi qua đây: luôn đi thẳng tới máy chủ */
+-const V = 'hoc-tap-v70';
++const V = 'hoc-tap-v71';
+ const IMG = 'hoc-tap-hinh-v1';
+-const CORE = ['./', 'index.html', 'claude-shim.js?v=70', 'bank.js?v=70', 'thidua.js?v=70', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'sanchoi.html', 'words.json', 'manifest.json', 'icon.png'];
++const CORE = ['./', 'index.html', 'claude-shim.js?v=71', 'bank.js?v=71', 'thidua.js?v=71', 'tuvung.html', 'lop1.html', 'lop2.html', 'lop3.html', 'lop5.html', 'lop7.html', 'lop6.html', 'nuoithu.html', 'sanchoi.html', 'words.json', 'manifest.json', 'icon.png'];
+ 
+ self.addEventListener('install', e => {
+diff --git a/tuvung.html b/tuvung.html
+index 57deddd..065d13d 100644
+--- a/tuvung.html
++++ b/tuvung.html
+@@ -1768,5 +1768,5 @@ function refreshAfterRemote(){
+   try{applyFixes()}catch(e){}
+   if(!$('report').classList.contains('hide')){renderReport();return}
+-  if(!$('badges').classList.contains('hide')){openBadges();return}
++  if(!$('badges').classList.contains('hide')){const y=window.scrollY;openBadges();window.scrollTo(0,y);return}   // 0069: giữ chỗ đang xem, không nhảy lên đầu khi máy khác vừa gửi dữ liệu
+   // không vẽ lại khi bé đang làm bài; các màn hình tĩnh thì cập nhật ngay
+   if(!$('home').classList.contains('hide'))renderHome();
