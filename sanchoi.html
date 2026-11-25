@@ -108,7 +108,7 @@
     <div class="sc-list" id="scList"><div class="sc-empty">⏳ Đang mở Sân chơi…</div></div>
     <div class="sc-quick" id="scQuick"></div>
     <div class="sc-comp" id="scComp"></div>
-    <div class="sc-note">Mỗi ngày mỗi bạn được gửi 10 câu · Sân chơi mở từ 6 giờ đến 22 giờ · Lời lẽ đẹp, cổ vũ nhau học tốt nhé!</div>
+    <div class="sc-note">Mỗi ngày mỗi bạn được gửi 10 câu, xong 🎯 Nhiệm vụ được thêm 10 câu · Sân chơi mở từ 6 giờ đến 22 giờ · Lời lẽ đẹp, cổ vũ nhau học tốt nhé!</div>
   </section>
   <section id="scClosed" class="hide"><div class="sc-closed" id="scClosedT"></div></section>
   <section id="scPar" class="hide">
@@ -120,7 +120,7 @@
 </div>
 <script>
 /* ===== 💬 Sân chơi chung (bản thử 24/11/2026, bố mẹ yêu cầu):
-   - một phòng chung cho cả 6 bạn, tự gõ chữ hoặc bấm 🎤 nói để chuyển thành chữ; mỗi bạn 10 câu/ngày;
+   - một phòng chung cho cả 6 bạn, tự gõ chữ hoặc bấm 🎤 nói để chuyển thành chữ; mỗi bạn 10 câu/ngày, xong Nhiệm vụ thêm 10 câu (25/11);
    - nhắn được cả khi chưa xong Nhiệm vụ (bố mẹ đổi 24/11 để các bé khích lệ nhau), đóng lúc 22 giờ (đến 6 giờ sáng); lọc từ chưa đẹp, số điện thoại, đường link;
    - 📣 Bản tin tự động: xong nhiệm vụ, chuỗi ngày, thú tiến hóa / lên cấp, nhặt đồ hiếm, dẫn đầu tuần, điểm tuần, thắng đấu trực tiếp;
    - ⚔️ Thách đấu trực tiếp: thấy bạn đang ở Sân chơi (chấm xanh) thì thách, bạn nhận lời là cả hai vào trận trong 🐾 Nuôi thú.
@@ -130,7 +130,7 @@
 'use strict';
 var GEN=window.__scGen=(window.__scGen||0)+1;function alive(){return window.__scGen===GEN&&!!document.getElementById('sc')}
 var P=window.PORTAL||{},KID=P.kid||'anhphong',PAR=!!P.parent,B=window.BANK,T=window.THIDUA;
-var MAX=10,CLOSE_H=22,OPEN_H=6,ONLINE_MS=45000,INV_MS=60000;
+var MAX=10,BONUS=10,CLOSE_H=22,OPEN_H=6,ONLINE_MS=45000,INV_MS=60000;
 var $=function(id){return document.getElementById(id)};
 function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function pad(n){return String(n).padStart(2,'0')}
@@ -162,12 +162,14 @@ function missionDone(id){var t=(T&&T.tasks?T.tasks(id||KID):[]).filter(function(
 function hourOpen(){var h=new Date().getHours();return h>=OPEN_H&&h<CLOSE_H}
 function used(){var d=today(),n=DEM.d===d?+DEM.n||0:0,l=lsGet('sc_dem_v1',{})[KID];if(l&&l.d===d)n=Math.max(n,+l.n||0);
   var mine=MSG.filter(function(m){return m.k===KID&&m.ty==='tin'&&ymd(new Date(m.t))===d}).length;return Math.max(n,mine)}
-function left(){return Math.max(0,MAX-used())}
+/* 10 câu/ngày; xong 🎯 Nhiệm vụ hôm nay thì được thêm 10 câu (bố mẹ yêu cầu 25/11) */
+function maxOf(id){return MAX+(missionDone(id||KID)?BONUS:0)}
+function left(){return Math.max(0,maxOf()-used())}
 function sendLock(){if(CFG.on===false)return '🔒 Bố mẹ đang tạm đóng Sân chơi.'+(CFG.msg?' '+CFG.msg:'');
   if(CFG.khoa&&CFG.khoa[KID])return '🔒 Bố mẹ đang tạm khóa phần trò chuyện của con.';
   if(!hourOpen())return '🌙 Sân chơi chỉ mở từ 6 giờ sáng đến 22 giờ.';
   if(!(T&&T.data()))return '⏳ Đang tải dữ liệu học…';
-  if(!left())return '✅ Con đã gửi đủ 10 câu hôm nay rồi. Mai trò chuyện tiếp nhé!';
+  if(!left())return missionDone()?'✅ Con đã gửi đủ '+maxOf()+' câu hôm nay rồi. Mai trò chuyện tiếp nhé!':'🎯 Con đã gửi hết '+MAX+' câu. Làm xong Nhiệm vụ hôm nay để được thêm '+BONUS+' câu nữa nhé!';
   return ''}
 
 /* ---------- gửi tin ---------- */
@@ -228,7 +230,7 @@ var LASTN=-1;
 function renderList(){var box=$('scList');if(!box)return;var L=shown(),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<80;box.innerHTML=listHtml(L);bindList(box);
   if(atEnd||L.length!==LASTN)box.scrollTop=box.scrollHeight;LASTN=L.length}
 function renderComp(){var c=$('scComp'),q=$('scQuick'),cnt=$('scCnt');if(!c)return;var lk=sendLock(),l=left();
-  cnt.textContent=l?'✏️ Hôm nay còn '+l+'/'+MAX+' câu':'✅ Đã gửi đủ '+MAX+' câu';cnt.className='sc-cnt'+(l?'':' end');
+  var mx=maxOf(),md=missionDone();cnt.textContent=l?'✏️ Hôm nay còn '+l+'/'+mx+' câu'+(md?' 🎁':' · xong Nhiệm vụ +'+BONUS):(md?'✅ Đã gửi đủ '+mx+' câu':'🎯 Xong Nhiệm vụ để được thêm '+BONUS+' câu');cnt.className='sc-cnt'+(l?'':' end');
   if(lk){if(!c.querySelector('.sc-lock')||c.dataset.lk!==lk){c.innerHTML='<div class="sc-lock">'+esc(lk)+'</div>';c.dataset.lk=lk}q.innerHTML='';return}
   if(!$('scIn')){c.dataset.lk='';c.innerHTML='<button class="mic" id="scMic" aria-label="Nói để viết">🎤</button><input id="scIn" maxlength="100" autocomplete="off" enterkeyhint="send" placeholder="Viết lời nhắn hoặc bấm 🎤 để nói…"><button class="go" id="scSend">Gửi</button>';
     $('scMic').onclick=micStart;$('scSend').onclick=function(){send($('scIn').value)};$('scIn').onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();send(this.value)}}}
@@ -244,8 +246,8 @@ document.querySelectorAll('.sc-tabs [data-tab]').forEach(function(b){b.onclick=f
 async function saveCfg(){try{await DB.doc('sanchoi/_cfg').set({on:CFG.on!==false,khoa:CFG.khoa||{},msg:CFG.msg||'',t:Date.now()});toast('✅ Đã lưu')}catch(e){toast('Chưa lưu được, kiểm tra mạng.')}}
 function renderPar(){showSec('scPar');var s=$('scPSet'),on=CFG.on!==false,kh=CFG.khoa||{};
   s.innerHTML='<div class="sc-prow"><span>Sân chơi của cả nhóm</span><button class="sc-sw'+(on?'':' off')+'" data-sw="all">'+(on?'🟢 Đang mở':'🔴 Tạm đóng')+'</button></div>'+
-    KIDS().map(function(k){var off=!!kh[k.id],nN=MSG.filter(function(m){return m.k===k.id&&m.ty==='tin'&&ymd(new Date(m.t))===today()}).length;return '<div class="sc-prow"><span>'+esc(k.av||'')+' '+esc(k.name)+' <small style="color:#64748B">· hôm nay '+nN+'/'+MAX+' câu · '+(online(k.id)?'🟢 đang ở đây':'⚪ không ở đây')+'</small></span><button class="sc-sw'+(off?' off':'')+'" data-sw="'+k.id+'">'+(off?'🔴 Đang khóa':'🟢 Được nhắn')+'</button></div>'}).join('')+
-    '<div class="sc-prow" style="color:#64748B;font-size:14px">Giờ mở: 6:00–22:00 · 10 câu mỗi bạn mỗi ngày · nhắn được cả khi chưa xong Nhiệm vụ (để khích lệ nhau); thách đấu vẫn cần xong Nhiệm vụ.</div>';
+    KIDS().map(function(k){var off=!!kh[k.id],nN=MSG.filter(function(m){return m.k===k.id&&m.ty==='tin'&&ymd(new Date(m.t))===today()}).length;return '<div class="sc-prow"><span>'+esc(k.av||'')+' '+esc(k.name)+' <small style="color:#64748B">· hôm nay '+nN+'/'+maxOf(k.id)+' câu · '+(online(k.id)?'🟢 đang ở đây':'⚪ không ở đây')+'</small></span><button class="sc-sw'+(off?' off':'')+'" data-sw="'+k.id+'">'+(off?'🔴 Đang khóa':'🟢 Được nhắn')+'</button></div>'}).join('')+
+    '<div class="sc-prow" style="color:#64748B;font-size:14px">Giờ mở: 6:00–22:00 · 10 câu mỗi bạn mỗi ngày, xong Nhiệm vụ được thêm 10 câu (tổng 20) · nhắn được cả khi chưa xong Nhiệm vụ (để khích lệ nhau); thách đấu vẫn cần xong Nhiệm vụ.</div>';
   s.querySelectorAll('[data-sw]').forEach(function(b){b.onclick=function(){var k=b.dataset.sw;if(k==='all')CFG.on=!(CFG.on!==false);else{CFG.khoa=CFG.khoa||{};if(CFG.khoa[k])delete CFG.khoa[k];else CFG.khoa[k]=1}saveCfg();renderPar()}});
   var box=$('scPList'),L=MSG.slice().sort(function(a,b){return a.t-b.t});box.innerHTML=listHtml(L,true);bindList(box);box.scrollTop=box.scrollHeight;
   box.querySelectorAll('[data-hide]').forEach(function(b){b.onclick=async function(){var m=MSG.filter(function(x){return x.id===b.dataset.hide})[0];if(!m)return;m.an=m.an?0:1;var o=Object.assign({},m);delete o.id;try{await DB.doc('sanchoi/tin/m/'+m.id).set(o)}catch(e){}renderPar()}});
