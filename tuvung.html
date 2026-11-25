@@ -1767,7 +1767,7 @@ function syncPushAll(){if(!SYNC.db)return;SYNC_KEYS.forEach(k=>SYNC.dirty.add(k)
 function refreshAfterRemote(){
   try{applyFixes()}catch(e){}
   if(!$('report').classList.contains('hide')){renderReport();return}
-  if(!$('badges').classList.contains('hide')){openBadges();return}
+  if(!$('badges').classList.contains('hide')){const y=window.scrollY;openBadges();window.scrollTo(0,y);return}   // 0069: giữ chỗ đang xem, không nhảy lên đầu khi máy khác vừa gửi dữ liệu
   // không vẽ lại khi bé đang làm bài; các màn hình tĩnh thì cập nhật ngay
   if(!$('home').classList.contains('hide'))renderHome();
   else if(!$('stars').classList.contains('hide')){renderStarTabs();renderStars();renderPresets()}
